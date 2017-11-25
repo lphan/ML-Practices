@@ -4,6 +4,9 @@
 jupyter notebook filename.ipynb
 
 
-### This work dedicated to teamwork tera (Long Phan, Lily, Galina)
+### This work dedicated to teamwork tera 
+Long Phan, 
+Lily, 
+Galina
 
 
