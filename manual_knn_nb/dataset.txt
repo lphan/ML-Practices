@@ -1,0 +1,14 @@
+Sunny Cool High Weak No
+Sunny Cool High Strong No
+Sunny Cool Normal Strong Yes
+Rain Mild High Weak Yes
+Sunny Mild Normal Strong Yes
+Overcast Cool Normal Strong Yes
+Sunny Cool High Weak No
+Overcast Hot High Strong Yes
+Overcast Hot High Weak Yes
+Rain Mild High Weak Yes
+Rain Mild Normal Weak Yes
+Rain Cool Normal Strong No
+Overcast Hot Normal Weak Yes
+Rain Mild High Strong No
