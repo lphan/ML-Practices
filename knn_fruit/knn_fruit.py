@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 
 dataset = pd.read_csv('dataset.csv')
+print (dataset.columns)
 # replace 0-value by numpy NaN
 dataset = dataset.replace(0, np.NaN)
 
@@ -31,16 +32,13 @@ X[:, 0] = labelencoder_X.fit_transform(X[:, 0])
 
 onehotencoder = OneHotEncoder(categorical_features= [0])
 X = onehotencoder.fit_transform(X).toarray()
-# print (X)
 
 # encoding the dependent variable
 labelencoder_y = LabelEncoder()
 y = labelencoder_y.fit_transform(y)
 
-print (y)
-
 # splitting the dataset into the training set and test set
-# from sklearn.cross_validation import train_test_split
+# from sklearn.cross_validation import train_test_split (deprecated)
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state = 0)
 
@@ -52,11 +50,11 @@ X_test = sc_X.transform(X_test)
 
 # Fitting to the training set using k-NN
 from sklearn.neighbors import KNeighborsClassifier
-classifier = KNeighborsClassifier(n_neighbors=5, metric='euclidean', p=2)
-classifier.fit(X_train, y_train)
+classifier_k3 = KNeighborsClassifier(n_neighbors=3, metric='euclidean', p=2)
+classifier_k3.fit(X_train, y_train)
 
 # Predicting the test set results
-y_pred = classifier.predict(X_test)
+y_pred = classifier_k3.predict(X_test)
 
 # find total errors/ correct by using confusion matrix
 from sklearn.metrics import confusion_matrix
@@ -67,5 +65,29 @@ print (cm)
 print ("Predicted value y_pred", y_pred)
 print ("Actual value y_test", y_test)
 
+# Classify the inputdata & visualize them 
+inputdata = pd.read_csv('classify_data.txt', sep='\s+', 
+                        names=['Color', 'Radius (cm)', 'Weight (grams)'])
 
-# TODO: classify the inputdata & visualize them 
+# importing data into object
+X_input = inputdata.iloc[:, [0,1,2]].values
+
+# preprocessing data
+labelencoder_X_input = LabelEncoder()
+X_input[:, 0] = labelencoder_X_input.fit_transform(X_input[:, 0])
+
+onehotencoder = OneHotEncoder(categorical_features= [0])
+X_input = onehotencoder.fit_transform(X_input).toarray()
+
+# feature scaling 
+X_input = sc_X.transform(X_input)
+
+# Predicting the input set results
+y_pred_input_k3 = classifier_k3.predict(X_input)
+
+# ------------- Predicting the input set with k=1 -------------------------
+# classifier_k1 = KNeighborsClassifier(n_neighbors=1, metric='euclidean', p=2)
+# classifier_k1.fit(X_train, y_train)
+# y_pred_input_k1 = classifier_k1.predict(X_input)
+
+# TODO: visualization
