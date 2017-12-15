@@ -1,0 +1,5 @@
+Green 3.2 95
+Yellow 2.9 60
+Green 4.2 90
+Red 2.9 65
+Yellow 2.5 64
