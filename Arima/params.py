@@ -28,14 +28,17 @@ def run():
     argument = get_arguments()
     dateparse = lambda dates: pd.datetime.strptime(dates, '%m/%d/%Y %H:%M:%S')
 
-    path = argument['dataset_path']
+    dataset_path = argument['dataset_path']
+    datatestset_path = argument['datatestset_path']
 
-    hw = pd.read_csv(path, index_col=0, parse_dates={'datetime': ['Datum', 'Zeit']}, date_parser=dateparse)
+    hw = pd.read_csv(dataset_path, index_col=0, parse_dates={'datetime': ['Datum', 'Zeit']}, date_parser=dateparse)
+    hw_test = pd.read_csv(datatestset_path, index_col=0, parse_dates={'datetime': ['Datum', 'Zeit']}, date_parser=dateparse)
     
     # convert to time series
     ts = hw['W [cm]']
+    ts_test = hw_test['W [cm]']
 
-    return hw, ts
+    return hw, ts, hw_test, ts_test
 
 
 def get_arguments():
@@ -46,7 +49,6 @@ def get_arguments():
     now_water_level = config['input']['now_water_level']
     now_time = config['input']['now_time']
     predict_time = config['input']['predict_time']
-    water_level_chain = config['input']['water_level_chain']
 
     pre_process = config.getboolean('process', 'pre_processing')
     classify = config.getboolean('process', 'classify')
@@ -56,11 +58,12 @@ def get_arguments():
 
     image_path = config['paths']['image_path']
     dataset_path = config['paths']['dataset_path']
+    datatestset_path = config['paths']['datatestset_path']
 
     kwargs = {"now_water_level": now_water_level, "now_time": now_time, "predict_time": predict_time,
-              "water_level_chain": water_level_chain,
               "pre_process": pre_process, "classify": classify, "predict": predict,
-              "rate_of_change": rate_of_change, "filter_data": filter_data, "image_path": image_path, "dataset_path": dataset_path }
+              "rate_of_change": rate_of_change, "filter_data": filter_data, "image_path": image_path, 
+              "dataset_path": dataset_path, "datatestset_path": datatestset_path}
 
     return (kwargs)
 
@@ -79,7 +82,7 @@ def getMaxMin(ts):
     min2016 = ts['2016'][ts['2016'] == min(ts['2016'])]
     return max1993, min1993, max1994, min1994, max2013, min2013, max2016, min2016
 
-hw, ts = run()
+hw, ts, hw_test, ts_test = run()
 max1993, min1993, max1994, min1994, max2013, min2013, max2016, min2016 = getMaxMin(ts)
 
 # print (test)
