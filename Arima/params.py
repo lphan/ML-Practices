@@ -12,7 +12,7 @@
 __author__ = 'Long Phan'
 
 '''
-Description: others download media-data
+Description: Import parameters from config.ini and data from dataset
 '''
 import configparser
 import pandas as pd
