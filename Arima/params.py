@@ -31,8 +31,12 @@ def run():
     path = argument['dataset_path']
 
     hw = pd.read_csv(path, index_col=0, parse_dates={'datetime': ['Datum', 'Zeit']}, date_parser=dateparse)
+    
+    # convert to time series
+    ts = hw['W [cm]']
 
-    return hw
+    return hw, ts
+
 
 def get_arguments():
     
@@ -59,3 +63,24 @@ def get_arguments():
               "rate_of_change": rate_of_change, "filter_data": filter_data, "image_path": image_path, "dataset_path": dataset_path }
 
     return (kwargs)
+
+
+def getMaxMin(ts):
+    max1993 = ts['1993'][ts['1993'] == max(ts['1993'])]
+    min1993 = ts['1993'][ts['1993'] == min(ts['1993'])]
+
+    max1994 = ts['1994'][ts['1994'] == max(ts['1994'])]
+    min1994 = ts['1994'][ts['1994'] == min(ts['1994'])]
+
+    max2013 = ts['2013'][ts['2013'] == max(ts['2013'])]
+    min2013 = ts['2013'][ts['2013'] == min(ts['2013'])]
+
+    max2016 = ts['2016'][ts['2016'] == max(ts['2016'])]
+    min2016 = ts['2016'][ts['2016'] == min(ts['2016'])]
+    return max1993, min1993, max1994, min1994, max2013, min2013, max2016, min2016
+
+hw, ts = run()
+max1993, min1993, max1994, min1994, max2013, min2013, max2016, min2016 = getMaxMin(ts)
+
+# print (test)
+# print (i)
