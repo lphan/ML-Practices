@@ -15,11 +15,26 @@ __author__ = 'Long Phan'
 Description: others download media-data
 '''
 import configparser
-# import json
-# import io
+import pandas as pd
+import params
+import numpy as np
+import matplotlib.pyplot as plt
+from datetime import datetime
+from matplotlib.pylab import rcParams
+import timeit
 
 
-def execute():
+def run():
+    argument = get_arguments()
+    dateparse = lambda dates: pd.datetime.strptime(dates, '%m/%d/%Y %H:%M:%S')
+
+    path = argument['dataset_path']
+
+    hw = pd.read_csv(path, index_col=0, parse_dates={'datetime': ['Datum', 'Zeit']}, date_parser=dateparse)
+
+    return hw
+
+def get_arguments():
     
     config = configparser.ConfigParser()
     config.read('config.ini')
