@@ -16,7 +16,6 @@ Description: Import parameters from config.ini and data from dataset
 '''
 import configparser
 import pandas as pd
-import params
 import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
@@ -90,6 +89,3 @@ def getMaxMin(ts):
 
 hw, ts, hw_test, ts_test, hw_full, ts_full = run()
 max1993, min1993, max1994, min1994, max2013, min2013, max2016, min2016 = getMaxMin(ts)
-
-# print (test)
-# print (i)
