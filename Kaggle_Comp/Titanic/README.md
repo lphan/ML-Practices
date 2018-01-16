@@ -1,4 +1,4 @@
-# Kaggle Competition: Deadline 2 years to go 
+## Kaggle Competition: 2 years to go
 
 ### Reference:
 > https://www.kaggle.com/c/titanic/data
