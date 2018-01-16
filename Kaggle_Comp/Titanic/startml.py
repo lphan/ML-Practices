@@ -47,10 +47,10 @@ class StartML(object):
         data_path_1 = config['paths']['data_path_1']
         data_path_2 = config['paths']['data_path_2']
 
-        nan_drop_col = config['StartML']['replace_nan_column_drop']
-        nan_drop_row = config['StartML']['replace_nan_row_drop']
-        nan_zero = config['StartML']['replace_nan_zero']
-        nan_mean = config['StartML']['replace_nan_mean']
+        nan_drop_col = config.getboolean('StartML', 'replace_nan_drop_column')
+        nan_drop_row = config.getboolean('StartML', 'replace_nan_drop_row')
+        nan_zero = config.getboolean('StartML', 'replace_nan_zero')
+        nan_mean = config.getboolean('StartML', 'replace_nan_mean')
 
         StartML.kwargs.update({"data_path_1": data_path_1,
                                "data_path_2": data_path_2,
@@ -127,10 +127,10 @@ class StartML(object):
 
         elif nan_cols and StartML.kwargs['nan_zero']:
 
-            # convert nan in column into zero_value (WARNING: only suitable for columns in dtypes float64, int64)
+            # convert nan_value in column into zero_value (WARNING: columns in dtypes float64, int64), axis=1
             for nan_col in nan_cols:
                 if data[nan_col].dtype == np.float64 or data[nan_col].dtype == np.int64:
-                    data[nan_col] = data[nan_col].replace(to_replace=np.NaN, value=0, axis=1)
+                    data[nan_col] = data[nan_col].replace(to_replace=np.NaN, value=0)
             return data
 
         elif nan_cols and StartML.kwargs['nan_mean']:
