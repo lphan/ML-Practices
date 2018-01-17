@@ -45,7 +45,7 @@ class StartMLTestCase(unittest.TestCase):
     @staticmethod
     def testPre_processing_columns():
         processed_train_data = StartML.pre_processing_columns(train_data)
-        nan_cols = ['Age', 'Cabin', 'Embarked']
+        nan_cols = StartML.nan_columns(train_data)  # ['Age', 'Cabin', 'Embarked']
 
         if StartML.kwargs['nan_drop_col']:
             assert np.array_equal(StartML.pre_processing_columns(processed_train_data),
@@ -57,7 +57,16 @@ class StartMLTestCase(unittest.TestCase):
                                  ['PassengerId', 'Survived', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp',
                                   'Parch', 'Ticket', 'Fare', 'Cabin', 'Embarked']
                                  ), 'the dropping columns are incorrect'
-            assert StartML.get_value_column_index(processed_train_data, 'Age', 5) == 0, 'Incorrect replaced, value should be 0.0'
+            assert StartML.get_value_column_index(processed_train_data, 'Age', 5) == 0, \
+                'Incorrect replaced, value should be 0.0'
+
+    @staticmethod
+    def testPre_processing_rows():
+        # processed_train_data = StartML.pre_processing_rows(train_data)
+        # nan_cols = StartML.nan_columns(train_data)  # ['Age', 'Cabin', 'Embarked']
+
+        if StartML.kwargs['nan_mean_neighbors']:
+            assert StartML.mean_neighbors(train_data, 'Age', 32) == np.mean([40, 66]), 'Incorrect computed'
 
 
 if __name__ == '__main__':

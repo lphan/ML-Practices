@@ -51,13 +51,15 @@ class StartML(object):
         nan_drop_row = config.getboolean('StartML', 'replace_nan_drop_row')
         nan_zero = config.getboolean('StartML', 'replace_nan_zero')
         nan_mean = config.getboolean('StartML', 'replace_nan_mean')
+        nan_mean_neighbors = config.getboolean('StartML', 'replace_nan_mean_neighbors')
 
         StartML.kwargs.update({"data_path_1": data_path_1,
                                "data_path_2": data_path_2,
                                "nan_drop_col": nan_drop_col,
                                "nan_drop_row": nan_drop_row,
                                "nan_zero": nan_zero,
-                               "nan_mean": nan_mean})
+                               "nan_mean": nan_mean,
+                               "nan_mean_neighbors": nan_mean_neighbors})
 
     @classmethod
     def groupby_columns(cls, data, columns):
@@ -80,8 +82,9 @@ class StartML(object):
         :param row_id:
         :return: value at row_id of the given column
         """
+        # return data.column_name[row_id]  # (short-way)
         return data[column_name][data[column_name].index[row_id]]
-
+        
     @classmethod
     def nan_columns(cls, data):
         """
@@ -107,6 +110,27 @@ class StartML(object):
     def feature_engineering(cls, data):
         # tbd
         pass
+
+    @classmethod
+    def mean_neighbors(cls, data, column, row_id):
+        """
+        compute mean value of value at row_id with values from its above and lower neighbors.
+        if the above neighbor is NaN, it jumps to higher position
+        :param column:
+        :param row_id:
+        :return:
+        """
+        above_rid = row_id - 1
+        while np.isnan(StartML.get_value_column_index(data, column, above_rid)):
+            above_rid = above_rid - 1
+        above_val = StartML.get_value_column_index(data, column, above_rid)
+
+        lower_rid = row_id + 1
+        while np.isnan(StartML.get_value_column_index(data, column, lower_rid)):
+            lower_rid = lower_rid + 1
+        lower_val = StartML.get_value_column_index(data, column, lower_rid)
+
+        return np.mean([lower_val, above_val])
 
     @classmethod
     def pre_processing_columns(cls, data):
@@ -154,11 +178,13 @@ class StartML(object):
         nan_cols = cls.nan_columns(data)
         nan_rows = cls.nan_rows(data)
 
-        if not nan_rows.empty:
-            # Return DataFrame with duplicate rows removed
-            return data.drop_duplicates()
+        data = data.drop_duplicates()
 
-        elif not nan_rows.empty and StartML.kwargs['nan_drop_row']:
+        # if not nan_rows.empty:
+        #     # Return DataFrame with duplicate rows removed
+        #     data = data.drop_duplicates()
+
+        if not nan_rows.empty and StartML.kwargs['nan_drop_row']:
             # Drop the rows where all elements are nan
             data = data.dropna(axis=0, how='all')
 
@@ -166,6 +192,7 @@ class StartML(object):
             return data.dropna(thresh=2)
 
         elif not nan_rows.empty and StartML.kwargs['nan_zero']:
+
             # convert nan in row into zero_value, axis=0
             for nan_col in nan_cols:
                 if data[nan_col].dtype == np.float64 or data[nan_col].dtype == np.int64:
@@ -173,6 +200,7 @@ class StartML(object):
             return data
 
         elif not nan_rows.empty and StartML.kwargs['nan_mean']:
+
             for nan_col in nan_cols:
                 if data[nan_col].dtype == np.float64 or data[nan_col].dtype == np.int64:
                     # data[nan_col] = data[nan_col].replace(to_replace=np.NaN, value=0)
@@ -181,6 +209,20 @@ class StartML(object):
                     imputer = Imputer(missing_values='NaN', strategy='mean', axis=1)
                     imputer = imputer.fit(data[nan_col].values.reshape(1, -1))
                     data[nan_col] = imputer.transform(data[nan_col].values.reshape(1, -1))[0]
+            return data
+
+        elif not nan_rows.empty and StartML.kwargs['nan_mean_neighbors']:
+
+            for nan_col in nan_cols:
+                if data[nan_col].dtype == np.float64 or data[nan_col].dtype == np.int64:
+                    # for row_id in range(len(data[nan_col])):
+                    #     if np.isnan(StartML.get_value_column_index(data, nan_col, row_id)):
+                    #         data[nan_col][row_id] = StartML.mean_neighbors(data, nan_col, row_id)
+                    data[nan_col] = [StartML.mean_neighbors(data, nan_col, row_id)
+                                     if np.isnan(StartML.get_value_column_index(data, nan_col, row_id))
+                                     else data[nan_col][row_id] for row_id in range(len(data[nan_col]))
+                                     ]
+
             return data
 
         else:
@@ -192,9 +234,14 @@ class StartML(object):
         """
         Show all basic information
         """
-        print("\n", data.columns, "\n")
+        print("\nData Columns: ", data.columns, "\n")
+        print("Missing values in Data: \n")
+        print(data.isnull().sum(), "\n")
+        print("data.head(10): \n")
         print(data.head(10), "\n")
+        print("data.info(): \n")
         print(data.info(), "\n")
+        print("data.describe(): \n")
         print(data.describe(), "\n")
 
     @staticmethod
