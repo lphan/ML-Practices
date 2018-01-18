@@ -47,14 +47,16 @@ class StartML(object):
         data_path_1 = config['paths']['data_path_1']
         data_path_2 = config['paths']['data_path_2']
 
-        nan_drop_col = config.getboolean('StartML', 'replace_nan_drop_column')
-        nan_drop_row = config.getboolean('StartML', 'replace_nan_drop_row')
-        nan_zero = config.getboolean('StartML', 'replace_nan_zero')
-        nan_mean = config.getboolean('StartML', 'replace_nan_mean')
-        nan_mean_neighbors = config.getboolean('StartML', 'replace_nan_mean_neighbors')
+        exclude_obj_col = config.getboolean('StartML', 'exclude_object_column')
+        nan_drop_col = config.getboolean('StartML', 'nan_drop_column')
+        nan_drop_row = config.getboolean('StartML', 'nan_drop_row')
+        nan_zero = config.getboolean('StartML', 'nan_zero')
+        nan_mean = config.getboolean('StartML', 'nan_mean')
+        nan_mean_neighbors = config.getboolean('StartML', 'nan_mean_neighbors')
 
         StartML.kwargs.update({"data_path_1": data_path_1,
                                "data_path_2": data_path_2,
+                               "drop_obj_col": exclude_obj_col,
                                "nan_drop_col": nan_drop_col,
                                "nan_drop_row": nan_drop_row,
                                "nan_zero": nan_zero,
@@ -62,7 +64,7 @@ class StartML(object):
                                "nan_mean_neighbors": nan_mean_neighbors})
 
     @classmethod
-    def groupby_columns(cls, data, columns):
+    def group_by_columns(cls, data, columns):
         """
         operation group_by and count the frequency of all single variables in every columns
         :param data:
@@ -83,6 +85,7 @@ class StartML(object):
         :return: value at row_id of the given column
         """
         # return data.column_name[row_id]  # (short-way)
+
         return data[column_name][data[column_name].index[row_id]]
         
     @classmethod
@@ -107,11 +110,6 @@ class StartML(object):
         return data[data.isnull().any(axis=1)]
 
     @classmethod
-    def feature_engineering(cls, data):
-        # tbd
-        pass
-
-    @classmethod
     def mean_neighbors(cls, data, column, row_id):
         """
         compute mean value of value at row_id with values from its above and lower neighbors.
@@ -133,7 +131,7 @@ class StartML(object):
         return np.mean([lower_val, above_val])
 
     @classmethod
-    def pre_processing_columns(cls, data):
+    def process_nan_columns(cls, data):
         """
         pre_processing columns based on information given in the config.ini
         :param data:
@@ -144,7 +142,11 @@ class StartML(object):
         # Drop the columns where all elements are nan
         data = data.dropna(axis=1, how='all')
 
-        if nan_cols and StartML.kwargs['nan_drop_col']:
+        if nan_cols and StartML.kwargs['drop_obj_col']:
+            # drop all columns with type object
+            return data.select_dtypes(exclude=object)
+
+        elif nan_cols and StartML.kwargs['nan_drop_col']:
 
             # drop all nan_columns, axis : {0 or 'index (rows)', 1 or 'columns'}
             return data.drop(nan_cols, axis=1)
@@ -165,11 +167,10 @@ class StartML(object):
             return data
 
         else:
-            print("Data in columns safe!")
             return data
 
     @classmethod
-    def pre_processing_rows(cls, data):
+    def process_nan_rows(cls, data):
         """
         pre_processing rows based on information given in the config.ini
         :param data:
@@ -179,10 +180,6 @@ class StartML(object):
         nan_rows = cls.nan_rows(data)
 
         data = data.drop_duplicates()
-
-        # if not nan_rows.empty:
-        #     # Return DataFrame with duplicate rows removed
-        #     data = data.drop_duplicates()
 
         if not nan_rows.empty and StartML.kwargs['nan_drop_row']:
             # Drop the rows where all elements are nan
@@ -262,8 +259,8 @@ info_help = {
             "info_help": StartML.__name__,
             "StartML.kwargs": "Show key words arguments from config.ini",
             "StartML.summary(data)": StartML.summary.__doc__,
-            "StartML.pre_processing_columns(data)": StartML.pre_processing_columns.__doc__,
-            "StartML.pre_processing_rows(data)": StartML.pre_processing_rows.__doc__,
+            "StartML.pre_processing_columns(data)": StartML.process_nan_columns.__doc__,
+            "StartML.pre_processing_rows(data)": StartML.process_nan_rows.__doc__,
             "StartML.nan_columns(data)": StartML.nan_columns.__doc__,
             "StartML.nan_rows(data)": StartML.nan_rows.__doc__,
             "train_data": train_data.__class__,

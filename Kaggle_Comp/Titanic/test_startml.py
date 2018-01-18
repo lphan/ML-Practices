@@ -44,16 +44,20 @@ class StartMLTestCase(unittest.TestCase):
 
     @staticmethod
     def testPre_processing_columns():
-        processed_train_data = StartML.pre_processing_columns(train_data)
-        nan_cols = StartML.nan_columns(train_data)  # ['Age', 'Cabin', 'Embarked']
+        processed_train_data = StartML.process_nan_columns(train_data)
 
-        if StartML.kwargs['nan_drop_col']:
-            assert np.array_equal(StartML.pre_processing_columns(processed_train_data),
+        if StartML.kwargs['drop_obj_col']:
+            assert np.array_equal(processed_train_data.columns,
+                                  ['PassengerId', 'Survived', 'Pclass', 'Age', 'SibSp', 'Parch', 'Fare']), \
+                'the dropping columns are incorrect'
+
+        elif StartML.kwargs['nan_drop_col']:
+            assert np.array_equal(processed_train_data.columns,
                                   ['PassengerId', 'Survived', 'Pclass', 'Name', 'Sex', 'SibSp', 'Parch', 'Ticket',
                                    'Fare']), 'the dropping columns are incorrect'
 
         elif StartML.kwargs['nan_zero']:
-            assert np.array_equal(StartML.pre_processing_columns(processed_train_data).columns,
+            assert np.array_equal(processed_train_data.columns,
                                  ['PassengerId', 'Survived', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp',
                                   'Parch', 'Ticket', 'Fare', 'Cabin', 'Embarked']
                                  ), 'the dropping columns are incorrect'
