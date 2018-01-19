@@ -32,47 +32,23 @@ class StartModTestCase(unittest.TestCase):
 
         assert np.array_equal(train_data.columns, new_columns), 'feature engineering not successful'
 
+    @staticmethod
+    def testFeature_engineering_merge_cols():
+        new_columns = StartMod.feature_engineering_merge_cols(train_data, ['SibSp', 'Parch'], 'FamilySize').columns
+
+        assert np.array_equal(new_columns, ['PassengerId', 'Survived', 'Pclass', 'Name', 'Sex', 'Age', 'Ticket',
+                                            'Fare', 'Cabin', 'Embarked', 'Title', 'FamilySize']), \
+            'feature engineering merge columns not successful'
+
     # @staticmethod
-    # def testGet_value_column_index_Fare():
-    #     assert float(StartML.get_value_column_index(train_data, 'Fare', 10)) == 16.7, 'incorrect Fare price'
-    #
+    # def testEncode_label_column_invalid():
+    #     x = StartMod.encode_label_column(train_data, 'FamilySize')
+    #     assert np.array_equal(x, []), "encoding not successful"
+
     # @staticmethod
-    # def testNan_columns():
-    #     assert StartML.nan_columns(train_data) == ['Age', 'Cabin', 'Embarked'], 'incorrect NaN columns'
-    #
-    # @staticmethod
-    # def testNan_rows():
-    #     assert StartML.nan_rows(train_data).size == 8496, 'incorrect number of elements 708*12 in returning data object'
-    #
-    # @staticmethod
-    # def testPre_processing_columns():
-    #     processed_train_data = StartML.process_nan_columns(train_data)
-    #
-    #     if StartML.kwargs['drop_obj_col']:
-    #         assert np.array_equal(processed_train_data.columns,
-    #                               ['PassengerId', 'Survived', 'Pclass', 'Age', 'SibSp', 'Parch', 'Fare']), \
-    #             'the dropping columns are incorrect'
-    #
-    #     elif StartML.kwargs['nan_drop_col']:
-    #         assert np.array_equal(processed_train_data.columns,
-    #                               ['PassengerId', 'Survived', 'Pclass', 'Name', 'Sex', 'SibSp', 'Parch', 'Ticket',
-    #                                'Fare']), 'the dropping columns are incorrect'
-    #
-    #     elif StartML.kwargs['nan_zero']:
-    #         assert np.array_equal(processed_train_data.columns,
-    #                              ['PassengerId', 'Survived', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp',
-    #                               'Parch', 'Ticket', 'Fare', 'Cabin', 'Embarked']
-    #                              ), 'the dropping columns are incorrect'
-    #         assert StartML.get_value_column_index(processed_train_data, 'Age', 5) == 0, \
-    #             'Incorrect replaced, value should be 0.0'
-    #
-    # @staticmethod
-    # def testPre_processing_rows():
-    #     # processed_train_data = StartML.pre_processing_rows(train_data)
-    #     # nan_cols = StartML.nan_columns(train_data)  # ['Age', 'Cabin', 'Embarked']
-    #
-    #     if StartML.kwargs['nan_mean_neighbors']:
-    #         assert StartML.mean_neighbors(train_data, 'Age', 32) == np.mean([40, 66]), 'Incorrect computed'
+    # def testEncode_label_column_valid():
+    #     X = StartMod.encode_label_column(train_data, 'Sex')
+    #     assert ((X[:, 4]==1.0).sum(), (X[:, 4]==0.0).sum()) == (577, 314), "encoding not successful"
 
 
 if __name__ == '__main__':

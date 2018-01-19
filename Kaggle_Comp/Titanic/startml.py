@@ -64,6 +64,15 @@ class StartML(object):
                                "nan_mean_neighbors": nan_mean_neighbors})
 
     @classmethod
+    def get_columns_idx(cls, data):
+        """
+        return a list of tuple (column, index, label_type)
+        :param data:
+        :return:
+        """
+        return [(col, data.columns.get_loc(col), data.dtypes[col]) for col in data.columns]
+
+    @classmethod
     def group_by_columns(cls, data, columns):
         """
         operation group_by and count the frequency of all single variables in every columns
@@ -75,19 +84,46 @@ class StartML(object):
         pass
 
     @classmethod
-    def get_value_column_index(cls, data, column_name, row_id):
+    def lookup_value(cls, data, value):
+        """
+        locate all values in data frame
+        :param data:
+        :param value (can be either int, float or object)
+        :return: list of tuple (row_id, 'column_name')
+        """
+        # tbd: value in regex*
+
+        # identify all columns with the same type as value
+        if type(value) == str:
+            columns = [col for col in data.columns if data.dtypes[data.columns.get_loc(col)] == 'O']
+        else:
+            columns = [col for col in data.columns if data.dtypes[data.columns.get_loc(col)] == int or
+                       data.dtypes[data.columns.get_loc(col)] == float]
+
+        # loop on these columns to look up value
+        result = []
+
+        for idx, rows in data.iterrows():
+            result = result + [(idx, col) for col in columns if rows[col] == value]
+
+        return result
+
+    @classmethod
+    def find_value(cls, data, rows_id, column_name):
         """
         given data, column_name and row_id
         return value at row_id of column
         :param data:
         :param column_name:
-        :param row_id:
-        :return: value at row_id of the given column
+        :param rows_id:
+        :return: tuple (column, row, value)
         """
         # return data.column_name[row_id]  # (short-way)
+        # return data.iloc[row_id, column_id], data.loc[row_id, column_label]
+        # return [(column_name, data[column_name][data[column_name].index[row_id])]
 
-        return data[column_name][data[column_name].index[row_id]]
-        
+        return [(row_id, column_name, data.at[row_id, column_name]) for row_id in rows_id]
+
     @classmethod
     def nan_columns(cls, data):
         """
@@ -110,7 +146,7 @@ class StartML(object):
         return data[data.isnull().any(axis=1)]
 
     @classmethod
-    def mean_neighbors(cls, data, column, row_id):
+    def mean_neighbors(cls, data, row_id, column):
         """
         compute mean value of value at row_id with values from its above and lower neighbors.
         if the above neighbor is NaN, it jumps to higher position
@@ -119,14 +155,15 @@ class StartML(object):
         :return:
         """
         above_rid = row_id - 1
-        while np.isnan(StartML.get_value_column_index(data, column, above_rid)):
+
+        while np.isnan(data.at[above_rid, column]):
             above_rid = above_rid - 1
-        above_val = StartML.get_value_column_index(data, column, above_rid)
+        above_val = data.at[above_rid, column]
 
         lower_rid = row_id + 1
-        while np.isnan(StartML.get_value_column_index(data, column, lower_rid)):
+        while np.isnan(data.at[lower_rid, column]):
             lower_rid = lower_rid + 1
-        lower_val = StartML.get_value_column_index(data, column, lower_rid)
+        lower_val = data.at[lower_rid, column]
 
         return np.mean([lower_val, above_val])
 
@@ -179,6 +216,7 @@ class StartML(object):
         nan_cols = cls.nan_columns(data)
         nan_rows = cls.nan_rows(data)
 
+        # drop the duplicates rows
         data = data.drop_duplicates()
 
         if not nan_rows.empty and StartML.kwargs['nan_drop_row']:
@@ -216,14 +254,11 @@ class StartML(object):
                     #     if np.isnan(StartML.get_value_column_index(data, nan_col, row_id)):
                     #         data[nan_col][row_id] = StartML.mean_neighbors(data, nan_col, row_id)
                     data[nan_col] = [StartML.mean_neighbors(data, nan_col, row_id)
-                                     if np.isnan(StartML.get_value_column_index(data, nan_col, row_id))
-                                     else data[nan_col][row_id] for row_id in range(len(data[nan_col]))
+                                     if np.isnan(data.at[row_id, nan_col]) else data[nan_col][row_id]
+                                     for row_id in range(len(data[nan_col]))
                                      ]
-
             return data
-
         else:
-            print("Data in rows safe, please check StartML.nan_columns again!")
             return data
 
     @staticmethod
@@ -252,11 +287,11 @@ class StartML(object):
 
         return data_path_1, data_path_2
 
+    @staticmethod
+    def info_help():
 
-train_data, test_data = StartML.run()
-
-info_help = {
-            "info_help": StartML.__name__,
+        return {
+            "info_help_StartML": StartML.__name__,
             "StartML.kwargs": "Show key words arguments from config.ini",
             "StartML.summary(data)": StartML.summary.__doc__,
             "StartML.pre_processing_columns(data)": StartML.process_nan_columns.__doc__,
@@ -265,6 +300,10 @@ info_help = {
             "StartML.nan_rows(data)": StartML.nan_rows.__doc__,
             "train_data": train_data.__class__,
             "test_data": test_data.__class__
-            }
+        }
+
+
+train_data, test_data = StartML.run()
+info_help = StartML.info_help()
 
 StartML.__doc__

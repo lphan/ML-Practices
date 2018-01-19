@@ -27,12 +27,12 @@ class StartMLTestCase(unittest.TestCase):
 
     @staticmethod
     def testGet_value_column_index_Name():
-        assert StartML.get_value_column_index(train_data, 'Name', 8) == \
-               "Johnson, Mrs. Oscar W (Elisabeth Vilhelmina Berg)", 'incorrect Name'
+        assert StartML.find_value(train_data, [1, 2, 3], 'Age') == \
+               [(1, 'Age', 38.0), (2, 'Age', 26.0), (3, 'Age', 35.0)], 'incorrect Name'
 
     @staticmethod
     def testGet_value_column_index_Fare():
-        assert float(StartML.get_value_column_index(train_data, 'Fare', 10)) == 16.7, 'incorrect Fare price'
+        assert (float(StartML.find_value(train_data, [10], 'Fare')[0][2])) == 16.7, 'incorrect Fare price'
 
     @staticmethod
     def testNan_columns():
@@ -61,7 +61,7 @@ class StartMLTestCase(unittest.TestCase):
                                  ['PassengerId', 'Survived', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp',
                                   'Parch', 'Ticket', 'Fare', 'Cabin', 'Embarked']
                                  ), 'the dropping columns are incorrect'
-            assert StartML.get_value_column_index(processed_train_data, 'Age', 5) == 0, \
+            assert StartML.find_value(processed_train_data, 5, 'Age') == 0, \
                 'Incorrect replaced, value should be 0.0'
 
     @staticmethod
@@ -70,7 +70,7 @@ class StartMLTestCase(unittest.TestCase):
         # nan_cols = StartML.nan_columns(train_data)  # ['Age', 'Cabin', 'Embarked']
 
         if StartML.kwargs['nan_mean_neighbors']:
-            assert StartML.mean_neighbors(train_data, 'Age', 32) == np.mean([40, 66]), 'Incorrect computed'
+            assert StartML.mean_neighbors(train_data, 32, 'Age') == np.mean([40, 66]), 'Incorrect computed'
 
 
 if __name__ == '__main__':
