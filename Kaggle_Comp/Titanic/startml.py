@@ -304,6 +304,6 @@ class StartML(object):
 
 
 train_data, test_data = StartML.run()
-info_help = StartML.info_help()
+info_ml = StartML.info_help()
 
 StartML.__doc__

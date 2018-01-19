@@ -24,9 +24,9 @@ class StartMod(StartML):
         k-NN, Decision Tree, SVM, Neural Network, etc.
 
       Start:
-      jupyter notebook
-      -> from startmod import *
-      -> info_help
+          jupyter notebook
+          -> from startmod import *
+          -> info_mod
     """
 
     @classmethod
@@ -146,9 +146,9 @@ class StartMod(StartML):
             "StartMod.feature_engineering(data)": StartMod.feature_engineering.__doc__,
             "StartMod.feature_engineering_merge_cols(data)": StartMod.feature_engineering_merge_cols.__doc__,
             }
-        info.update(StartML.info_help())
+        # info.update(StartML.info_help())
 
         return info
 
 
-info_help = StartMod.info_help()
+info_mod = StartMod.info_help()
