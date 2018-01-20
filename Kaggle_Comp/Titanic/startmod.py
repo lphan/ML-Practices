@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2014-2015
+# Copyright (c) 2018
 #
 # This software is licensed to you under the GNU General Public License,
 # version 2 (GPLv2). There is NO WARRANTY for this software, express or
@@ -84,7 +84,7 @@ class StartMod(StartML):
         return data.drop(features, axis=1)
 
     @classmethod
-    def encode_label_column(cls, data, label_column):
+    def encode_label_column(cls, data, label_column, onehot=False):
         """
         Source:
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html
@@ -99,33 +99,31 @@ class StartMod(StartML):
         """
         try:
             if data[label_column].dtype == np.float64 or data[label_column].dtype == np.int64:
-                print("label_column is not valid, only accept type-object ")
+                print("Warning: type of label_column "+label_column+" is " + str(data[label_column].dtypes))
         except ValueError:
             return []
 
-        x_values = data.values
-
-        # get column index
-        label_idx = data.columns.get_loc(label_column)
-        # print(label_idx)
-
-        # transform into numpy values
-        # print(x_values)
-
         # label_encoder to turn object-column into number-column
         label_encoder = LabelEncoder()
-        # print(x_values[:, label_idx])
+        data[label_column] = label_encoder.fit_transform(data[label_column].values)
 
-        x_values[:, label_idx] = label_encoder.fit_transform(x_values[:, label_idx])
-        # print(X[:, label_idx])
+        if onehot:
+            x_values = data.values
 
-        # tbd:
-        # to make the code as X = onehotencoder.fit_transform(X).toarray() to create many dummy-columns
-        # one_hot_encoder to turn number-column into sparse matrix without reshape(1, -1)
-        one_hot_encoder = OneHotEncoder(categorical_features=[label_idx])
-        x_values[:, label_idx] = one_hot_encoder.fit_transform(x_values[:, label_idx].reshape(1, -1)).toarray()
+            # get column index
+            label_idx = data.columns.get_loc(label_column)
 
-        return x_values
+            x_values[:, label_idx] = label_encoder.fit_transform(x_values[:, label_idx])
+            # print(x[:, label_idx])
+            # tbd:
+            # to make the code as X = onehotencoder.fit_transform(X).toarray() to create many dummy-columns
+            # one_hot_encoder to turn number-column into sparse matrix without reshape(1, -1)
+            one_hot_encoder = OneHotEncoder(categorical_features=[label_idx])
+            x_values[:, label_idx] = one_hot_encoder.fit_transform(x_values[:, label_idx].reshape(1, -1)).toarray()
+
+            return x_values
+        else:
+            return data
 
     @classmethod
     def score_dataset(cls):

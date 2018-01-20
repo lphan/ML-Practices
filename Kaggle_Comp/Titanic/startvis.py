@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2014-2015
+# Copyright (c) 2018
 #
 # This software is licensed to you under the GNU General Public License,
 # version 2 (GPLv2). There is NO WARRANTY for this software, express or
@@ -23,10 +23,11 @@ rcParams['figure.figsize'] = 15, 6
 
 class StartVis(StartML):
     """
-      Description: StartVis - Start Visualization
-      Visualize data in different chart (Bar-Chart, Histograms, Scatter, TimeSeries, etc.)
+        Description: StartVis - Start Visualization
+        Visualize data in different chart (Bar-Chart, Histograms, Scatter, TimeSeries, etc.)
+        Reference: https://www.kaggle.com/learn/data-visualisation
 
-      Start:
+        Start:
           jupyter notebook
           -> from startvis import *
           -> info_vis
@@ -34,6 +35,15 @@ class StartVis(StartML):
 
     @classmethod
     def vis_bar(cls, data, columns, x_label='', y_label='', title=''):
+        """
+        visualize the number of counted values in the given columns in bar-chart
+        :param data: in format DataFrame
+        :param columns:
+        :param x_label:
+        :param y_label:
+        :param title:
+        :return:
+        """
         for column in columns:
             # other options: line, area
             # data[column].head().value_counts().plot(kind='bar')
@@ -54,12 +64,13 @@ class StartVis(StartML):
         Display Histogram of data and labels, with filter-function
         :param data:
         :param columns:
-        :param func_filter:
+        :param func_filter: object type Pandas-Series
         :param x_label:
         :param y_label:
         :param title:
         :return: Histogram
         """
+
         try:
             for column in columns:
                 if func_filter is None:
@@ -79,8 +90,13 @@ class StartVis(StartML):
 
     @classmethod
     def vis_bar_groupby(cls, data, columns, group_by_column, x_label='', y_label='', title=''):
-        grouped_data = data[columns].groupby(by=group_by_column)
-        grouped_data.plot(kind='bar', label=str(group_by_column))
+        """
+        Visualize groupby-object in bar chart.
+        """
+        grouped_data = StartML.group_by_columns(data, columns, group_by_column)
+        # grouped_data = data[columns].groupby(by=group_by_column)
+        x = grouped_data.size()
+        x.plot.bar(label=str(group_by_column))
         plt.title("Bar Chart group_by "+str(columns) + " " + title)
         plt.xlabel(x_label)
         plt.ylabel(y_label)

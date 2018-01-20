@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2014-2015
+# Copyright (c) 2018
 #
 # This software is licensed to you under the GNU General Public License,
 # version 2 (GPLv2). There is NO WARRANTY for this software, express or
@@ -73,15 +73,20 @@ class StartML(object):
         return [(col, data.columns.get_loc(col), data.dtypes[col]) for col in data.columns]
 
     @classmethod
-    def group_by_columns(cls, data, columns):
+    def group_by_columns(cls, data, columns, label_groupby, func=None):
         """
         operation group_by and count the frequency of all single variables in every columns
         :param data:
-        :param columns:
-        :return:
+        :param columns: list of columns need to be grouped
+        :param label_groupby: need to be one of the given columns
+        :param func:
+        :return: DataFrameGroupBy object, which can be used to compute further
         """
-        # tbd
-        pass
+        grouped = data[columns].groupby(label_groupby)
+        if func is None:
+            return grouped
+        else:
+            return grouped.aggregate(func)
 
     @classmethod
     def lookup_value(cls, data, value):
@@ -115,7 +120,7 @@ class StartML(object):
         return value at row_id of column
         :param data:
         :param column_name:
-        :param rows_id:
+        :param rows_id: list type as list of rows_id
         :return: tuple (column, row, value)
         """
         # return data.column_name[row_id]  # (short-way)
@@ -260,6 +265,17 @@ class StartML(object):
             return data
         else:
             return data
+
+    @classmethod
+    def process_nan_simply(cls, data):
+        """
+        process all nan-value by replacing with 'Unknown'
+        :param data:
+        :return:
+        """
+        for col in StartML.nan_columns(data):
+            data[col] = data[col].fillna('Unknown')
+        return data
 
     @staticmethod
     def summary(data):
