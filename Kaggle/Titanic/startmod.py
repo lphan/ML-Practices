@@ -28,11 +28,34 @@ class StartMod(StartML):
           -> from startmod import *
           -> info_mod
     """
+    @classmethod
+    def feature_scaling(cls, data):
+        """
+        Standardization involves rescaling the features such that they have the properties
+        of a standard normal distribution with a mean of zero and a standard deviation of one
+        Source:
+            http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html
+            http://scikit-learn.org/stable/auto_examples/preprocessing/plot_scaling_importance.html
+        :param data:
+        :return:
+        """
+
+    @classmethod
+    def feature_selection(cls, data):
+        """
+        feature selection/dimensionality reduction
+        Source:
+            http://scikit-learn.org/stable/modules/feature_selection.html
+        :param data:
+        :return:
+        """
 
     @classmethod
     def feature_hashing(cls, data):
         """
+        Benefit on low-memory and speed up the performance
         Source:
+            http://scikit-learn.org/stable/modules/feature_extraction.html
             http://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.FeatureHasher.html
         :param data:
         :return:
