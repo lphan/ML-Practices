@@ -1,4 +1,4 @@
-## Kaggle Competition: 2 years to go
+## Kaggle Competition:
 
 ### Reference:
 > https://www.kaggle.com/c/titanic/data
