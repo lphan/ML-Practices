@@ -64,23 +64,31 @@ class StartML(object):
                                "nan_mean_neighbors": nan_mean_neighbors})
 
     @classmethod
+    def find_idx_max_value(cls, data):
+        for i, v in enumerate(data):
+            if v == max(data):
+                break
+        return max(data), i
+
+
+    @classmethod
     def get_columns_idx(cls, data):
         """
         return a list of tuple (column, index, label_type)
         :param data:
-        :return:
+        :return: list of tuple (column, column_idx, type's column)
         """
         return [(col, data.columns.get_loc(col), data.dtypes[col]) for col in data.columns]
 
     @classmethod
     def group_by_columns(cls, data, columns, label_groupby, func=None):
         """
-        operation group_by and count the frequency of all single variables in every columns
+        execute operation group_by on columns by label_groupby
         :param data:
         :param columns: list of columns need to be grouped
         :param label_groupby: need to be one of the given columns
         :param func:
-        :return: DataFrameGroupBy object, which can be used to compute further
+        :return: DataFrameGroupBy object (which can be used to compute further)
         """
         grouped = data[columns].groupby(label_groupby)
         if func is None:
@@ -91,8 +99,8 @@ class StartML(object):
     @classmethod
     def lookup_value(cls, data, value):
         """
-        locate all values in data frame
-        :param data:
+        find all values in data frame
+        :param data
         :param value (can be either int, float or object)
         :return: list of tuple (row_id, 'column_name')
         """
@@ -121,7 +129,7 @@ class StartML(object):
         :param data:
         :param column_name:
         :param rows_id: list type as list of rows_id
-        :return: tuple (column, row, value)
+        :return: list of tuple (column, row, value)
         """
         # return data.column_name[row_id]  # (short-way)
         # return data.iloc[row_id, column_id], data.loc[row_id, column_label]
@@ -134,7 +142,7 @@ class StartML(object):
         """
         return name of all columns which have NaN_value
         :param data:
-        :return: key_true
+        :return: list of all NaN_column(s)
         """
         kc = data.isnull().any()
         key_true = [key for key, value in kc.iteritems() if value]
@@ -146,7 +154,7 @@ class StartML(object):
         """
         return all rows containing NaN values in type DataFrame
         :param data:
-        :return: nan_rows
+        :return: data with all NaN_rows
         """
         return data[data.isnull().any(axis=1)]
 
@@ -157,7 +165,7 @@ class StartML(object):
         if the above neighbor is NaN, it jumps to higher position
         :param column:
         :param row_id:
-        :return:
+        :return: mean value of neighbors
         """
         above_rid = row_id - 1
 
@@ -269,9 +277,9 @@ class StartML(object):
     @classmethod
     def process_nan_simply(cls, data):
         """
-        process all nan-value by replacing with 'Unknown'
+        simply process all nan-value by replacing with 'Unknown'
         :param data:
-        :return:
+        :return: data after preprocessing
         """
         for col in StartML.nan_columns(data):
             data[col] = data[col].fillna('Unknown')

@@ -15,9 +15,14 @@ __author__ = 'Long Phan'
 # from sklearn.pipeline import make_pipeline
 from startmod import *
 from startvis import *
+from sklearn.preprocessing import StandardScaler
 from sklearn.model_selection import train_test_split
 
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.tree import DecisionTreeRegressor
+
+import statsmodels.formula.api as sm
 from sklearn.metrics import confusion_matrix
 
 
@@ -36,30 +41,145 @@ class StartModSKL(StartMod):
         pass
 
     @classmethod
-    def linear_regression(cls, data, dependent_label):
+    def linear_regression(cls, data, dependent_label, poly=False):
         """
-        Ordinary least squares Linear Regression
+        Ordinary least squares Linear Regression y = ax + b (one independent variable, one dependent_label)
         Source:
             http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html
-        :param data:
-        :return: the predicted result based on test
+        :param data: clean encoded data without NaN-value
+        :param dependent_label:
+        :param poly: initiate polynomial linear regression
+        :return: LinearRegression-object (or PolynomialFeatures-object if poly=True), predicted_result, test_result
         """
-        # convert data into numpy-values
+        # convert data into numpy-values (in case: the last column is dependent label)
         # x = data.iloc[:, :-1].values
         # y = data.iloc[:, 1].values
-
         y = data[dependent_label].values
         x = data.drop(dependent_label, axis=1).values
 
-        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=0)
+        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=0)
 
-        # return x_train, x_test, y_train, y_test
+        # Feature scaling
+        sc_x = StandardScaler(copy=True, with_mean=True, with_std=True)
+        x_train = sc_x.fit_transform(x_train)
+        x_test = sc_x.transform(x_test)
+
+        if poly:
+            # fit polynomial regression degree level = 3, with training-data
+            poly_reg = PolynomialFeatures(degree=3)
+            x_poly = poly_reg.fit_transform(x_train)
+            poly_reg.fit(x_poly, y_train)
+
+            # apply linear regression to polynomial data
+            lin_reg_2 = LinearRegression()
+            lin_reg_2.fit(x_poly, y_train)
+
+            # predict value on testing data by applying polynomial regression object
+            y_predict = lin_reg_2.predict(poly_reg.fit_transform(x_test))
+
+            return poly_reg, y_predict, y_test
+
+        else:
+
+            # fit model with training-data
+            reg = LinearRegression()
+            reg.fit(x_train, y_train)
+
+            # Visualizing
+            StartVis.vis_obj_predict(x_train, y_train, reg)
+
+            # Predicting the Test and return the predicted result
+            y_predict = reg.predict(x_test)
+
+            # Visualizing
+            StartVis.vis_obj_predict(x_test, y_test, reg)
+
+            return reg, y_predict, y_test
+
+    @classmethod
+    def multi_linear_regression(cls, data, dependent_label):
+        """
+        Multiple Linear Regression y = b0 + b1.x1 + b2.x2 + ... + bn.xn (Method: Backward Elimination)
+        :param data:
+        :param dependent_label:
+        :return: RegressionResultsWrapper object, predicted_result, test_result
+        """
+
+        # save the dependent value into y
+        y = data[dependent_label].values
+
+        # drop dependent value from data and save the independent values into x
+        data = data.drop(dependent_label, axis=1)
+        x = data.values
+
+        # add column 0 as constant b0 implicitly
+        x = np.append(arr=np.ones(shape=(x.shape[0], 1)).astype(int), values=x, axis=1)
+
+        # Start Method Backward Elimination
+        # Step 1: select a significance level to stay
+        sl = 0.05
+        x_opt = x[:, [i for i in range(len(data.columns)+1)]]
+        # print(range(len(data.columns)), x_opt.shape, range(len(data.columns)))
+
+        # Step 2: fit the full model with all possible predictors
+        # create new object for Ordinary Least Square OLS
+        reg_ols = sm.OLS(endog=y, exog=x_opt).fit()
+
+        # Step 3: select and remove the redundant columns with pvalue > significant level 0.05
+        max_pvalue, col_idx = StartML.find_idx_max_value(reg_ols.pvalues)
+
+        while max_pvalue > sl:
+            x_opt = np.delete(x_opt, col_idx, axis=1)
+
+            # recompute regressor with new value without the redundant column
+            reg_ols = sm.OLS(endog=y, exog=x_opt).fit()
+            max_pvalue, idx = StartML.find_idx_max_value(reg_ols.pvalues)
+            # print(max_pvalue, reg_ols.pvalues, idx)
+
+        print("x_value is optimal with pvalue ", max_pvalue)
+        x_train, x_test, y_train, y_test = train_test_split(x_opt, y, test_size=0.2, random_state=0)
+
+        # Execute Linear Regression on optimal value
         # fit model with training-data
         reg = LinearRegression()
         reg.fit(x_train, y_train)
 
+        # Visualizing
+        StartVis.vis_obj_predict(x_train, y_train, reg)
+
         # Predicting the Test and return the predicted result
-        return reg.predict(x_test), y_test
+        y_predict = reg.predict(x_test)
+
+        # Visualizing
+        StartVis.vis_obj_predict(x_test, y_test, reg)
+
+        return reg_ols, y_predict, y_test
+
+    @classmethod
+    def decision_tree_regression(cls, data, dependent_label):
+
+        # save the dependent value into y
+        y = data[dependent_label].values
+
+        # drop dependent value from data and save the independent values into x
+        data = data.drop(dependent_label, axis=1)
+        x = data.values
+
+        x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=0)
+
+        regdt = DecisionTreeRegressor(random_state=0)
+        regdt.fit(x, y)
+
+        # Visualizing
+        StartVis.vis_obj_predict(x_train, y_train, regdt)
+
+        # Predicting a new result
+        y_predict = regdt.predict(x_test)
+
+        # Visualizing
+        StartVis.vis_obj_predict(x_test, y_test, regdt)
+
+        return regdt, y_predict, y_test
 
     @staticmethod
     def info_help():

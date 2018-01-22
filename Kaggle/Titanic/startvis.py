@@ -108,6 +108,25 @@ class StartVis(StartML):
     def vis_scatter(cls, data):
         pass
 
+    @classmethod
+    def vis_obj_predict(cls, x, y, obj_pred):
+        """
+        Visualizing result of the predicting object
+        :param x:
+        :param y:
+        :param obj_pred:
+        :return:
+        """
+
+        if x.shape == y.shape:
+            plt.scatter(x, y, color='red')
+
+        plt.plot(x, obj_pred.predict(x), color='blue')
+        plt.title(type(obj_pred))
+        plt.xlabel(str(type(x)))
+        plt.ylabel(str(type(y)))
+        plt.show()
+
     @staticmethod
     def info_help():
         info = {

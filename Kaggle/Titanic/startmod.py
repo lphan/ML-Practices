@@ -39,6 +39,9 @@ class StartMod(StartML):
         :param data:
         :return:
         """
+        # tbd
+        pass
+
 
     @classmethod
     def feature_selection(cls, data):
@@ -49,6 +52,8 @@ class StartMod(StartML):
         :param data:
         :return:
         """
+        # tbd
+        pass
 
     @classmethod
     def feature_hashing(cls, data):
@@ -74,7 +79,7 @@ class StartMod(StartML):
         :param old_feature:
         :param new_feature:
         :param attributes_new_feature:
-        :return: data with new feature
+        :return: data (with new feature)
         """
 
         def find_attributes_feature(search_object, attributes):
@@ -90,11 +95,11 @@ class StartMod(StartML):
     @classmethod
     def feature_engineering_merge_cols(cls, data, features, new_feature):
         """
-        merge many features into one new_feature (column)
+        Merge many features into one new_feature (column)
         :param data:
         :param features: list of the merging features
         :param new_feature: name of merged new_feature
-        :return: data with new column (feature)
+        :return: data (with new column feature)
         """
         # initialize new feature column
         data[new_feature] = 0
@@ -118,7 +123,7 @@ class StartMod(StartML):
         notably linear models and SVMs with the standard kernels.
         :param data:
         :param label_column
-        :return: the encoded data in type numpy.array
+        :return: data and x_values (the encoded data in type numpy.array)
         """
         try:
             if data[label_column].dtype == np.float64 or data[label_column].dtype == np.int64:
@@ -153,6 +158,7 @@ class StartMod(StartML):
         """
         Source:
             https://www.kaggle.com/dansbecker/handling-missing-values
+            http://scikit-learn.org/stable/modules/model_evaluation.html
         measure the quality of the models (comparing results before and after running prediction)
 
         :return:
