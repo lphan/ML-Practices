@@ -156,10 +156,10 @@ class StartMod(StartML):
     @classmethod
     def score_dataset(cls):
         """
+        measure the quality of the models (comparing results before and after running prediction)
         Source:
             https://www.kaggle.com/dansbecker/handling-missing-values
             http://scikit-learn.org/stable/modules/model_evaluation.html
-        measure the quality of the models (comparing results before and after running prediction)
 
         :return:
         """

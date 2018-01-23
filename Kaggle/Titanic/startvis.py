@@ -120,12 +120,14 @@ class StartVis(StartML):
 
         if x.shape == y.shape:
             plt.scatter(x, y, color='red')
-
-        plt.plot(x, obj_pred.predict(x), color='blue')
-        plt.title(type(obj_pred))
-        plt.xlabel(str(type(x)))
-        plt.ylabel(str(type(y)))
-        plt.show()
+        try:
+            plt.plot(x, obj_pred.predict(x), color='blue')
+            plt.title(type(obj_pred))
+            plt.xlabel(str(type(x)))
+            plt.ylabel(str(type(y)))
+            plt.show()
+        except AttributeError:
+            print("Object has no Attribute predict, invalid object")
 
     @staticmethod
     def info_help():
