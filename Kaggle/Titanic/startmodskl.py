@@ -23,6 +23,10 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.linear_model import LogisticRegression
 
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.naive_bayes import GaussianNB
+
 import statsmodels.formula.api as sm
 from sklearn.metrics import confusion_matrix
 
@@ -43,6 +47,13 @@ class StartModSKL(StartMod):
 
     @classmethod
     def split_data(cls, data, dependent_label, split=True):
+        """
+        split data for regression methods
+        :param data: Pandas-DataFrame
+        :param dependent_label:
+        :param split:
+        :return: x_train, x_test, y_train, y_test
+        """
         # convert data into numpy-values (in case: the last column is dependent label)
         # x = data.iloc[:, :-1].values
         # y = data.iloc[:, 1].values
@@ -58,7 +69,7 @@ class StartModSKL(StartMod):
         # split data
         x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=0)
 
-        # Feature scaling
+        # Feature scaling (Normalization)
         sc_x = StandardScaler(copy=True, with_mean=True, with_std=True)
         x_train = sc_x.fit_transform(x_train)
         x_test = sc_x.transform(x_test)
@@ -71,10 +82,10 @@ class StartModSKL(StartMod):
         Ordinary least squares Linear Regression y = ax + b (one independent variable, one dependent_label)
         Source:
             http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html
-        :param data: clean encoded data without NaN-value
+        :param data: Pandas-DataFrame
         :param dependent_label:
         :param poly: initiate polynomial linear regression
-        :return: LinearRegression-object (or PolynomialFeatures-object if poly=True), predicted_result, test_result
+        :return: LinearRegression-object (or PolynomialFeatures-object if poly=True), true_test_result, predicted_result
         """
 
         x_train, x_test, y_train, y_test = StartModSKL.split_data(data, dependent_label)
@@ -97,7 +108,7 @@ class StartModSKL(StartMod):
             # predict value on testing data by applying polynomial regression object
             y_predict = lin_reg_2.predict(reg_poly.fit_transform(x_test))
 
-            return reg_poly, y_predict, y_test
+            return reg_poly, y_test, y_predict
 
         else:
 
@@ -114,15 +125,15 @@ class StartModSKL(StartMod):
             # Visualizing
             StartVis.vis_obj_predict(x_test, y_test, reg_lin)
 
-            return reg_lin, y_predict, y_test
+            return reg_lin, y_test, y_predict
 
     @classmethod
     def regression_multi_linear(cls, data, dependent_label):
         """
         Multiple Linear Regression y = b0 + b1.x1 + b2.x2 + ... + bn.xn (Method: Backward Elimination)
-        :param data:
+        :param data: Pandas-DataFrame
         :param dependent_label:
-        :return: RegressionResultsWrapper object, predicted_result, test_result
+        :return: RegressionResultsWrapper object, true_test_result, predicted_result
         """
 
         # save the dependent value into y
@@ -174,10 +185,16 @@ class StartModSKL(StartMod):
         # Visualizing
         StartVis.vis_obj_predict(x_test, y_test, reg)
 
-        return reg_ols, y_predict, y_test
+        return reg_ols, y_test, y_predict
 
     @classmethod
     def regression_decision_tree(cls, data, dependent_label):
+        """
+        Decision Tree regression method
+        :param data: Pandas-DataFrame
+        :param dependent_label:
+        :return: DecisionTreeRegressor, true_test_result, predicted_result
+        """
 
         # # save the dependent value into y
         # y = data[dependent_label].values
@@ -200,14 +217,14 @@ class StartModSKL(StartMod):
         # Visualizing
         StartVis.vis_obj_predict(x_test, y_test, reg_dt)
 
-        return reg_dt, y_predict, y_test
+        return reg_dt, y_test, y_predict
 
     @classmethod
     def regression_logistic(cls, data, dependent_label):
         """
         apply method logistic regression to data
-        :param data: DataFrame Pandas
-        :return:
+        :param data: Pandas-DataFrame
+        :return: LogisticRegression object, true_test_result, predicted_result
         """
         # # save the dependent value into y
         # y = data[dependent_label].values
@@ -223,7 +240,85 @@ class StartModSKL(StartMod):
         # Predicting the Test set results
         y_predict = reg_log.predict(x_test)
 
-        return reg_log, y_predict, y_test
+        return reg_log, y_test, y_predict
+
+    @classmethod
+    def classification_knn(cls, data, dependent_label, k=5):
+        """
+        Apply k-Nearest Neighbours method to classify data
+        Source:
+            http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html
+        :param data: Pandas-DataFrame
+        :param dependent_label:
+        :return: KNeighborsClassifier object, true_test_result, predicted_result
+        """
+
+        x_train, x_test, y_train, y_test = StartModSKL.split_data(data, dependent_label)
+
+        clf_knn = KNeighborsClassifier(n_neighbors=k, metric='euclidean', p=2)
+        clf_knn.fit(x_train, y_train)
+
+        # Predicting the Test set results
+        y_predict = clf_knn.predict(x_test)
+
+        return clf_knn, y_test, y_predict
+
+    @classmethod
+    def classification_svm(cls, data, dependent_label):
+        """
+        Apply Support Vector Machine method to classify data
+        Source:
+            http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
+            http://mlkernels.readthedocs.io/en/latest/kernels.html
+        :param data: Pandas-DataFrame
+        :param dependent_label:
+        :param k: kernel (default is 'rbf')
+        :return: SVC Object, true_test_result, predicted_result
+        """
+        def kernel_compute(kn):
+            kc_clf_svc = SVC(kernel=kn, random_state=0)
+            kc_clf_svc.fit(x_train, y_train)
+
+            # Predicting the Test set results
+            kc_y_predict = kc_clf_svc.predict(x_test)
+            cm = confusion_matrix(y_test, kc_y_predict)
+            kc_correct = cm[0][0] + cm[1][1]
+            print(kc_clf_svc, kc_correct)
+            return kc_correct, kc_clf_svc, kc_y_predict
+
+        x_train, x_test, y_train, y_test = StartModSKL.split_data(data, dependent_label)
+
+        # Find and choose the best Kernel-SVM to fit with the Training set
+        # (Kernel options: rbf (default), linear, poly, sigmoid
+        kernel_options = ['linear', 'poly', 'sigmoid']
+        default_max_correct, default_clf_svc, default_y_predict = kernel_compute('rbf')
+
+        for kernel in kernel_options:
+            max_correct, clf_svc, y_predict = kernel_compute(kernel)
+            if max_correct > default_max_correct:
+                default_clf_svc = clf_svc
+                default_y_predict = y_predict
+
+        return default_clf_svc, y_test, default_y_predict
+
+    @classmethod
+    def classification_nb(cls, data, dependent_label):
+        """
+        Apply Gaussian Naive Bayes method to classify data
+        Source:
+            http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html
+        :param data: Pandas-DataFrame
+        :return: GaussianNB, true_test_result, predicted_result
+        """
+        x_train, x_test, y_train, y_test = StartModSKL.split_data(data, dependent_label)
+
+        clf_gnb = GaussianNB()
+        clf_gnb.fit(x_train, y_train)
+
+        # Predicting the Test set results
+        y_predict = clf_gnb.predict(x_test)
+
+        return clf_gnb, y_test, y_predict
 
     @staticmethod
     def info_help():

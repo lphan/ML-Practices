@@ -84,7 +84,7 @@ class StartML(object):
     def group_by_columns(cls, data, columns, label_groupby, func=None):
         """
         execute operation group_by on columns by label_groupby
-        :param data:
+        :param data: Pandas-DataFrame
         :param columns: list of columns need to be grouped
         :param label_groupby: need to be one of the given columns
         :param func:
@@ -100,7 +100,7 @@ class StartML(object):
     def lookup_value(cls, data, value):
         """
         find all values in data frame
-        :param data
+        :param data: Pandas-DataFrame
         :param value (can be either int, float or object)
         :return: list of tuple (row_id, 'column_name')
         """
@@ -126,7 +126,7 @@ class StartML(object):
         """
         given data, column_name and row_id
         return value at row_id of column
-        :param data:
+        :param data: Pandas-DataFrame
         :param column_name:
         :param rows_id: list type as list of rows_id
         :return: list of tuple (column, row, value)
@@ -141,7 +141,7 @@ class StartML(object):
     def nan_columns(cls, data):
         """
         return name of all columns which have NaN_value
-        :param data:
+        :param data: Pandas-DataFrame
         :return: list of all NaN_column(s)
         """
         kc = data.isnull().any()
@@ -153,7 +153,7 @@ class StartML(object):
     def nan_rows(cls, data):
         """
         return all rows containing NaN values in type DataFrame
-        :param data:
+        :param data: Pandas-DataFrame
         :return: data with all NaN_rows
         """
         return data[data.isnull().any(axis=1)]
@@ -184,7 +184,7 @@ class StartML(object):
     def process_nan_columns(cls, data):
         """
         pre_processing columns based on information given in the config.ini
-        :param data:
+        :param data: Pandas-DataFrame
         :return: data after pre-processing
         """
         nan_cols = cls.nan_columns(data)
@@ -223,7 +223,7 @@ class StartML(object):
     def process_nan_rows(cls, data):
         """
         pre_processing rows based on information given in the config.ini
-        :param data:
+        :param data: Pandas-DataFrame
         :return: data after pre-processing
         """
         nan_cols = cls.nan_columns(data)
@@ -278,7 +278,7 @@ class StartML(object):
     def process_nan_simply(cls, data):
         """
         simply process all nan-value by replacing with 'Unknown'
-        :param data:
+        :param data: Pandas-DataFrame
         :return: data after preprocessing
         """
         for col in StartML.nan_columns(data):

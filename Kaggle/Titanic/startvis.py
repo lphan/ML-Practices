@@ -37,7 +37,7 @@ class StartVis(StartML):
     def vis_bar(cls, data, columns, x_label='', y_label='', title=''):
         """
         visualize the number of counted values in the given columns in bar-chart
-        :param data: in format DataFrame
+        :param data: Pandas-DataFrame
         :param columns:
         :param x_label:
         :param y_label:
@@ -62,7 +62,7 @@ class StartVis(StartML):
     def vis_hist(cls, data, columns, x_label='', y_label='', title='', func_filter=None):
         """
         Display Histogram of data and labels, with filter-function
-        :param data:
+        :param data: Pandas-DataFrame
         :param columns:
         :param func_filter: object type Pandas-Series
         :param x_label:
@@ -92,7 +92,15 @@ class StartVis(StartML):
     def vis_bar_groupby(cls, data, columns, group_by_column, x_label='', y_label='', title=''):
         """
         Visualize groupby-object in bar chart.
+        :param data: Pandas-DataFrame
+        :param columns:
+        :param group_by_column:
+        :param x_label:
+        :param y_label:
+        :param title:
+        :return:
         """
+
         grouped_data = StartML.group_by_columns(data, columns, group_by_column)
         # grouped_data = data[columns].groupby(by=group_by_column)
         x = grouped_data.size()
@@ -128,6 +136,16 @@ class StartVis(StartML):
             plt.show()
         except AttributeError:
             print("Object has no Attribute predict, invalid object")
+
+    @classmethod
+    def vis_contourf(cls, data):
+        """
+        Source:
+            https://matplotlib.org/devdocs/api/_as_gen/matplotlib.pyplot.contourf.html
+        :param data:
+        :return:
+        """
+        pass
 
     @staticmethod
     def info_help():
