@@ -28,6 +28,48 @@ class StartMod(StartML):
           -> from startmod import *
           -> info_mod
     """
+
+    @classmethod
+    def encode_label_column(cls, data, label_column, onehot=False):
+        """
+        Source:
+            http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html
+            http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html
+
+        Encode object-columns
+        This encoding is needed for feeding categorical data to many scikit-learn estimators,
+        notably linear models and SVMs with the standard kernels.
+        :param data:
+        :param label_column
+        :return: data and x_values (the encoded data in type numpy.array)
+        """
+        try:
+            # Encode label only applies to Column in type Object
+            if data[label_column].dtype == np.float64 or data[label_column].dtype == np.int64:
+                print("Warning: type of label_column " + label_column + " is " + str(data[label_column].dtypes))
+        except ValueError:
+            return []
+
+        # label_encoder to turn object-column into number-column
+        label_encoder = LabelEncoder()
+        data[label_column] = label_encoder.fit_transform(data[label_column].values)
+
+        if onehot:
+            # get column index
+            label_idx = data.columns.get_loc(label_column)
+
+            data.values[:, label_idx] = label_encoder.fit_transform(data.values[:, label_idx])
+            # tbd:
+            # create dummy columns to encode the above label_column
+            one_hot_encoder = OneHotEncoder(categorical_features=[label_idx])
+            # data.values[:, label_idx] =
+            # one_hot_encoder.fit_transform(data.values[:,label_idx].reshape(1,-1)).toarray()
+            data = one_hot_encoder.fit_transform(data).toarray()
+
+            return data
+        else:
+            return data
+
     @classmethod
     def feature_scaling(cls, data):
         """
@@ -110,48 +152,6 @@ class StartMod(StartML):
         # data = data.drop(features, axis=1)
         # and also remove all old features
         return data.drop(features, axis=1)
-
-    @classmethod
-    def encode_label_column(cls, data, label_column, onehot=False):
-        """
-        Source:
-            http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html
-            http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html
-
-        Encode object-columns
-        This encoding is needed for feeding categorical data to many scikit-learn estimators,
-        notably linear models and SVMs with the standard kernels.
-        :param data:
-        :param label_column
-        :return: data and x_values (the encoded data in type numpy.array)
-        """
-        try:
-            if data[label_column].dtype == np.float64 or data[label_column].dtype == np.int64:
-                print("Warning: type of label_column "+label_column+" is " + str(data[label_column].dtypes))
-        except ValueError:
-            return []
-
-        # label_encoder to turn object-column into number-column
-        label_encoder = LabelEncoder()
-        data[label_column] = label_encoder.fit_transform(data[label_column].values)
-
-        if onehot:
-            x_values = data.values
-
-            # get column index
-            label_idx = data.columns.get_loc(label_column)
-
-            x_values[:, label_idx] = label_encoder.fit_transform(x_values[:, label_idx])
-            # print(x[:, label_idx])
-            # tbd:
-            # to make the code as X = onehotencoder.fit_transform(X).toarray() to create many dummy-columns
-            # one_hot_encoder to turn number-column into sparse matrix without reshape(1, -1)
-            one_hot_encoder = OneHotEncoder(categorical_features=[label_idx])
-            x_values[:, label_idx] = one_hot_encoder.fit_transform(x_values[:, label_idx].reshape(1, -1)).toarray()
-
-            return x_values
-        else:
-            return data
 
     @classmethod
     def score_dataset(cls):

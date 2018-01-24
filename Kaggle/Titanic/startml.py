@@ -37,7 +37,7 @@ class StartML(object):
     kwargs = {}
 
     @staticmethod
-    def _get_arguments():
+    def _arguments():
         """
         read config-parameters from file config.ini
         """
@@ -70,6 +70,21 @@ class StartML(object):
                 break
         return max(data), i
 
+    @classmethod
+    def find_value(cls, data, rows_id, column_name):
+        """
+        given data, column_name and row_id
+        return value at row_id of column
+        :param data: Pandas-DataFrame
+        :param column_name:
+        :param rows_id: list type as list of rows_id
+        :return: list of tuple (column, row, value)
+        """
+        # return data.column_name[row_id]  # (short-way)
+        # return data.iloc[row_id, column_id], data.loc[row_id, column_label]
+        # return [(column_name, data[column_name][data[column_name].index[row_id])]
+
+        return [(row_id, column_name, data.at[row_id, column_name]) for row_id in rows_id]
 
     @classmethod
     def get_columns_idx(cls, data):
@@ -122,20 +137,26 @@ class StartML(object):
         return result
 
     @classmethod
-    def find_value(cls, data, rows_id, column_name):
+    def mean_neighbors(cls, data, row_id, column):
         """
-        given data, column_name and row_id
-        return value at row_id of column
-        :param data: Pandas-DataFrame
-        :param column_name:
-        :param rows_id: list type as list of rows_id
-        :return: list of tuple (column, row, value)
+        compute mean value of value at row_id with values from its above and lower neighbors.
+        if the above neighbor is NaN, it jumps to higher position
+        :param column:
+        :param row_id:
+        :return: mean value of neighbors
         """
-        # return data.column_name[row_id]  # (short-way)
-        # return data.iloc[row_id, column_id], data.loc[row_id, column_label]
-        # return [(column_name, data[column_name][data[column_name].index[row_id])]
+        above_rid = row_id - 1
 
-        return [(row_id, column_name, data.at[row_id, column_name]) for row_id in rows_id]
+        while np.isnan(data.at[above_rid, column]):
+            above_rid = above_rid - 1
+        above_val = data.at[above_rid, column]
+
+        lower_rid = row_id + 1
+        while np.isnan(data.at[lower_rid, column]):
+            lower_rid = lower_rid + 1
+        lower_val = data.at[lower_rid, column]
+
+        return np.mean([lower_val, above_val])
 
     @classmethod
     def nan_columns(cls, data):
@@ -157,28 +178,6 @@ class StartML(object):
         :return: data with all NaN_rows
         """
         return data[data.isnull().any(axis=1)]
-
-    @classmethod
-    def mean_neighbors(cls, data, row_id, column):
-        """
-        compute mean value of value at row_id with values from its above and lower neighbors.
-        if the above neighbor is NaN, it jumps to higher position
-        :param column:
-        :param row_id:
-        :return: mean value of neighbors
-        """
-        above_rid = row_id - 1
-
-        while np.isnan(data.at[above_rid, column]):
-            above_rid = above_rid - 1
-        above_val = data.at[above_rid, column]
-
-        lower_rid = row_id + 1
-        while np.isnan(data.at[lower_rid, column]):
-            lower_rid = lower_rid + 1
-        lower_val = data.at[lower_rid, column]
-
-        return np.mean([lower_val, above_val])
 
     @classmethod
     def process_nan_columns(cls, data):
@@ -264,9 +263,9 @@ class StartML(object):
             for nan_col in nan_cols:
                 if data[nan_col].dtype == np.float64 or data[nan_col].dtype == np.int64:
                     # for row_id in range(len(data[nan_col])):
-                    #     if np.isnan(StartML.get_value_column_index(data, nan_col, row_id)):
-                    #         data[nan_col][row_id] = StartML.mean_neighbors(data, nan_col, row_id)
-                    data[nan_col] = [StartML.mean_neighbors(data, nan_col, row_id)
+                    #     if np.isnan(data.at[row_id, nan_col]):
+                    #         data[nan_col][row_id] = StartML.mean_neighbors(data, row_id, nan_col)
+                    data[nan_col] = [StartML.mean_neighbors(data, row_id, nan_col)
                                      if np.isnan(data.at[row_id, nan_col]) else data[nan_col][row_id]
                                      for row_id in range(len(data[nan_col]))
                                      ]
@@ -305,7 +304,7 @@ class StartML(object):
         """
         Read data from data_set .csv and convert them into Pandas Data Frame
         """
-        StartML._get_arguments()
+        StartML._arguments()
         data_path_1 = pd.read_csv(StartML.kwargs['data_path_1'])
         data_path_2 = pd.read_csv(StartML.kwargs['data_path_2'])
 
