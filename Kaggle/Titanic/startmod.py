@@ -57,16 +57,19 @@ class StartMod(StartML):
         if onehot:
             # get column index
             label_idx = data.columns.get_loc(label_column)
-
             data.values[:, label_idx] = label_encoder.fit_transform(data.values[:, label_idx])
-            # tbd:
+
             # create dummy columns to encode the above label_column
             one_hot_encoder = OneHotEncoder(categorical_features=[label_idx])
-            # data.values[:, label_idx] =
-            # one_hot_encoder.fit_transform(data.values[:,label_idx].reshape(1,-1)).toarray()
-            data = one_hot_encoder.fit_transform(data).toarray()
 
-            return data
+        # data.values[:, label_idx] = one_hot_encoder.fit_transform(data.values[:,label_idx].reshape(1,-1)).toarray()
+            new_values = one_hot_encoder.fit_transform(data.values).toarray()
+
+            # TODO: replace data.columns into new_data.columns (parameter to transfer column name in fit_transform ?)
+            # new_data = pd.DataFrame(data=new_values, columns=...)
+            new_data = pd.DataFrame(new_values)
+
+            return new_data
         else:
             return data
 

@@ -87,7 +87,7 @@ class StartML(object):
         return [(row_id, column_name, data.at[row_id, column_name]) for row_id in rows_id]
 
     @classmethod
-    def get_columns_idx(cls, data):
+    def idx_columns(cls, data):
         """
         return a list of tuple (column, index, label_type)
         :param data:
