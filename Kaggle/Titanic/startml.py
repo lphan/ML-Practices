@@ -285,19 +285,24 @@ class StartML(object):
         return data
 
     @staticmethod
+    def nan_summary(data):
+        """
+        display summary about all NaN values in data
+        :param data:
+        :return:
+        """
+        pass
+
+    @staticmethod
     def summary(data):
         """
-        Show all basic information
+        Show all basic information about data set
         """
-        print("\nData Columns: ", data.columns, "\n")
-        print("Missing values in Data: \n")
-        print(data.isnull().sum(), "\n")
-        print("data.head(10): \n")
-        print(data.head(10), "\n")
-        print("data.info(): \n")
-        print(data.info(), "\n")
-        print("data.describe(): \n")
-        print(data.describe(), "\n")
+        print("\nData Columns: {}".format(data.columns), "\n")
+        print("Missing values in Data: \n{}".format(data.isnull().sum()), "\n")
+        print("data.head(10): \n{}".format(data.head(10)), "\n")
+        print("data.info(): \n{}".format(data.info()), "\n")
+        print("data.describe(): \n{}".format(data.describe()), "\n")
 
     @staticmethod
     def run():
