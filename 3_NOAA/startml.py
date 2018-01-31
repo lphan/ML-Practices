@@ -218,6 +218,7 @@ class StartML(object):
         """
         return all rows containing NaN values in type DataFrame
         :param data: Pandas-DataFrame
+        :param nan: Boolean-input True to search for NaN values, False for not_NaN
         :return: data with all possible found NaN_rows or not_NaN_rows (if nan=False)
         """
         if isinstance(data, pd.DataFrame) and nan:
