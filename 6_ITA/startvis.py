@@ -20,7 +20,6 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 from matplotlib.pylab import rcParams
 from startml import *
-rcParams['figure.figsize'] = 15, 6
 
 
 class StartVis(StartML):
@@ -140,18 +139,28 @@ class StartVis(StartML):
             print("Object has no Attribute predict, invalid object")
 
     @classmethod
-    def vis_clustering(cls, data, y_clusters, x_label='', y_label=''):
+    def vis_clustering(cls, data, y_clusters, x_label='', y_label='', ts=False):
         """
         plot clustering out with limited to data in 2 columns 0, 1)
         :param data:
         :param y_clusters:
         :param x_label:
         :param y_label:
+        :param ts: set True if index is TimeSeries's type
         :return:
         """
-        for i in range(max(np.unique(y_clusters))+1):
-            plt.scatter(data.values[y_clusters == i, 0], data.values[y_clusters == i, 1], s=100,
-                        label='Cluster '+str(i))
+        plt.figure(figsize=(16, 14))
+        if ts:
+            data.loc[:, 'Clusters'] = y_clusters
+            for i in range(max(np.unique(y_clusters)) + 1):
+                plt.scatter(StartML.lookup_value(data[['Clusters']], i, tup=False),
+                            data.values[y_clusters == i, 0], s=10,
+                            label='Cluster '+str(i))
+            plt.xticks(rotation=45)
+        else:
+            for i in range(max(np.unique(y_clusters))+1):
+                plt.scatter(data.values[y_clusters == i, 0], data.values[y_clusters == i, 1], s=10,
+                            label='Cluster '+str(i))
 
         plt.xlabel(x_label)
         plt.ylabel(y_label)
