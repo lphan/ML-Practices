@@ -64,6 +64,17 @@ class StartML(object):
                                "nan_mean_neighbors": nan_mean_neighbors})
 
     @classmethod
+    def convert_time_series(cls, data, time_column):
+        """
+        convert dataset into time_series dataset
+        :param data:
+        :param time_column:
+        :return: new_data
+        """
+        data.index = pd.to_datetime(data.pop(time_column))
+        return data
+
+    @classmethod
     def find_idx_max_value(cls, data):
         for i, v in enumerate(data):
             if v == max(data):
@@ -122,11 +133,12 @@ class StartML(object):
             return grouped.aggregate(func)
 
     @classmethod
-    def lookup_value(cls, data, value):
+    def lookup_value(cls, data, value, tup=True):
         """
         find all values in data frame
         :param data: Pandas-DataFrame
         :param value (can be either int, float or object)
+        :param tup (True will return as tuple with column, False will return a list of row_id)
         :return: list of tuple (row_id, 'column_name')
         """
         # tbd: value in regex*
@@ -134,19 +146,26 @@ class StartML(object):
         # identify all columns with the same type as value
         if isinstance(type(value), str):
             # type(value) == str:
-            print('Object')
+            # print('Object')
             search_columns = [col for col in data.columns if data.dtypes[data.columns.get_loc(col)] == 'O']
         else:
-            search_columns = [col for col in data.columns if data.dtypes[data.columns.get_loc(col)] == int or
-                       data.dtypes[data.columns.get_loc(col)] == float]
+            search_columns = [col for col in data.columns if data.dtypes[data.columns.get_loc(col)] == 'int32' or
+                              data.dtypes[data.columns.get_loc(col)] == 'float64']
 
         # loop on these columns to look up value
         result = []
+        # print(search_columns)
+        if not tup:
+            for idx, rows in data.iterrows():
+                result = result + [idx for col in search_columns if rows[col] == value]
+            return np.array(result)
 
-        for idx, rows in data.iterrows():
-            result = result + [(idx, col) for col in search_columns if rows[col] == value]
+        else:
+            for idx, rows in data.iterrows():
+                result = result + [(idx, col) for col in search_columns if rows[col] == value]
+                # print(result)
 
-        return result
+            return np.array(result)
 
     @classmethod
     def mean_neighbors(cls, data, row_id, column):
