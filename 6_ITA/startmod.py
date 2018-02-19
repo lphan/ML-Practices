@@ -14,8 +14,12 @@ __author__ = 'Long Phan'
 
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+
 # from sklearn.pipeline import make_pipeline
 from startml import *
 
@@ -35,13 +39,14 @@ class StartMod(StartML):
     @classmethod
     def encode_label_column(cls, data, label_columns, one_hot=False):
         """
+        Encode object-columns
+        This encoding is needed for feeding categorical data to many scikit-learn estimators,
+        notably linear models and SVMs with the standard kernels.
+
         Source:
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html
 
-        Encode object-columns
-        This encoding is needed for feeding categorical data to many scikit-learn estimators,
-        notably linear models and SVMs with the standard kernels.
         :param data:
         :param label_columns
         :param one_hot: Boolean-value, True to choose method OneHotEncoder
@@ -89,16 +94,20 @@ class StartMod(StartML):
             return pd.DataFrame(data=x_values, columns=data.columns, index=None)
 
     @classmethod
-    def split_data(cls, data, dependent_label, test_size=0.2, random_state=0, typenp=True, split=True):
+    def split_data(cls, data, dependent_label, test_size=0.2, random_state=0, type_pd=True, split=True):
         """
         split data for regression methods
+
+        Source:
+            http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html
+
         :param data: Pandas-DataFrame
-        :param dependent_label:
+        :param dependent_label: categorical label
         :param test_size: (default is 0.2)
         :param random_state: (default is 0)
-        :param typepd: (default is Pandas Dataframe)
+        :param type_pd: (default is Pandas Dataframe)
         :param split: (default is True)
-        :return: x_train, x_test, y_train, y_test (type Numpy)
+        :return: x_train, x_test, y_train, y_test (default type Pandas DataFrame)
         """
 
         # convert data into numpy-values (in case: the last column is dependent label)
@@ -106,17 +115,18 @@ class StartMod(StartML):
         # y = data.iloc[:, 1].values
         # save the dependent value into y
 
-        if not typenp:
+        if type_pd:
             # convert to type Pandas DataFrame
-            y = data.pop(dependent_label)
+            # y = data.pop(dependent_label)  # should not use pop, instead of using data[dependent_label]
+            y = data[dependent_label]
             x = data
-            print(type(x), type(y))
+            # print(type(x), type(y))
         else:
             # convert to type Numpy
             y = data[dependent_label].values
             # drop dependent value from data and save the independent values into x
             x = data.drop(dependent_label, axis=1).values
-            print(type(x), type(y))
+            # print(type(x), type(y))
 
         if not split:
             return x, y
@@ -129,21 +139,12 @@ class StartMod(StartML):
             print("No splitting happen")
             return data
 
-        if not typenp:
-            return x_train, x_test, y_train, y_test
-
-        else:
-            # Feature scaling (Normalization)
-            sc_x = StandardScaler(copy=True, with_mean=True, with_std=True)
-            x_train = sc_x.fit_transform(x_train)
-            x_test = sc_x.transform(x_test)
-
-            return x_train, x_test, y_train, y_test
+        return x_train, x_test, y_train, y_test
 
     @classmethod
     def feature_columns(cls, data, label=None):
         """
-        find and return non-object columns
+        find and return object and non-object columns
         :param data:
         :param label=None in default
         :return: list of non_obj_feature, list of obj_feature
@@ -161,19 +162,32 @@ class StartMod(StartML):
             return non_obj_feature, obj_feature
 
     @classmethod
-    def feature_scaling(cls, data):
+    def feature_scaling(cls, data, type_pd=True, std=True):
         """
         Standardization involves rescaling the features such that they have the properties
         of a standard normal distribution with a mean of zero and a standard deviation of one
+
         Source:
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html
             http://scikit-learn.org/stable/auto_examples/preprocessing/plot_scaling_importance.html
+
         :param data:
-        :return:
+        :return: data in scaled format
         """
-        # tbd
-        pass
+        if type_pd:
+            # convert data in Pandas DataFrame, apply Min_Max method
+            # print(data.columns)
+            data[data.columns] = data[data.columns].apply(lambda x: (x - x.min()) / (x.max() - x.min()))
+            return data
+        else:
+            if std:
+                scaler = StandardScaler(copy=True, with_mean=True, with_std=True)
+            else:
+                scaler = MinMaxScaler()
+            # Compute the mean and std to be used for later scaling
+            scaler.fit(data)
+            return scaler.transform(data)
 
     @classmethod
     def feature_selection(cls, data):
@@ -258,23 +272,30 @@ class StartMod(StartML):
             data[new_feature] = data[new_feature]+data[feature]
 
         # data = data.drop(features, axis=1)
-        # and also remove all old features
         return data.drop(features, axis=1)
 
     @classmethod
-    def metrics_score(cls, data):
+    def metrics_report(cls, y_true, y_pred, target_names=None):
         """
         measure the quality of the models (comparing results before and after running prediction)
         Source:
             https://www.kaggle.com/dansbecker/handling-missing-values
-            http://scikit-learn.org/stable/modules/model_evaluation.html
+            http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics
             http://scikit-learn.org/stable/modules/model_evaluation.html#model-evaluation
             http://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html
-            http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics
+            http://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html
+        :param y_true: the truth values
+        :param y_pred: the predicted values
+        :param target_names: label (categorical) name
         :return:
         """
         # tbd
-        pass
+        if target_names is not None:
+            print("Classification Report: \n", classification_report(y_true, y_pred, target_names=target_names))
+            print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred, labels=target_names))
+        else:
+            print("Classification Report: \n", classification_report(y_true, y_pred))
+            print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred))
 
     @staticmethod
     def info_help():
