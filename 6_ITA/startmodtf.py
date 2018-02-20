@@ -15,7 +15,6 @@ import tensorflow as tf
 from keras.models import Sequential
 from keras.layers import Dense
 from startmod import *
-from startmodskl import StartModSKL
 
 
 class StartModTF(StartMod):
@@ -138,56 +137,6 @@ class StartModTF(StartMod):
         :return:
         """
         return tf.estimator.inputs.pandas_input_fn(x=test_features, batch_size=batch_size, shuffle=False)
-
-    @classmethod
-    def keras_sequential(cls, data, dependent_label):
-        """
-        Setup Keras and run the Sequential method to predict value
-
-        Source:
-            https://github.com/tensorflow/models/blob/master/samples/core/get_started/iris_data.py
-
-        :param data: Pandas-DataFrame
-        :param dependent_label: sequential-object model, predicted value, actual (true) value
-        :return: Keras-Sequential object, the actual (true) value, the predicted value
-        """
-        # Initialising the ANN
-        model = Sequential()
-
-        x_train, x_true, y_train, y_true = StartModSKL.split_data(data, dependent_label)
-
-        # number of nodes in the hidden-layer
-        # tbd: use parameter tuning to find the exact numbers
-        input_weight_combis = 6
-        output_weight_combis = 1
-
-        # Create n=2 layers neural network (idea: setup parameters 'how many layers' from config.ini)
-        # Adding the input layer and the first hidden layer, activation function as rectifier function
-        model.add(Dense(activation="relu", input_dim=x_train.shape[1], units=input_weight_combis,
-                        kernel_initializer="uniform"))
-
-        # Adding the second hidden layer, activation function as rectifier function
-        model.add(Dense(activation="relu", units=input_weight_combis, kernel_initializer="uniform"))
-
-        # Adding the output layer (in case of there's only one dependent_label), activation function as sigmoid function
-        model.add(Dense(activation="sigmoid", units=output_weight_combis, kernel_initializer="uniform"))
-
-        # Compiling the ANN with optimizer='adam'
-        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
-
-        # tbd compute and find the appropriate batch_size and epochs
-        # b_s = int(len(train_data)/10)  # default batch_size=32
-        n_e = x_train.shape[1]   # default nb_epoch=10
-
-        # fit the keras_model to the training_data and see the real time training of model on data
-        # with result of loss and accuracy.
-        # The smaller batch_size and higher epochs, the better the result. However, slow_computing!
-        model.fit(x_train, y_train, batch_size=1, epochs=n_e)
-
-        # predictions and evaluating the model
-        y_predict = model.predict(x_true)
-
-        return model, y_true, y_predict
 
     def setup_feature_columns(self, x_train):
         """
@@ -324,6 +273,7 @@ class StartModTF(StartMod):
             classifier = tf.estimator.LinearClassifier(feature_columns=fea_cols, n_classes=self.n_classes,
                                                        optimizer='Ftrl')
         else:
+            # Tbd with Dense Columns
             classifier = tf.estimator.DNNClassifier(feature_columns=fea_cols, hidden_units=self.hidden_units,
                                                     n_classes=self.n_classes, optimizer=self.optimizer,
                                                     activation_fn=self.activation_fn)
@@ -349,6 +299,49 @@ class StartModTF(StartMod):
         # print(type(self.y_test))
 
         return classifier, y_true, y_predict
+
+    def keras_sequential(self, data, dependent_label, hidden_layers=1, output_signals = 1):
+        """
+        Setup Keras and run the Sequential method to predict value
+        :param data:
+        :param dependent_label: sequential-object model, predicted value, actual (true) value
+        :param hidden_layers: number of hidden layers (default 1)
+        :param output_signals: default 1 (when there's only 1 categorical column)
+        :return: Keras-Sequential object, the actual (true) value, the predicted value
+        """
+        # Initialising the ANN
+        model = Sequential()
+
+        x_train, x_true, y_train, y_true = StartMod.split_data(data, dependent_label)
+
+        # tbd: use parameter tuning to find the exact number of nodes in the hidden-layer
+        # default = number of features
+        input_signals = x_train.shape[1]
+
+        # Create n=2 layers neural network (idea: setup parameters 'how many layers' from config.ini)
+        # Adding the input layer and the first hidden layer, activation function as rectifier function
+        model.add(Dense(activation="relu", input_dim=x_train.shape[1], units=input_signals,
+                        kernel_initializer="uniform"))
+
+        for _ in range(hidden_layers):
+            # Adding the second hidden layer, activation function as rectifier function
+            model.add(Dense(activation="relu", units=input_signals, kernel_initializer="uniform"))
+
+        # Adding the output layer (in case of there's only one dependent_label), activation function as sigmoid function
+        model.add(Dense(activation="sigmoid", units=output_signals, kernel_initializer="uniform"))
+
+        # Compiling the ANN with optimizer='adam'
+        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+
+        # fit the keras_model to the training_data and see the real time training of model on data
+        # with result of loss and accuracy.
+        # The smaller batch_size and higher epochs, the better the result. However, slow_computing!
+        model.fit(x_train, y_train, batch_size=self.batch_size, epochs=self.num_epochs)
+
+        # predictions and evaluating the model
+        y_predict = model.predict(x_true)
+
+        return model, y_true, y_predict
 
     @staticmethod
     def info_help():

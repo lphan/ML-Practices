@@ -47,9 +47,9 @@ class StartMod(StartML):
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html
 
-        :param data:
-        :param label_columns
-        :param one_hot: Boolean-value, True to choose method OneHotEncoder
+        :param data: Pandas-DataFrame
+        :param label_columns: list of all labels (object-type)
+        :param one_hot: Boolean-value, set value True for categorical column
         :return: data and x_values (the encoded data in type numpy.array)
         """
 
@@ -57,41 +57,59 @@ class StartMod(StartML):
             try:
                 # Encode label only applies to Column in type Object
                 if data[label_column].dtype == np.float64 or data[label_column].dtype == np.int64:
-                    print("Warning: type of label_column " + label_column + " is " + str(data[label_column].dtypes))
+                    print("Type of label_column " + label_column + " is " + str(data[label_column].dtypes))
             except ValueError:
                 return []
 
         x_values = data.values
-        for label_column in label_columns:
-            label_idx = data.columns.get_loc(label_column)
-            # label_encoder to turn object-column into number-column
-            label_encoder = LabelEncoder()
-            x_values[:, label_idx] = label_encoder.fit_transform(x_values[:, label_idx])
-
-        if one_hot:
-            labels_idx = []
+        try:
             for label_column in label_columns:
-                # get column index
                 label_idx = data.columns.get_loc(label_column)
-                # data.values[:, label_idx] = label_encoder.fit_transform(data.values[:, label_idx])
-                labels_idx.append(label_idx)
+                # label_encoder to turn object-column into number-column
+                label_encoder = LabelEncoder()
+                x_values[:, label_idx] = label_encoder.fit_transform(x_values[:, label_idx])
+        except TypeError:
+            print("Data might have mixed type str and float, please make sure there is no (float) NaN-Value")
 
-            # create dummy columns to encode the above label_column
-            one_hot_encoder = OneHotEncoder(categorical_features=labels_idx)
+        # one_hot=True is used for categorical column
+        if one_hot:
+            try:
+                labels_idx = []
+                for label_column in label_columns:
+                    # get column index
+                    label_idx = data.columns.get_loc(label_column)
+                    # data.values[:, label_idx] = label_encoder.fit_transform(data.values[:, label_idx])
+                    labels_idx.append(label_idx)
 
-            # data.values[:, label_idx]
-            # = one_hot_encoder.fit_transform(data.values[:,label_idx].reshape(1,-1)).toarray()
-            x_values = one_hot_encoder.fit_transform(x_values).toarray()
+                # create dummy columns to encode the above label_column
+                one_hot_encoder = OneHotEncoder(categorical_features=labels_idx)
 
-            # remove dummy trap
-            # x_values = x_values[:, 1:]
+                # data.values[:, label_idx]
+                # = one_hot_encoder.fit_transform(data.values[:,label_idx].reshape(1,-1)).toarray()
+                x_values = one_hot_encoder.fit_transform(x_values).toarray()
 
-            # TODO: replace data.columns into new_data.columns (parameter to transfer column name in fit_transform ?)
-            # new_data = pd.DataFrame(data=new_values, columns=...)
+                # remove dummy trap
+                # x_values = x_values[:, 1:]
 
-            return pd.DataFrame(data=x_values)
+                # TODO: replace data.columns into new_data.columns (parameter to transfer column name in fit_transform?)
+                # new_data = pd.DataFrame(data=new_values, columns=...)
+                data = pd.DataFrame(data=x_values)
+
+                # convert to numeric-type DataFrame
+                for col in data.columns:
+                    data[col] = pd.to_numeric(data[col])
+            except ValueError:
+                print("Data might be containing NaN_values")
+
+            return data
+
         else:
-            return pd.DataFrame(data=x_values, columns=data.columns, index=None)
+            # one_hot=False is used for object_feature columns
+            data = pd.DataFrame(data=x_values, columns=data.columns, index=None)
+            # convert to numeric-type DataFrame
+            for col in data.columns:
+                data[col] = pd.to_numeric(data[col])
+            return data
 
     @classmethod
     def split_data(cls, data, dependent_label, test_size=0.2, random_state=0, type_pd=True, split=True):
@@ -120,20 +138,19 @@ class StartMod(StartML):
             # y = data.pop(dependent_label)  # should not use pop, instead of using data[dependent_label]
             y = data[dependent_label]
             x = data
-            # print(type(x), type(y))
         else:
             # convert to type Numpy
             y = data[dependent_label].values
             # drop dependent value from data and save the independent values into x
             x = data.drop(dependent_label, axis=1).values
-            # print(type(x), type(y))
 
         if not split:
             return x, y
 
         try:
             # split data
-            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size, random_state=random_state)
+            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size,
+                                                                random_state=random_state, shuffle=True)
         except ValueError:
             print("Data set is not valid yet, need to be preprocessed first")
             print("No splitting happen")
@@ -145,8 +162,8 @@ class StartMod(StartML):
     def feature_columns(cls, data, label=None):
         """
         find and return object and non-object columns
-        :param data:
-        :param label=None in default
+        :param data: Pandas-DataFrame
+        :param label: default is None
         :return: list of non_obj_feature, list of obj_feature
         """
         if label is None:
@@ -173,6 +190,7 @@ class StartMod(StartML):
             http://scikit-learn.org/stable/auto_examples/preprocessing/plot_scaling_importance.html
 
         :param data:
+        :param type_pd: default True to convert data in Pandas Data-Frame
         :return: data in scaled format
         """
         if type_pd:
@@ -190,16 +208,19 @@ class StartMod(StartML):
             return scaler.transform(data)
 
     @classmethod
-    def feature_selection(cls, data):
+    def feature_selection(cls, data, rm_columns):
         """
         feature selection/dimensionality reduction
         Source:
             http://scikit-learn.org/stable/modules/feature_selection.html
         :param data:
+        :param rm_columns: features which will be removed
         :return:
         """
         # tbd
-        pass
+        for rmc in rm_columns:
+            data = data.drop(rmc, axis=1)
+        return data
 
     @classmethod
     def feature_hashing(cls, data):
@@ -217,7 +238,7 @@ class StartMod(StartML):
     @classmethod
     def feature_extraction(cls, data, dependent_variable):
         """
-        Using Principal component analysis (PCA) to extract the most important independent variables
+        Using Principal component analysis (PCA) to extract the most important independent variables (features)
         Source:
             http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html
         :param data:
@@ -233,7 +254,7 @@ class StartMod(StartML):
         return pca.explained_variance_ratio_, x_train, x_test, y_train, y_test
 
     @classmethod
-    def feature_engineering(cls, data, old_feature, new_feature, attributes_new_feature):
+    def feature_engineering(cls, data, old_feature, new_feature, attributes_new_feature, rm=False):
         """
         Source:
             https://triangleinequality.wordpress.com/2013/09/08/basic-feature-engineering-with-the-titanic-data/
@@ -254,6 +275,9 @@ class StartMod(StartML):
             return np.nan
 
         data[new_feature] = data[old_feature].map(lambda x: find_attributes_feature(x, attributes_new_feature))
+        if rm:
+            data = data.drop(old_feature, axis=1)
+            # print("Dropped the old feature")
         return data
 
     @classmethod

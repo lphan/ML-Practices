@@ -46,6 +46,7 @@ class StartML(object):
 
         data_path_1 = config['paths']['data_path_1']
         data_path_2 = config['paths']['data_path_2']
+        data_path_3 = config['paths']['data_path_3']
 
         exclude_obj_col = config.getboolean('StartML', 'exclude_object_column')
         nan_drop_col = config.getboolean('StartML', 'nan_drop_column')
@@ -56,6 +57,7 @@ class StartML(object):
 
         StartML.kwargs.update({"data_path_1": data_path_1,
                                "data_path_2": data_path_2,
+                               "data_path_3": data_path_3,
                                "drop_obj_col": exclude_obj_col,
                                "nan_drop_col": nan_drop_col,
                                "nan_drop_row": nan_drop_row,
@@ -67,7 +69,7 @@ class StartML(object):
     def convert_time_series(cls, data, time_column):
         """
         convert dataset into time_series dataset
-        :param data:
+        :param data: Pandas-DataFrame
         :param time_column:
         :return: new_data
         """
@@ -288,7 +290,6 @@ class StartML(object):
             return data
 
         else:
-
             return data
 
     @classmethod
@@ -349,14 +350,20 @@ class StartML(object):
             return data
 
     @classmethod
-    def process_nan_simply(cls, data):
+    def process_nan_simply(cls, data, nan_column=None):
         """
         simply process all nan-value by replacing with 'Unknown'
         :param data: Pandas-DataFrame
+        :param nan_column: single NaN_column
         :return: data after preprocessing
         """
-        for col in StartML.nan_columns(data):
-            data[col] = data[col].fillna('Unknown')
+        if nan_column:
+            # process single NaN_column
+            data[nan_column] = data[nan_column].fillna('Unknown')
+        else:
+            # process multiple NaN_columns
+            for col in StartML.nan_columns(data):
+                data[col] = data[col].fillna('Unknown')
         return data
 
     @staticmethod
@@ -401,6 +408,9 @@ class StartML(object):
     def run():
         """
         Read data from data_set .csv and convert them into Pandas Data Frame
+        data_path_1: training_data
+        data_path_2: preprocessed data without NaN
+        data_path_3: test_data (new_data is used to test the model)
         """
         StartML._arguments()
         if StartML.kwargs['data_path_1']:
@@ -411,8 +421,12 @@ class StartML(object):
             data_path_2 = pd.read_csv(StartML.kwargs['data_path_2'])
         else:
             data_path_2 = ''
+        if StartML.kwargs['data_path_3']:
+            data_path_3 = pd.read_csv(StartML.kwargs['data_path_3'])
+        else:
+            data_path_3 = ''
 
-        return data_path_1, data_path_2
+        return data_path_1, data_path_2, data_path_3
 
     @staticmethod
     def info_help():
@@ -426,20 +440,20 @@ class StartML(object):
             "StartML.nan_columns(data)": StartML.nan_columns.__doc__,
             "StartML.nan_rows(data)": StartML.nan_rows.__doc__,
             "train_data": train_data.__class__,
-            "test_data": test_data.__class__
+            "nonan_data": nonan_data.__class__
         }
 
 
-train_data, test_data = StartML.run()
+train_data, nonan_data, test_data = StartML.run()
 
 # Remove leading and trailing spaces in columns
 if isinstance(train_data, pd.DataFrame):
     # if not train_data.empty:
     train_data.columns = [col.strip() for col in train_data.columns]
 
-if isinstance(test_data, pd.DataFrame):
+if isinstance(nonan_data, pd.DataFrame):
     # if not test_data.empty:
-    test_data.columns = [col.strip() for col in test_data.columns]
+    nonan_data.columns = [col.strip() for col in nonan_data.columns]
 
 info_ml = StartML.info_help()
 

@@ -16,5 +16,3 @@ All the data come from the official public sources (scikit-learn, UCI, Kaggle) f
 > https://github.com/tensorflow/tensorflow.git
 
 > https://github.com/scikit-learn/scikit-learn
-
-> https://github.com/gmonce/scikit-learn-book

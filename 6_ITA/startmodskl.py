@@ -62,7 +62,7 @@ class StartModSKL(StartMod):
         :return: LinearRegression-object (or PolynomialFeatures-object if poly=True), true_test_result, predicted_result
         """
 
-        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label)
+        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
 
         # Feature scaling
         sc_x = StandardScaler(copy=True, with_mean=True, with_std=True)
@@ -116,7 +116,7 @@ class StartModSKL(StartMod):
         # drop dependent value from data and save the independent values into x
         # data = data.drop(dependent_label, axis=1)
         # x = data.values
-        x, y = StartMod.split_data(data, dependent_label, split=False)
+        x, y = StartMod.split_data(data, dependent_label, split=False, type_pd=False)
 
         # add column 0 as constant b0 implicitly
         x = np.append(arr=np.ones(shape=(x.shape[0], 1)).astype(int), values=x, axis=1)
@@ -162,24 +162,23 @@ class StartModSKL(StartMod):
         return reg_ols, y_test, y_predict
 
     @classmethod
-    def regression_decision_tree(cls, data, dependent_label):
+    def regression_decision_tree(cls, data, dependent_label, random_state=0):
         """
         Decision Tree regression method
         :param data: Pandas-DataFrame
-        :param dependent_label:
+        :param dependent_label: categorical column
+        :param random_state:
         :return: DecisionTreeRegressor, true_test_result, predicted_result
         """
-
         # # save the dependent value into y
         # y = data[dependent_label].values
         #
         # # drop dependent value from data and save the independent values into x
         # x = data.drop(dependent_label, axis=1).values
         #
-        # x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=0)
-        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label)
+        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
 
-        reg_dt = DecisionTreeRegressor(random_state=0)
+        reg_dt = DecisionTreeRegressor(random_state=random_state)
         reg_dt.fit(x_train, y_train)
 
         # Visualizing
@@ -206,7 +205,7 @@ class StartModSKL(StartMod):
         # # drop dependent value from data and save the independent values into x
         # x = data.drop(dependent_label, axis=1).values
 
-        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label)
+        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
 
         reg_log = LogisticRegression(random_state=0)
         reg_log.fit(x_train, y_train)
@@ -227,7 +226,7 @@ class StartModSKL(StartMod):
         :return: KNeighborsClassifier object, true_test_result, predicted_result
         """
 
-        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label)
+        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
 
         clf_knn = KNeighborsClassifier(n_neighbors=k, metric='euclidean', p=2)
         clf_knn.fit(x_train, y_train)
@@ -238,15 +237,15 @@ class StartModSKL(StartMod):
         return clf_knn, y_test, y_predict
 
     @classmethod
-    def classification_svm(cls, data, dependent_label):
+    def classification_svm(cls, data, dependent_label, kernel='rbf'):
         """
         Apply Support Vector Machine method to classify data
         Source:
             http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
             http://mlkernels.readthedocs.io/en/latest/kernels.html
         :param data: Pandas-DataFrame
-        :param dependent_label:
-        :param k: kernel (default is 'rbf')
+        :param dependent_label: categorical column
+        :param kernel: default is 'rbf', kernel_options = ['linear', 'poly', 'sigmoid']
         :return: SVC Object, true_test_result, predicted_result
         """
         def kernel_compute(kn):
@@ -254,26 +253,25 @@ class StartModSKL(StartMod):
             kc_clf_svc.fit(x_train, y_train)
 
             # Predicting the Test set results
-            kc_y_predict = kc_clf_svc.predict(x_test)
-            cm = confusion_matrix(y_test, kc_y_predict)
-            kc_correct = cm[0][0] + cm[1][1]
-            print(kc_clf_svc, kc_correct)
-            return kc_correct, kc_clf_svc, kc_y_predict
+            kc_y_predict = kc_clf_svc.predict(x_true)
+            # cm = confusion_matrix(y_test, kc_y_predict)
+            # kc_correct = cm[0][0] + cm[1][1]
+            # print(kc_clf_svc, kc_correct)
+            return kc_clf_svc, kc_y_predict
 
-        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label)
+        x_train, x_true, y_train, y_true = StartMod.split_data(data, dependent_label, type_pd=False)
 
         # Find and choose the best Kernel-SVM to fit with the Training set
-        # (Kernel options: rbf (default), linear, poly, sigmoid
-        kernel_options = ['linear', 'poly', 'sigmoid']
-        default_max_correct, default_clf_svc, default_y_predict = kernel_compute('rbf')
+        # kernel_options = ['linear', 'poly', 'sigmoid']
+        classifier_svc, y_predict = kernel_compute(kernel)
 
-        for kernel in kernel_options:
-            max_correct, clf_svc, y_predict = kernel_compute(kernel)
-            if max_correct > default_max_correct:
-                default_clf_svc = clf_svc
-                default_y_predict = y_predict
+        # for kernel in kernel_options:
+        #     max_correct, clf_svc, y_predict = kernel_compute(kernel)
+        #     if max_correct > default_max_correct:
+        #         default_clf_svc = clf_svc
+        #         default_y_predict = y_predict
 
-        return default_clf_svc, y_test, default_y_predict
+        return classifier_svc, y_true, y_predict
 
     @classmethod
     def classification_nb(cls, data, dependent_label):
@@ -282,9 +280,10 @@ class StartModSKL(StartMod):
         Source:
             http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html
         :param data: Pandas-DataFrame
+        :param dependent_label: categorical column
         :return: GaussianNB, true_test_result, predicted_result
         """
-        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label)
+        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
 
         clf_gnb = GaussianNB()
         clf_gnb.fit(x_train, y_train)
