@@ -4,7 +4,7 @@
 jupyter notebook filename.ipynb
 
 
-### Notices about the using dataset 
+### Notices about the using data  
 All the data come from the official public sources (scikit-learn, UCI, Kaggle) for the purpose of study, practice Machine Learning.
 
 
