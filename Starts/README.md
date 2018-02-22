@@ -3,18 +3,28 @@
 __author__ = 'Long Phan'
 
 ### File structures 
-startml.py Start_module Machine Learning
+> startml.py Start_module Machine Learning
 
-startmod.py Start_module Models
+> startmod.py Start_module Models
 
-startmodskl.py Start_module Models Scikit-Learn
+> startmodskl.py Start_module Models Scikit-Learn
 
-startmodtf.py Start_module Models Tensorflow
+> startmodtf.py Start_module Models Tensorflow
 
-startvis.py Start_module Visualization Matplotlib
+> startvis.py Start_module Visualization Matplotlib
+
+### Install dependencies
+OS platform: Fedora
+
+Python3
+
+Using pip to install the dependencies (Pandas, Numpy, Scipy, Scikit-learn, Tensorflow)
+> pip3 install -r requirements.txt
+> sudo apt-get install python3-mpltoolkits.basemap  (extra for basemap package)
+Source: https://matplotlib.org/basemap/users/installing.html
 
 
-### References:
+### References
 > https://pandas.pydata.org/
 
 > http://www.numpy.org/
