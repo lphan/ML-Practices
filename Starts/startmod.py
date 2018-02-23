@@ -281,19 +281,25 @@ class StartMod(StartML):
         return data
 
     @classmethod
-    def feature_engineering_merge_cols(cls, data, features, new_feature):
+    def feature_engineering_merge_cols(cls, data, features, new_feature, datetime=False):
         """
         Merge many features into one new_feature (column)
         :param data:
         :param features: list of the merging features
-        :param new_feature: name of merged new_feature
+        :param new_feature: name of merged new_feature (plus_combined)
+        :param datetime: default is False (if True, then it will merge list of ['date', 'time'] features into
+        new_feature (e.g. 'Date_Time')
         :return: data (with new column feature)
         """
-        # initialize new feature column
-        data[new_feature] = 0
+        if datetime:
+            # merge columns features ['Date','Time'] into new column new_feature ['Date_Time']
+            data[new_feature] = data[features].apply(lambda x: pd.datetime.combine(*list(x)), axis=1)
+        else:
+            # initialize new feature column
+            data[new_feature] = 0
 
-        for feature in features:
-            data[new_feature] = data[new_feature]+data[feature]
+            for feature in features:
+                data[new_feature] = data[new_feature]+data[feature]
 
         # data = data.drop(features, axis=1)
         return data.drop(features, axis=1)

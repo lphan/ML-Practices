@@ -20,6 +20,7 @@ Python3
 
 Using pip to install the dependencies (Pandas, Numpy, Scipy, Scikit-learn, Tensorflow)
 > pip3 install -r requirements.txt
+
 > sudo apt-get install python3-mpltoolkits.basemap  (extra for basemap package)
 Source: https://matplotlib.org/basemap/users/installing.html
 

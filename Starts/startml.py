@@ -423,15 +423,24 @@ class StartML(object):
 
         try:
             if StartML.kwargs['data_path_1']:
-                data_path_1 = pd.read_csv(StartML.kwargs['data_path_1'])
+                if StartML.kwargs['data_path_1'].endswith('.xlsx'):
+                    data_path_1 = pd.read_excel(StartML.kwargs['data_path_1'])
+                else:
+                    data_path_1 = pd.read_csv(StartML.kwargs['data_path_1'])
             else:
                 data_path_1 = ''
             if StartML.kwargs['data_path_2']:
-                data_path_2 = pd.read_csv(StartML.kwargs['data_path_2'])
+                if StartML.kwargs['data_path_2'].endswith('.xlsx'):
+                    data_path_2 = pd.read_excel(StartML.kwargs['data_path_2'])
+                else:
+                    data_path_2 = pd.read_csv(StartML.kwargs['data_path_2'])
             else:
                 data_path_2 = ''
             if StartML.kwargs['data_path_3']:
-                data_path_3 = pd.read_csv(StartML.kwargs['data_path_3'])
+                if StartML.kwargs['data_path_3'].endswith('.xlsx'):
+                    data_path_3 = pd.read_excel(StartML.kwargs['data_path_3'])
+                else:
+                    data_path_3 = pd.read_csv(StartML.kwargs['data_path_3'])
             else:
                 data_path_3 = ''
 
