@@ -1,7 +1,11 @@
 # ML-Practices
 
 ### Run the script with jupyter notebook
-jupyter notebook filename.ipynb
+> data need to be downloaded from the reference link in x_foldername 
+
+> copy and overwrite the file config.ini in current path or modify the path to data location. The __init__.py file setup the absolute path in current path.
+
+> jupyter notebook x_filename.ipynb
 
 
 ### Notices about the using data  

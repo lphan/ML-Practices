@@ -36,6 +36,8 @@ class StartModTF(StartMod):
     def __init__(self, data, label=None):
         """
         setup parameters for neuron network
+        :param data: pandas.core.frame.DataFrame
+        :param label:
         """
         self.data = data
         if label is None:
@@ -85,8 +87,15 @@ class StartModTF(StartMod):
     def train_input_func(cls, features, labels, batch_size, epochs):
         """
         An input function for training
+
         Source:
             https://github.com/tensorflow/models/blob/master/samples/core/get_started/iris_data.py
+
+        :param features:
+        :param labels:
+        :param batch_size:
+        :param epochs:
+        :return:
         """
 
         # if features and labels are numpy-type, then use numpy_input_fn
@@ -140,7 +149,7 @@ class StartModTF(StartMod):
 
     def setup_feature_columns(self, x_train):
         """
-        setup feature columns into TensorFlow format (numeric, bucketized, hash_bucket)
+        Setup feature columns into TensorFlow format (numeric, bucketized, hash_bucket)
 
         Source:
             https://www.tensorflow.org/get_started/feature_columns
@@ -204,7 +213,7 @@ class StartModTF(StartMod):
     def regressor_estimator(cls, data):
         """
         apply Estimator API
-        :param data: Pandas-DataFrame
+        :param data: pandas.core.frame.DataFrame
         :return:
         """
 
@@ -224,7 +233,7 @@ class StartModTF(StartMod):
         """
         tbd
 
-        :param data: Pandas-DataFrame
+        :param data: pandas.core.frame.DataFrame
         :return:
         """
         # retrieve value of feature_columns
@@ -239,13 +248,13 @@ class StartModTF(StartMod):
 
     def classifier_estimator(self, model_lin=True):
         """
-        apply pre-made Estimator to classify data
+        Apply pre-made Estimator to classify data
 
         Source:
             https://www.tensorflow.org/api_docs/python/tf/contrib/learn/LinearClassifier
             https://www.tensorflow.org/api_docs/python/tf/contrib/learn/DNNClassifier
 
-        :param data: Pandas-DataFrame
+        :param data: pandas.core.frame.DataFrame
         :param model_lin: default is LinearClassifier
         :return: LinearClassifier object (DNNClassifier object), y_true, y_predict
         """
@@ -263,11 +272,6 @@ class StartModTF(StartMod):
 
         # create feature_columns for model
         fea_cols = self.setup_feature_columns(x_train)
-
-        # print("FEATURE_COLUMNS ....")
-        # for f in fea_cols:
-        #     print(f)
-        #     print("\n")
 
         if model_lin:
             classifier = tf.estimator.LinearClassifier(feature_columns=fea_cols, n_classes=self.n_classes,
@@ -303,6 +307,10 @@ class StartModTF(StartMod):
     def keras_sequential(self, data, dependent_label, hidden_layers=1, output_signals = 1):
         """
         Setup Keras and run the Sequential method to predict value
+
+        Source:
+            https://keras.io/getting-started/sequential-model-guide/
+
         :param data:
         :param dependent_label: sequential-object model, predicted value, actual (true) value
         :param hidden_layers: number of hidden layers (default 1)
@@ -323,8 +331,8 @@ class StartModTF(StartMod):
         model.add(Dense(activation="relu", input_dim=x_train.shape[1], units=input_signals,
                         kernel_initializer="uniform"))
 
+        # Adding the second hidden layer, activation function as rectifier function
         for _ in range(hidden_layers):
-            # Adding the second hidden layer, activation function as rectifier function
             model.add(Dense(activation="relu", units=input_signals, kernel_initializer="uniform"))
 
         # Adding the output layer (in case of there's only one dependent_label), activation function as sigmoid function
@@ -333,9 +341,8 @@ class StartModTF(StartMod):
         # Compiling the ANN with optimizer='adam'
         model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-        # fit the keras_model to the training_data and see the real time training of model on data
-        # with result of loss and accuracy.
-        # The smaller batch_size and higher epochs, the better the result. However, slow_computing!
+        # fit the keras_model to the training_data and see the real time training of model on data with result of loss
+        # and accuracy. The smaller batch_size and higher epochs, the better the result. However, slow_computing!
         model.fit(x_train, y_train, batch_size=self.batch_size, epochs=self.num_epochs)
 
         # predictions and evaluating the model
@@ -349,7 +356,6 @@ class StartModTF(StartMod):
             "info_help_StartModTF": StartModTF.__name__,
             "StartModTF.(data)": StartModTF.regressor_custom.__doc__
             }
-        # info.update(StartML.info_help())
 
         return info
 

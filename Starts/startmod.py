@@ -12,6 +12,7 @@
 __author__ = 'Long Phan'
 
 
+from Starts.startml import *
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
@@ -19,9 +20,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
-
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import cross_val_score
 # from sklearn.pipeline import make_pipeline
-from Starts.startml import *
+
+import statsmodels.formula.api as sm
 
 
 class StartMod(StartML):
@@ -47,7 +50,7 @@ class StartMod(StartML):
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html
 
-        :param data: Pandas-DataFrame
+        :param data: pandas.core.frame.DataFrame
         :param label_columns: list of all labels (object-type)
         :param one_hot: Boolean-value, set value True for categorical column
         :return: data and x_values (the encoded data in type numpy.array)
@@ -114,12 +117,12 @@ class StartMod(StartML):
     @classmethod
     def split_data(cls, data, dependent_label, test_size=0.2, random_state=0, type_pd=True, split=True):
         """
-        split data for regression methods
+        Split data into training_data and test_data used for (regression, classification) methods
 
         Source:
             http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html
 
-        :param data: Pandas-DataFrame
+        :param data: pandas.core.frame.DataFrame
         :param dependent_label: categorical label
         :param test_size: (default is 0.2)
         :param random_state: (default is 0)
@@ -159,10 +162,47 @@ class StartMod(StartML):
         return x_train, x_test, y_train, y_test
 
     @classmethod
+    def backward_eliminate(cls, data, x_data, y_data):
+        """
+        Support the evaluation on (regression) models by finding maximal pvalue (< pre-defined SL)
+        and applying method Backward Elimination for feature selection
+
+        Source:
+            http://www.stephacking.com/multivariate-linear-regression-python-step-6-backward-elimination/
+
+        :param data: pandas.core.frame.DataFrame
+        :param x_data: feature_values in type numpy.ndarray
+        :param y_data: categorical_values in numpy.ndarray
+        :return: regressor_ols object, max_pvalue, x_opt
+        """
+
+        # Start Method Backward Elimination for feature selection
+        # Step 1: select a significance level to stay
+        sl = 0.05
+        # initiate data for x with full columns
+        x_opt = x_data[:, [i for i in range(len(data.columns))]]
+
+        # Step 2: fit the full model with all possible predictors, create new object in (Ordinary Least Squares) OLS
+        reg_ols = sm.OLS(endog=y_data, exog=x_opt).fit()
+
+        # Step 3: select and remove the redundant columns with pvalue > significant level 0.05
+        max_pvalue, col_idx = StartML.find_idx_max_value(reg_ols.pvalues)
+
+        while max_pvalue > sl:
+            # remove value at column col_idx and refresh data of x_opt
+            x_opt = np.delete(x_opt, col_idx, axis=1)
+
+            # recompute regressor with new x_opt
+            reg_ols = sm.OLS(endog=y_data, exog=x_opt).fit()
+            max_pvalue, idx = StartML.find_idx_max_value(reg_ols.pvalues)
+
+        return reg_ols, max_pvalue, x_opt
+
+    @classmethod
     def feature_columns(cls, data, label=None):
         """
         find and return object and non-object columns
-        :param data: Pandas-DataFrame
+        :param data: pandas.core.frame.DataFrame
         :param label: default is None
         :return: list of non_obj_feature, list of obj_feature
         """
@@ -195,7 +235,6 @@ class StartMod(StartML):
         """
         if type_pd:
             # convert data in Pandas DataFrame, apply Min_Max method
-            # print(data.columns)
             data[data.columns] = data[data.columns].apply(lambda x: (x - x.min()) / (x.max() - x.min()))
             return data
         else:
@@ -208,28 +247,65 @@ class StartMod(StartML):
             return scaler.transform(data)
 
     @classmethod
-    def feature_selection(cls, data, rm_columns):
+    def feature_selection(cls, data, rm_columns, dependent_label=None, rm=False):
         """
-        feature selection/dimensionality reduction
+        simply feature selection/ dimensionality reduction
+        apply Backward Elimination, Forward Selection, Bidirectional Elimination, Score comparision
+
         Source:
             http://scikit-learn.org/stable/modules/feature_selection.html
-        :param data:
-        :param rm_columns: features which will be removed
+
+        :param data: pandas.core.frame.DataFrame
+        :param dependent_label: label of categorical column
+        :param rm_columns: list of feature_columns which will be removed
+        :param rm: default False (if True: columns from rm_columns will be removed)
         :return:
         """
-        # tbd
+        # calculate R_Squared & adj_R_Squared with full feature_columns
+        X, y = StartMod.split_data(data, dependent_label, type_pd=False, split=False)
+
+        try:
+            regressor_ols = sm.OLS(endog=y, exog=X).fit()
+        except TypeError:
+            print("Data might have NaN_value, please clean them before building model")
+            return data
+
+        # backup data for not removing case
+        orig_data = data
+        print(data.columns)
+        print("\nRSquared: ", regressor_ols.rsquared)
+        print("\nAdj_RSquared: ", regressor_ols.rsquared_adj)
+        print("\n", regressor_ols.summary())
+
+        # calculate r_squared, adj_r_squared on the removing columns
         for rmc in rm_columns:
+            print("\nRemove column: ", rmc)
             data = data.drop(rmc, axis=1)
-        return data
+            print(data.columns)
+            X, y = StartMod.split_data(data, dependent_label, type_pd=False, split=False)
+
+            regressor_ols = sm.OLS(endog=y, exog=X).fit()
+            print("RSquared: ", regressor_ols.rsquared)
+            print("Adj_RSquared: ", regressor_ols.rsquared_adj)
+            print("\n", regressor_ols.summary())
+
+        # if yes, return data without column
+        if rm:
+            return data
+        else:
+            # return original data without any damages
+            return orig_data
 
     @classmethod
     def feature_hashing(cls, data):
         """
         Benefit on low-memory and speed up the performance
+
         Source:
             http://scikit-learn.org/stable/modules/feature_extraction.html
             http://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.FeatureHasher.html
-        :param data:
+
+        :param data: pandas.core.frame.DataFrame
         :return:
         """
         # tbd
@@ -239,9 +315,11 @@ class StartMod(StartML):
     def feature_extraction(cls, data, dependent_variable):
         """
         Using Principal component analysis (PCA) to extract the most important independent variables (features)
+
         Source:
             http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html
-        :param data:
+
+        :param data: pandas.core.frame.DataFrame
         :param dependent_variable:
         :return: array of explained_variance_ratio, x_train, x_test, y_train, y_test
         """
@@ -254,16 +332,17 @@ class StartMod(StartML):
         return pca.explained_variance_ratio_, x_train, x_test, y_train, y_test
 
     @classmethod
-    def feature_engineering(cls, data, old_feature, new_feature, attributes_new_feature, rm=False):
+    def feature_engineering(cls, data, old_feature, new_feature, new_attributes, rm=False):
         """
+        Renew data with new_feature using the new attributes_new_feature
+
         Source:
             https://triangleinequality.wordpress.com/2013/09/08/basic-feature-engineering-with-the-titanic-data/
 
-        renew data with new_feature which has the attributes_new_feature
-        :param data:
+        :param data: pandas.core.frame.DataFrame
         :param old_feature:
         :param new_feature:
-        :param attributes_new_feature:
+        :param new_attributes:
         :return: data (with new feature)
         """
 
@@ -274,17 +353,17 @@ class StartMod(StartML):
                     return attr
             return np.nan
 
-        data[new_feature] = data[old_feature].map(lambda x: find_attributes_feature(x, attributes_new_feature))
+        data[new_feature] = data[old_feature].map(lambda x: find_attributes_feature(x, new_attributes))
         if rm:
             data = data.drop(old_feature, axis=1)
-            # print("Dropped the old feature")
         return data
 
     @classmethod
     def feature_engineering_merge_cols(cls, data, features, new_feature, datetime=False):
         """
         Merge many features into one new_feature (column)
-        :param data:
+
+        :param data: pandas.core.frame.DataFrame
         :param features: list of the merging features
         :param new_feature: name of merged new_feature (plus_combined)
         :param datetime: default is False (if True, then it will merge list of ['date', 'time'] features into
@@ -301,31 +380,61 @@ class StartMod(StartML):
             for feature in features:
                 data[new_feature] = data[new_feature]+data[feature]
 
-        # data = data.drop(features, axis=1)
         return data.drop(features, axis=1)
 
     @classmethod
     def metrics_report(cls, y_true, y_pred, target_names=None):
         """
         measure the quality of the models (comparing results before and after running prediction)
+
+        Accuracy = (TP + TN) / (TP + TN + FP + FN)
+        Precision = TP / (TP + FP)
+        Recall = TP / (TP + FN)
+        F1 Score = 2 * Precision * Recall / (Precision + Recall)
+
         Source:
-            https://www.kaggle.com/dansbecker/handling-missing-values
             http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics
             http://scikit-learn.org/stable/modules/model_evaluation.html#model-evaluation
             http://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html
             http://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html
+            http://scikit-learn.org/stable/modules/generated/sklearn.metrics.accuracy_score.html
+
         :param y_true: the truth values
         :param y_pred: the predicted values
         :param target_names: label (categorical) name
         :return:
         """
-        # tbd
+
         if target_names is not None:
             print("Classification Report: \n", classification_report(y_true, y_pred, target_names=target_names))
             print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred, labels=target_names))
         else:
             print("Classification Report: \n", classification_report(y_true, y_pred))
             print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred))
+        print("\nAccuracy: \n", accuracy_score(y_true, y_pred))
+
+    @classmethod
+    def validation(cls, classifier, x_train, y_train, cv=None):
+        """
+        Apply K-Fold Cross_Validation to estimate the model (classification)
+
+        Source:
+            http://scikit-learn.org/stable/modules/cross_validation.html
+
+        :param classifier:
+        :param x_train: feature_values
+        :param y_train: categorical_values
+        :param cv (Cross_Validation) default is 3-fold if None
+        :return:
+        """
+        accuracies = cross_val_score(estimator=classifier, X=x_train, y=y_train, cv=cv)
+        print("\nAccuracies: ", accuracies)
+        print("\nMean of accuracies: ", accuracies.mean())
+        print("\nStandard Deviation: ", accuracies.std())
+
+        accuracies = cross_val_score(estimator=classifier, X=x_train, y=y_train, cv=10)
+        accuracies.mean()
+        accuracies.std()
 
     @staticmethod
     def info_help():

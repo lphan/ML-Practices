@@ -23,11 +23,12 @@ class StartML(object):
     """
     Description: StartML - Start Machine Learning
     Import parameters from config.ini and execute basic pre_processing operations
-    Return all the basic statistics about data
+    (statistics, groupby, reduce, etc.) on datasets
+
     Start: 
-    jupyter notebook    
-    -> from startml import *
-    -> info_help    
+        jupyter notebook
+        -> from startml import *
+        -> info_help
     """
     # init keywords arguments
     kwargs = {}
@@ -45,7 +46,7 @@ class StartML(object):
             config = configparser.ConfigParser()
             config.read('config.ini')
         except IOError:
-            raise ("Error open file config.ini")
+            print("Error open file config.ini")
             return
 
         data_path_1 = config['paths']['data_path_1']
@@ -74,7 +75,8 @@ class StartML(object):
     def convert_time_series(cls, data, time_column):
         """
         convert dataset into time_series dataset
-        :param data: Pandas-DataFrame
+
+        :param data: pandas.core.frame.DataFrame
         :param time_column:
         :return: new_data
         """
@@ -93,9 +95,10 @@ class StartML(object):
         """
         given data, column_name and row_id
         return value at row_id of column
-        :param data: Pandas-DataFrame
-        :param column_name:
-        :param rows_id: list type as list of rows_id
+
+        :param data: pandas.core.frame.DataFrame
+        :param column_name: find on specific column
+        :param rows_id: list of rows_id
         :return: list of tuple (column, row, value)
         """
         # return data.column_name[row_id]  # (short-way)
@@ -118,22 +121,24 @@ class StartML(object):
     def idx_columns(cls, data):
         """
         return a list of tuple (column, index, label_type)
-        :param data:
+
+        :param data: pandas.core.frame.DataFrame
         :return: list of tuple (column, column_idx, type's column)
         """
         return [(col, data.columns.get_loc(col), data.dtypes[col]) for col in data.columns]
 
     @classmethod
-    def group_by_columns(cls, data, columns, label_groupby, func=None):
+    def groupby_columns(cls, data, columns, groupby_label, func=None):
         """
         execute operation group_by on columns by label_groupby
-        :param data: Pandas-DataFrame
+
+        :param data: pandas.core.frame.DataFrame
         :param columns: list of columns need to be grouped
-        :param label_groupby: need to be one of the given columns
+        :param groupby_label: need to be one of the given columns
         :param func:
         :return: DataFrameGroupBy object (which can be used to compute further)
         """
-        grouped = data[columns].groupby(label_groupby)
+        grouped = data[columns].groupby(groupby_label)
         if func is None:
             return grouped
         else:
@@ -143,7 +148,8 @@ class StartML(object):
     def lookup_value(cls, data, value, tup=True):
         """
         find all values in data frame
-        :param data: Pandas-DataFrame
+
+        :param data: pandas.core.frame.DataFrame
         :param value (can be either int, float or object)
         :param tup (True will return as tuple with column, False will return a list of row_id)
         :return: list of tuple (row_id, 'column_name')
@@ -165,14 +171,13 @@ class StartML(object):
         if not tup:
             for idx, rows in data.iterrows():
                 result = result + [idx for col in search_columns if rows[col] == value]
-            return np.array(result)
-
+            # return np.array(result)
         else:
             for idx, rows in data.iterrows():
                 result = result + [(idx, col) for col in search_columns if rows[col] == value]
                 # print(result)
 
-            return np.array(result)
+        return np.array(result)
 
     @classmethod
     def mean_neighbors(cls, data, row_id, column):
@@ -180,8 +185,10 @@ class StartML(object):
         compute mean value of value at row_id with values from its above and lower neighbors.
         if the above neighbor is NaN, it jumps to higher position
         similarly if the lower neighbor is NaN, it jumps to higher position.
-        :param row_id:
-        :param column:
+
+        :param data: pandas.core.frame.DataFrame
+        :param row_id: index row
+        :param column: column name
         :return: mean value of neighbors
         """
         # if row_id is min (e.g. 0), the closest 'non_NaN' value will be taken
@@ -229,7 +236,8 @@ class StartML(object):
     def nan_columns(cls, data):
         """
         return name of all columns which have NaN_value
-        :param data: Pandas-DataFrame
+
+        :param data: pandas.core.frame.DataFrame
         :return: list of all possible NaN_column(s)
         """
         nan_bool = data.isnull().any()
@@ -243,7 +251,7 @@ class StartML(object):
     def nan_rows(cls, data, nan=True):
         """
         return all rows containing NaN values in type DataFrame
-        :param data: Pandas-DataFrame
+        :param data: pandas.core.frame.DataFrame
         :param nan: Boolean-input True to search for NaN values, False for not_NaN
         :return: data with all possible found NaN_rows or not_NaN_rows (if nan=False)
         """
@@ -260,7 +268,7 @@ class StartML(object):
     def process_nan_columns(cls, data):
         """
         pre_processing columns based on information given in the config.ini
-        :param data: Pandas-DataFrame
+        :param data: pandas.core.frame.DataFrame
         :return: data after pre-processing
         """
 
@@ -301,7 +309,8 @@ class StartML(object):
     def process_nan_rows(cls, data):
         """
         pre_processing rows based on information given in the config.ini
-        :param data: Pandas-DataFrame
+
+        :param data: pandas.core.frame.DataFrame
         :return: data after pre-processing
         """
         # tbd: improve performance
@@ -358,7 +367,8 @@ class StartML(object):
     def process_nan_simply(cls, data, nan_column=None):
         """
         simply process all nan-value by replacing with 'Unknown'
-        :param data: Pandas-DataFrame
+
+        :param data: pandas.core.frame.DataFrame
         :param nan_column: single NaN_column
         :return: data after preprocessing
         """
@@ -375,8 +385,8 @@ class StartML(object):
     def obj_num_convert(data):
         """
         convert data from object-type into numeric type
-        :param data: Pandas-DataFrame
-        :return:
+        :param data: pandas.core.frame.DataFrame
+        :return: the converted data in numeric_type
         """
         for col in data.columns:
             try:
@@ -391,7 +401,8 @@ class StartML(object):
     def nan_summary(data):
         """
         display summary about all NaN values in data
-        :param data: Pandas-DataFrame
+
+        :param data: pandas.core.frame.DataFrame
         :return:
         """
         print("Nans_columns: \n{}".format(StartML.nan_columns(data)))

@@ -102,7 +102,7 @@ class StartVis(StartML):
         :return:
         """
 
-        grouped_data = StartML.group_by_columns(data, columns, group_by_column)
+        grouped_data = StartML.groupby_columns(data, columns, group_by_column)
         # grouped_data = data[columns].groupby(by=group_by_column)
         x = grouped_data.size()
         x.plot.bar(label=str(group_by_column))

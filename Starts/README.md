@@ -18,10 +18,11 @@ OS platform: Fedora
 
 Python3
 
-Using pip to install the dependencies (Pandas, Numpy, Scipy, Scikit-learn, Tensorflow, Keras)
+Using pip to install the dependencies (Pandas, Numpy, Scipy, matplotlib, Scikit-learn, Tensorflow, Keras)
 > pip3 install -r requirements.txt
 
 > sudo apt-get install python3-mpltoolkits.basemap  (extra for basemap package)
+
 Source: https://matplotlib.org/basemap/users/installing.html
 
 
