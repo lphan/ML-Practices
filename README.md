@@ -9,7 +9,7 @@
 
 
 ### Notices about the using data  
-All the data come from the official public sources (scikit-learn, UCI, Kaggle) for the purpose of study, practice Machine Learning.
+All the using data are from the official public sources (scikit-learn, UCI, Kaggle) for the purpose of study, practice Machine Learning.
 
 
 ### References:
@@ -17,6 +17,3 @@ All the data come from the official public sources (scikit-learn, UCI, Kaggle) f
 
 > https://archive.ics.uci.edu/ml/index.php
 
-> https://github.com/tensorflow/tensorflow.git
-
-> https://github.com/scikit-learn/scikit-learn
