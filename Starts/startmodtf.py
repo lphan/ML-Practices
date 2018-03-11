@@ -52,7 +52,7 @@ class StartModTF(StartMod):
         self.activation_fn = "relu"     # default 'relu' function
         self.learning_rate = 0.001      # default 0.001
         self.steps = 1000               # default training_steps 1000
-        self.batch_size = 10            # default batch_size 10
+        self.batch_size = 10            # default batch_size 10 (correspond with available system memory capacity to avoid outofmemory_error, small for many features, big for performance)
         self.num_epochs = 1             # default number of epochs 1
         self.feature_scl = False        # default turn off feature scaling
 
@@ -98,10 +98,6 @@ class StartModTF(StartMod):
         :return:
         """
 
-        # if features and labels are numpy-type, then use numpy_input_fn
-        # print("ENTERING train_input_func")
-        # print("\n")
-        # print(type(features), type(labels))
         return tf.estimator.inputs.pandas_input_fn(x=features, y=labels, batch_size=batch_size,
                                                    num_epochs=epochs, shuffle=True)
         # Alternatives:

@@ -38,7 +38,7 @@ class StartVis(StartML):
     def vis_bar(cls, data, columns, x_label='', y_label='', title=''):
         """
         visualize the number of counted values in the given columns in bar-chart
-        :param data: Pandas-DataFrame
+        :param data: pandas.core.frame.DataFrame
         :param columns:
         :param x_label:
         :param y_label:
@@ -63,7 +63,7 @@ class StartVis(StartML):
     def vis_hist(cls, data, columns, x_label='', y_label='', title='', func_filter=None):
         """
         Display Histogram of data and labels, with filter-function
-        :param data: Pandas-DataFrame
+        :param data: pandas.core.frame.DataFrame
         :param columns:
         :param func_filter: object type Pandas-Series
         :param x_label:
@@ -93,7 +93,7 @@ class StartVis(StartML):
     def vis_bar_groupby(cls, data, columns, group_by_column, x_label='', y_label='', title=''):
         """
         Visualize groupby-object in bar chart.
-        :param data: Pandas-DataFrame
+        :param data: pandas.core.frame.DataFrame
         :param columns:
         :param group_by_column:
         :param x_label:
@@ -112,6 +112,27 @@ class StartVis(StartML):
         plt.xticks(rotation=0)
         plt.legend()
         plt.show()
+
+    @classmethod
+    def vis_boxplot(cls, data):
+        """
+        visual boxplot all data features to detect the possible outliers in every features
+
+        :param data:
+        :return:
+        """
+        fig = plt.figure(1, figsize=(9, 6))
+        ax = fig.add_subplot(111)
+
+        data_to_plot = []
+        for col in data.columns:
+            data_col = data[col].values
+            data_to_plot.append(data_col)
+
+        bp = ax.boxplot(data_to_plot)
+        plt.title("Visual Boxplot")
+        plt.show()
+
 
     @classmethod
     def vis_scatter(cls, data):
@@ -176,7 +197,7 @@ class StartVis(StartML):
         """
         Source:
             https://matplotlib.org/basemap/
-        :param data: Pandas-DataFrame (with geospatial coordinates 'Longitude' and 'Latitutde'
+        :param data: pandas.core.frame.DataFrame (with geospatial coordinates 'Longitude' and 'Latitutde'
         :return:
         """
         try:
@@ -218,7 +239,7 @@ class StartVis(StartML):
         """
         Source:
             https://matplotlib.org/devdocs/api/_as_gen/matplotlib.pyplot.contourf.html
-        :param data:
+        :param data: pandas.core.frame.DataFrame
         :return:
         """
         pass

@@ -84,13 +84,6 @@ class StartML(object):
         return data
 
     @classmethod
-    def find_idx_max_value(cls, data):
-        for i, v in enumerate(data):
-            if v == max(data):
-                break
-        return max(data), i
-
-    @classmethod
     def find_value(cls, data, rows_id, column_name=''):
         """
         given data, column_name and row_id
@@ -114,6 +107,31 @@ class StartML(object):
             return []
 
     @classmethod
+    def find_idx_max_value(cls, data):
+        for i, v in enumerate(data):
+            if v == max(data):
+                break
+        return max(data), i
+
+    @classmethod
+    def find_idx(cls, data, column, values):
+        """
+        find all rows_idx which have the same values located at column of data
+        :param data: pandas.core.frame.DataFrame
+        :param values: the given values
+        :param column: column_feature where to look for values
+        :return: DataFrame object
+        """
+
+        # init empty DataFrame
+        x = pd.DataFrame(columns=data.columns)
+
+        # append/ fill DataFrame with values
+        for v in values:
+            x = x.append(pd.DataFrame(data[data[column] == v], columns=data.columns))
+        return x
+
+    @classmethod
     def idx_reset(cls, data):
         return data.reset_index(drop=True, inplace=True)
 
@@ -126,6 +144,16 @@ class StartML(object):
         :return: list of tuple (column, column_idx, type's column)
         """
         return [(col, data.columns.get_loc(col), data.dtypes[col]) for col in data.columns]
+
+    @classmethod
+    def parallelby_func(cls, data, func):
+        """
+        execute operation paralellization (MultiThreading, MultiProcessing) as wrapper on func
+        using Spark
+        :param data:
+        :return:
+        """
+        pass
 
     @classmethod
     def groupby_columns(cls, data, columns, groupby_label, func=None):
@@ -143,6 +171,183 @@ class StartML(object):
             return grouped
         else:
             return grouped.aggregate(func)
+
+    @classmethod
+    def reduceby_rows(cls, data, operations):
+        """
+        reduce number of rows (map_reduce, map needs 'list(mapped_obj)', reduce needs 'import functools')
+        or (DataFrame_apply)
+
+        :param data: pandas.core.frame.DataFrame
+        :param rows:
+        :param operation: add, subtract, multiplication, mean etc.
+        :return:
+        """
+        pass
+
+    @classmethod
+    def detect_outliers(cls, data):
+        """
+        Algorithm: setup a threshold for error (maximal error).
+        if the computed error exceeds the threshold, then the data point will be listed as outlier.
+        Choose to remove (clean) or neutralize using Minkowski-method
+
+        Algo functions in combination with plot-visual and observation.
+        Outliers are the points outside the range [(Q1-1.5 IQR), (Q3+1.5 IQR)]
+
+        Source:
+            https://www.neuraldesigner.com/blog/3_methods_to_deal_with_outliers
+            http://www.itl.nist.gov/div898/handbook/prc/section1/prc16.htm
+
+        :param data: pandas.core.series.Series
+        :return:
+        """
+        total_outliers = {}
+        # Step1: find all outliers in every columns
+        for col in data.columns:
+            # min value
+            min_value = data[col].describe()['min']
+
+            # lower_quartile = np.percentile(nonan_data['Fare'].values, 25)
+            q1_lower_quartile = data[col].describe()['25%']
+
+            # median = np.median(nonan_data['Fare'].values)
+            q2_median = data[col].describe()['50%']
+
+            # upper_quartile = np.percentile(nonan_data['Fare'].values, 75)
+            q3_upper_quartile = data[col].describe()['75%']
+
+            # max value
+            max_value = data[col].describe()['max']
+
+            IQR = abs(q3_upper_quartile - q1_lower_quartile)
+            IQR = 1.5*IQR
+            lower_bound = q1_lower_quartile - IQR
+            upper_bound = q3_upper_quartile + IQR
+
+            # print(min_value, q1_lower_quartile, q2_median, q3_upper_quartile, max_value)
+            # print(lower_bound, upper_bound)
+            outliers = [v for v in data[col].values if v < lower_bound or v > upper_bound]
+            # print(col, outliers)
+            # print(len(outliers))
+            total_outliers[col] = outliers
+            # print()
+
+        # tbd Step2: find all row_idx of these outliers points which appear in all columns
+        #
+        # then find the occurrences > 2
+        #
+        # tbd Step3: remove or keep it by modifying its values
+        return total_outliers
+
+    @classmethod
+    def applyby_func(cls, data, columns, ops):
+        """
+        Apply func on certain columns (to change or update values)
+        :param data: pandas.core.frame.DataFrame
+        :param columns: list of columns which will be updated by operation ops
+        :param ops: mean, median, mode
+        :return:
+        """
+        if ops in ['mean', 'median', 'mode']:
+            for col in columns:
+                if ops is 'mean':
+                    # try using df.loc[row_index,col_indexer] = value with lambda
+                    data[col] = data[col].apply(lambda x: data[col].mean())
+                elif ops is 'median':
+                    data[col] = data[col].apply(lambda x: data[col].median())
+                else:
+                    data[col] = data[col].apply(lambda x: data[col].mode())
+        else:
+            print("Ops is not valid, only accept one of operation mean, median, mode")
+
+        return data
+
+    @classmethod
+    def filterby_rows(cls, data, func):
+        """
+        filter out all the values (rows) which are considered "No need" for dataset
+        to reduce the unnecessary data processing (using DataFrame_apply)
+
+        :param data:
+        :param func:
+        :return:
+        """
+        return data.drop(data[func].index)
+
+    @classmethod
+    def unionby_rows(cls, data, func):
+        """
+        union all rows together with the pre-defined values (using DataFrame_apply)
+        :param data:
+        :param func:
+        :return:
+        """
+        # data.apply(func, )
+        pass
+
+    @classmethod
+    def mergeby_data(cls, data1, data2):
+        """
+        union data1 and data2 and filter out all duplicates (using DataFrame_merge)
+        :param data1:
+        :param data2:
+        :return:
+        """
+        pass
+
+    @classmethod
+    def joinby_data(cls, data1, data2):
+        """
+        proceed different join_operations (left, right, inner, outer) on dataset (using DataFrame_merge)
+        (similar as mergeby_data)
+        :param data1:
+        :param data2:
+        :return:
+        """
+        pass
+
+    @classmethod
+    def intersectionby_data(cls, data1, data2):
+        """
+        proceed operation intersect to get the common part between data1 and data2 (using DataFrame_merge)
+        :param data1:
+        :param data2:
+        :return:
+        """
+        pass
+
+    @classmethod
+    def mergeby_data(cls, data, rows, columns):
+        """
+        merge values from rows and columns together
+        :param data:
+        :param rows:
+        :param columns:
+        :return:
+        """
+        pass
+
+    @classmethod
+    def countby_kv(cls, data, keyvalue, operations):
+        """
+        count value with key (using DataFrame_to_dict to convert DataFrame into dict_type)
+        :param data:
+        :param keyvalue:
+        :param operations: (e.g. sum)
+        :return:
+        """
+        pass
+
+    @classmethod
+    def orderby_kv(cls, data, keyvalue):
+        """
+        sort (ascending, descending) of rows, columns (using DataFrame.sort_values)
+        :param data:
+        :param keyvalue:
+        :return:
+        """
+        pass
 
     @classmethod
     def lookup_value(cls, data, value, tup=True):
@@ -436,20 +641,28 @@ class StartML(object):
             if StartML.kwargs['data_path_1']:
                 if StartML.kwargs['data_path_1'].endswith('.xlsx'):
                     data_path_1 = pd.read_excel(StartML.kwargs['data_path_1'])
+                elif StartML.kwargs['data_path_1'].endswith('.json'):
+                    data_path_1 = pd.read_json(StartML.kwargs['data_path_1'])
                 else:
                     data_path_1 = pd.read_csv(StartML.kwargs['data_path_1'])
             else:
                 data_path_1 = ''
+
             if StartML.kwargs['data_path_2']:
                 if StartML.kwargs['data_path_2'].endswith('.xlsx'):
                     data_path_2 = pd.read_excel(StartML.kwargs['data_path_2'])
+                elif StartML.kwargs['data_path_2'].endswith('.json'):
+                    data_path_2 = pd.read_json(StartML.kwargs['data_path_2'])
                 else:
                     data_path_2 = pd.read_csv(StartML.kwargs['data_path_2'])
             else:
                 data_path_2 = ''
+
             if StartML.kwargs['data_path_3']:
                 if StartML.kwargs['data_path_3'].endswith('.xlsx'):
                     data_path_3 = pd.read_excel(StartML.kwargs['data_path_3'])
+                elif StartML.kwargs['data_path_3'].endswith('.json'):
+                    data_path_3 = pd.read_json(StartML.kwargs['data_path_3'])
                 else:
                     data_path_3 = pd.read_csv(StartML.kwargs['data_path_3'])
             else:

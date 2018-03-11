@@ -17,6 +17,7 @@ from Starts.startvis import *
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LogisticRegression
 
 from sklearn.neighbors import KNeighborsClassifier
@@ -99,13 +100,14 @@ class StartModSKL(StartMod):
             return reg_lin, y_test, y_predict
 
     @classmethod
-    def regression_multi_linear(cls, data, dependent_label):
+    def regression_multi_linear(cls, data, dependent_label, pr=True):
         """
         Apply method Multiple Linear regression y = b0 + b1.x1 + b2.x2 + ... + bn.xn
         choose the optimal feature_columns using algorithm Backward Elimination
 
         :param data: pandas.core.frame.DataFrame
         :param dependent_label: categorical column
+        :param pr: default True to display info
         :return: RegressionResultsWrapper object, true_test_result, predicted_result
         """
 
@@ -122,10 +124,11 @@ class StartModSKL(StartMod):
         # apply backward_eliminate to find pvalue and result of (adj)_r_squared
         reg_ols, max_pvalue, x_opt = StartMod.backward_eliminate(data, x, y)
 
-        print("x_value is optimal with p_value: ", max_pvalue)
-        print("\nR_Squared: ", reg_ols.rsquared)
-        print("\nAdjusted_R_Squared: ", reg_ols.rsquared_adj)
-        print("\nSummary: ", reg_ols.summary())
+        if pr:
+            print("x_value is optimal with p_value: ", max_pvalue)
+            print("\nR_Squared: ", reg_ols.rsquared)
+            print("\nAdjusted_R_Squared: ", reg_ols.rsquared_adj)
+            print("\nSummary: ", reg_ols.summary())
 
         x_train, x_test, y_train, y_test = train_test_split(x_opt, y, test_size=0.2, random_state=0)
 
@@ -186,6 +189,33 @@ class StartModSKL(StartMod):
         return reg_dt, y_true, y_predict
 
     @classmethod
+    def regression_random_forest(cls, data, dependent_label, n_est=10, ens=False):
+        """
+        Apply method Random forest regression
+
+        Source:
+            http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html
+
+        :param data:
+        :param dependent_label:
+        :param n_estimators: the number of trees in the forest.
+        :param ens: ensemble learning by decision tree and other regression model
+        :return:
+        """
+        x_train, x_true, y_train, y_true = StartMod.split_data(data, dependent_label, type_pd=False)
+
+        reg_rf = RandomForestRegressor(n_estimators=n_est, random_state=0)
+        reg_rf.fit(x_train, y_train)
+
+        # if ens (ensemble learning), re_implement random forest by applying other regression_model as one decision tree
+        # then get the mean result from every decision tree
+
+        # Predicting a new result
+        y_predict = reg_rf.predict(x_true)
+
+        return reg_rf, y_true, y_predict
+
+    @classmethod
     def regression_logistic(cls, data, dependent_label):
         """
         Apply method Logistic regression
@@ -218,7 +248,7 @@ class StartModSKL(StartMod):
         return reg_log, y_test, y_predict
 
     @classmethod
-    def classification_knn(cls, data, dependent_label, k=5):
+    def classification_knn(cls, data, dependent_label, k_nb=5):
         """
         Apply k-Nearest Neighbours method to classify data
 
@@ -227,13 +257,14 @@ class StartModSKL(StartMod):
 
         :param data: pandas.core.frame.DataFrame
         :param dependent_label: categorical column
+        :param  k_nb: number of neighbors
         :return: KNeighborsClassifier object, true_test_result, predicted_result
         """
 
         # split data into feature (independent) values and dependent values in type Numpy.array
         x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
 
-        clf_knn = KNeighborsClassifier(n_neighbors=k, metric='euclidean', p=2)
+        clf_knn = KNeighborsClassifier(n_neighbors=k_nb, metric='euclidean', p=2)
         clf_knn.fit(x_train, y_train)
 
         # Predicting the Test set results
@@ -310,6 +341,17 @@ class StartModSKL(StartMod):
         StartMod.validation(clf_gnb, x_train, y_train)
 
         return clf_gnb, y_test, y_predict
+
+    @classmethod
+    def classification_random_forest(cls, data, dependent_label):
+        """
+        Source:
+            http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
+        :param data:
+        :param dependent_label:
+        :return:
+        """
+        pass
 
     @classmethod
     def clustering_k_mean_noc(cls, data, plot=False):

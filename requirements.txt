@@ -6,4 +6,5 @@ statsmodels==0.8.0
 tensorflow>=1.4.1
 Keras>=2.1.2
 matplotlib>=2.1.2
+pyspark>=2.3.0
 

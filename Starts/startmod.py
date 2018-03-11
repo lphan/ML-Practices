@@ -115,9 +115,18 @@ class StartMod(StartML):
             return data
 
     @classmethod
+    def split_columns(cls, data):
+        """
+        Split data by feature_columns into 2 different datasets
+        :param data:
+        :return:
+        """
+        pass
+
+    @classmethod
     def split_data(cls, data, dependent_label, test_size=0.2, random_state=0, type_pd=True, split=True):
         """
-        Split data into training_data and test_data used for (regression, classification) methods
+        Split data by rows into training_data and test_data used for (regression, classification) methods
 
         Source:
             http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html
@@ -247,7 +256,7 @@ class StartMod(StartML):
             return scaler.transform(data)
 
     @classmethod
-    def feature_selection(cls, data, rm_columns, dependent_label=None, rm=False):
+    def feature_selection(cls, data, rm_columns, dependent_label=None, rm=False, pr=True):
         """
         simply feature selection/ dimensionality reduction
         apply Backward Elimination, Forward Selection, Bidirectional Elimination, Score comparision
@@ -259,6 +268,7 @@ class StartMod(StartML):
         :param dependent_label: label of categorical column
         :param rm_columns: list of feature_columns which will be removed
         :param rm: default False (if True: columns from rm_columns will be removed)
+        :param pr: turn on/ off print function (default: True to turn on)
         :return:
         """
         # calculate R_Squared & adj_R_Squared with full feature_columns
@@ -272,10 +282,11 @@ class StartMod(StartML):
 
         # backup data for not removing case
         orig_data = data
-        print(data.columns)
-        print("\nRSquared: ", regressor_ols.rsquared)
-        print("\nAdj_RSquared: ", regressor_ols.rsquared_adj)
-        print("\n", regressor_ols.summary())
+        if pr:
+            print(data.columns)
+            print("\nRSquared: ", regressor_ols.rsquared)
+            print("\nAdj_RSquared: ", regressor_ols.rsquared_adj)
+            print("\n", regressor_ols.summary())
 
         # calculate r_squared, adj_r_squared on the removing columns
         for rmc in rm_columns:
@@ -285,9 +296,10 @@ class StartMod(StartML):
             X, y = StartMod.split_data(data, dependent_label, type_pd=False, split=False)
 
             regressor_ols = sm.OLS(endog=y, exog=X).fit()
-            print("RSquared: ", regressor_ols.rsquared)
-            print("Adj_RSquared: ", regressor_ols.rsquared_adj)
-            print("\n", regressor_ols.summary())
+            if print:
+                print("RSquared: ", regressor_ols.rsquared)
+                print("Adj_RSquared: ", regressor_ols.rsquared_adj)
+                print("\n", regressor_ols.summary())
 
         # if yes, return data without column
         if rm:
@@ -407,10 +419,10 @@ class StartMod(StartML):
 
         if target_names is not None:
             print("Classification Report: \n", classification_report(y_true, y_pred, target_names=target_names))
-            print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred, labels=target_names))
+            print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred, labels=np.unique(y_true)))
         else:
             print("Classification Report: \n", classification_report(y_true, y_pred))
-            print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred))
+            print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred, labels=np.unique(y_true)))
         print("\nAccuracy: \n", accuracy_score(y_true, y_pred))
 
     @classmethod
@@ -424,7 +436,7 @@ class StartMod(StartML):
         :param classifier:
         :param x_train: feature_values
         :param y_train: categorical_values
-        :param cv (Cross_Validation) default is 3-fold if None
+        :param cv (Cross_Validation) default is 10-fold if None
         :return:
         """
         accuracies = cross_val_score(estimator=classifier, X=x_train, y=y_train, cv=cv)
@@ -444,7 +456,6 @@ class StartMod(StartML):
             "StartMod.feature_engineering(data)": StartMod.feature_engineering.__doc__,
             "StartMod.feature_engineering_merge_cols(data)": StartMod.feature_engineering_merge_cols.__doc__,
             }
-        # info.update(StartML.info_help())
 
         return info
 
