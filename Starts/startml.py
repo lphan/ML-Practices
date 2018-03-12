@@ -72,16 +72,57 @@ class StartML(object):
         print("local_kwargs", StartML.kwargs)
 
     @classmethod
-    def convert_time_series(cls, data, time_column):
+    def convert_time_series(cls, data, time_column, format=True):
         """
         convert dataset into time_series dataset
 
         :param data: pandas.core.frame.DataFrame
         :param time_column:
+        :param format: default True if time_column is in date_time format, False if in millisecond
         :return: new_data
         """
-        data.index = pd.to_datetime(data.pop(time_column))
+        if format:
+            data.index = pd.to_datetime(data.pop(time_column))
+        else:
+            data.index = pd.to_datetime(data.pop(time_column), unit='ms')
+        data = data.sort_index()
         return data
+
+    @classmethod
+    def get_day(cls, data):
+        """
+        return day (Mon, Tues, ...) by giving date
+        :param data:
+        :return:
+        """
+        pass
+
+    @classmethod
+    def mean_byday(cls, data):
+        """
+        find mean value by day (7 days per week) in a period time
+        :param data: Time_Series data
+        :return:
+        """
+        pass
+
+    @classmethod
+    def mean_byweek(cls, data):
+        """
+        find mean value by week in a period time
+        :param data:
+        :return:
+        """
+        pass
+
+    @classmethod
+    def mean_bymonth(cls, data):
+        """
+        find mean value by month in a period time
+        :param data:
+        :return:
+        """
+        pass
 
     @classmethod
     def find_value(cls, data, rows_id, column_name=''):
