@@ -35,7 +35,7 @@ class StartVis(StartML):
     """
 
     @classmethod
-    def vis_bar(cls, data, columns, x_label='', y_label='', title=''):
+    def vis_bar(cls, data, columns, x_label='', y_label='', title='', rot=0, bar=True):
         """
         visualize the number of counted values in the given columns in bar-chart
         :param data: pandas.core.frame.DataFrame
@@ -45,22 +45,25 @@ class StartVis(StartML):
         :param title:
         :return:
         """
-        for column in columns:
-            # other options: line, area
-            # data[column].head().value_counts().plot(kind='bar')
-            if len(data[column].value_counts()) > 20:
-                (data[column].value_counts() / len(data[column])).sort_index().plot.line()
-            else:
+        if bar:
+            for column in columns:
+                # other options: line, area
+                # data[column].head().value_counts().plot(kind='bar')
                 (data[column].value_counts()/ len(data[column])).sort_index().plot(kind='bar')
             plt.title("Bar Chart " + str(column) + " " + title)
-            plt.xlabel(x_label)
-            plt.ylabel(y_label)
-            plt.xticks(rotation=0)
-            plt.legend()
-            plt.show()
+        else:
+            for column in columns:
+                (data[column].value_counts() / len(data[column])).sort_index().plot.line()
+            plt.title("Line Chart " + str(column) + " " + title)
+
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+        plt.xticks(rotation=rot)
+        plt.legend()
+        plt.show()
 
     @classmethod
-    def vis_hist(cls, data, columns, x_label='', y_label='', title='', func_filter=None):
+    def vis_hist(cls, data, columns, x_label='', y_label='', title='', func_filter=None, rot=0):
         """
         Display Histogram of data and labels, with filter-function
         :param data: pandas.core.frame.DataFrame
@@ -69,6 +72,8 @@ class StartVis(StartML):
         :param x_label:
         :param y_label:
         :param title:
+        :param rot: rotation (default = 0)
+
         :return: Histogram
         """
 
@@ -79,18 +84,18 @@ class StartVis(StartML):
                 else:
                     data[func_filter][column].plot.hist()
 
-                plt.title("Histogram " + str(column) + " " + title)
-                plt.xlabel(x_label)
-                plt.ylabel(y_label)
-                plt.xticks(rotation=0)
-                plt.legend()
-                plt.show()
+            plt.title("Histogram " + str(column) + " " + title)
+            plt.xlabel(x_label)
+            plt.ylabel(y_label)
+            plt.xticks(rotation=rot)
+            plt.legend()
+            plt.show()
         except TypeError:
             print("No numeric data to plot")
             return
 
     @classmethod
-    def vis_bar_groupby(cls, data, columns, group_by_column, x_label='', y_label='', title=''):
+    def vis_bar_groupby(cls, data, columns, group_by_column, x_label='', y_label='', title='', rot=0):
         """
         Visualize groupby-object in bar chart.
         :param data: pandas.core.frame.DataFrame
@@ -99,6 +104,7 @@ class StartVis(StartML):
         :param x_label:
         :param y_label:
         :param title:
+        :param rot: rotation (default = 0)
         :return:
         """
 
@@ -109,7 +115,7 @@ class StartVis(StartML):
         plt.title("Bar Chart group_by "+str(columns) + " " + title)
         plt.xlabel(x_label)
         plt.ylabel(y_label)
-        plt.xticks(rotation=0)
+        plt.xticks(rotation=rot)
         plt.legend()
         plt.show()
 

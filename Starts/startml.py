@@ -72,7 +72,7 @@ class StartML(object):
         print("local_kwargs", StartML.kwargs)
 
     @classmethod
-    def convert_time_series(cls, data, time_column, format=True):
+    def convert_time_series(cls, data, time_column, format=True, add_day=False):
         """
         convert dataset into time_series dataset
 
@@ -85,41 +85,26 @@ class StartML(object):
             data.index = pd.to_datetime(data.pop(time_column))
         else:
             data.index = pd.to_datetime(data.pop(time_column), unit='ms')
+        if add_day:
+            data['day'] = [t.weekday() for t in data.index]
         data = data.sort_index()
         return data
 
     @classmethod
-    def get_day(cls, data):
+    def infobyTime(cls, data, time_range, func):
         """
-        return day (Mon, Tues, ...) by giving date
-        :param data:
-        :return:
-        """
-        pass
+        compute values in period windows
+        (e.g. by every certain 'Monday' days| 'Jan' months| years, every number N [days| weeks| month| years]),
+        apply for TimeSeries data
 
-    @classmethod
-    def mean_byday(cls, data):
-        """
-        find mean value by day (7 days per week) in a period time
-        :param data: Time_Series data
-        :return:
-        """
-        pass
+        Useful operations:
+        1. find mean value by day (7 days per week) in a period time
+        2. find mean value by week in a period time
+        3. find mean value by month in a period time
 
-    @classmethod
-    def mean_byweek(cls, data):
-        """
-        find mean value by week in a period time
         :param data:
-        :return:
-        """
-        pass
-
-    @classmethod
-    def mean_bymonth(cls, data):
-        """
-        find mean value by month in a period time
-        :param data:
+        :param time_range:
+        :param func: functions from Numpy e.g. np.mean, np.std, etc.
         :return:
         """
         pass
@@ -200,18 +185,24 @@ class StartML(object):
     def groupby_columns(cls, data, columns, groupby_label, func=None):
         """
         execute operation group_by on columns by label_groupby
+        e.g. compute mean value by column 'day'
+            StartML.groupby_columns(data, columns=['values'], groupby_label=['day'], func=np.mean)
+
+        Source:
+            https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.groupby.html
 
         :param data: pandas.core.frame.DataFrame
         :param columns: list of columns need to be grouped
         :param groupby_label: need to be one of the given columns
-        :param func:
+        :param func: e.g. np.mean, np.median, np.mode, etc.
         :return: DataFrameGroupBy object (which can be used to compute further)
         """
-        grouped = data[columns].groupby(groupby_label)
+        grouped = data.groupby(groupby_label)
         if func is None:
-            return grouped
+            return grouped.groups
         else:
-            return grouped.aggregate(func)
+            # return grouped.aggregate(func)
+            return grouped[columns].agg(func)
 
     @classmethod
     def reduceby_rows(cls, data, operations):
@@ -370,15 +361,32 @@ class StartML(object):
         pass
 
     @classmethod
-    def countby_kv(cls, data, keyvalue, operations):
+    def countby_values(cls, data, value=None):
         """
-        count value with key (using DataFrame_to_dict to convert DataFrame into dict_type)
-        :param data:
-        :param keyvalue:
-        :param operations: (e.g. sum)
-        :return:
+        count value by key (using DataFrame_to_dict to convert DataFrame into dict_type)
+        :param data: pandas.core.series.Series
+        :param value: value in column which need to be counted
+        :return: list of tuple
         """
-        pass
+        # use np.count_nonzero or np.sum
+        if not value:
+            return dict([(c, np.count_nonzero((data == c).values)) for c in data.unique()])
+        else:
+            return dict([(value, np.count_nonzero((data == value).values))])
+
+    @classmethod
+    def getKeyValueDict(cls, data, ma=True):
+        """
+        return the data (key, value) with max/ min value
+        (room for improvement of performance)
+        :param data: dict-type
+        :param ma: default max if True (min if False)
+        :return: data: dict-type
+        """
+        if ma:
+            return dict([(k, v) for k, v in data.items() if v == max(data.values())])
+        else:
+            return dict([(k, v) for k, v in data.items() if v == min(data.values())])
 
     @classmethod
     def orderby_kv(cls, data, keyvalue):
