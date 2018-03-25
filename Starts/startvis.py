@@ -38,6 +38,7 @@ class StartVis(StartML):
     def vis_bar(cls, data, columns, x_label='', y_label='', title='', rot=0, bar=True):
         """
         visualize the number of counted values in the given columns in bar-chart
+
         :param data: pandas.core.frame.DataFrame
         :param columns:
         :param x_label:
@@ -47,8 +48,8 @@ class StartVis(StartML):
         """
         if bar:
             for column in columns:
-                # other options: line, area
                 # data[column].head().value_counts().plot(kind='bar')
+                # TBD: compute %value on number of index
                 (data[column].value_counts()/ len(data[column])).sort_index().plot(kind='bar')
             plt.title("Bar Chart " + str(column) + " " + title)
         else:
@@ -66,6 +67,7 @@ class StartVis(StartML):
     def vis_hist(cls, data, columns, x_label='', y_label='', title='', func_filter=None, rot=0):
         """
         Display Histogram of data and labels, with filter-function
+
         :param data: pandas.core.frame.DataFrame
         :param columns:
         :param func_filter: object type Pandas-Series
@@ -98,6 +100,7 @@ class StartVis(StartML):
     def vis_bar_groupby(cls, data, columns, group_by_column, x_label='', y_label='', title='', rot=0):
         """
         Visualize groupby-object in bar chart.
+
         :param data: pandas.core.frame.DataFrame
         :param columns:
         :param group_by_column:
@@ -139,7 +142,6 @@ class StartVis(StartML):
         plt.title("Visual Boxplot")
         plt.show()
 
-
     @classmethod
     def vis_scatter(cls, data):
         pass
@@ -148,6 +150,7 @@ class StartVis(StartML):
     def vis_obj_predict(cls, x, y, obj_pred):
         """
         Visualizing result of the predicting object
+
         :param x:
         :param y:
         :param obj_pred:
@@ -169,6 +172,7 @@ class StartVis(StartML):
     def vis_clustering(cls, data, y_clusters, x_label='', y_label='', ts=False):
         """
         plot clustering out with limited to data in 2 columns 0, 1)
+
         :param data:
         :param y_clusters:
         :param x_label:
@@ -201,8 +205,9 @@ class StartVis(StartML):
     @classmethod
     def vis_basemap(cls, data, plot=False):
         """
-        Source:
+        References:
             https://matplotlib.org/basemap/
+
         :param data: pandas.core.frame.DataFrame (with geospatial coordinates 'Longitude' and 'Latitutde'
         :return:
         """
@@ -243,8 +248,9 @@ class StartVis(StartML):
     @classmethod
     def vis_contourf(cls, data):
         """
-        Source:
+        References:
             https://matplotlib.org/devdocs/api/_as_gen/matplotlib.pyplot.contourf.html
+
         :param data: pandas.core.frame.DataFrame
         :return:
         """

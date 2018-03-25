@@ -32,7 +32,7 @@ class StartModSKL(StartMod):
         Description: StartModSKL - Start Models Scikit-Learn
         regression, classification
 
-        Source:
+        References:
             http://scikit-learn.org/stable/modules/classes.html
 
         Start:
@@ -48,8 +48,10 @@ class StartModSKL(StartMod):
     def regression_linear(cls, data, dependent_label, poly=False):
         """
         Apply method Linear regression y = ax + b (one independent variable, one dependent_label)
-        Source:
+
+        References:
             http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html
+
         :param data: pandas.core.frame.DataFrame
         :param dependent_label: categorical column
         :param poly: initiate polynomial linear regression
@@ -155,7 +157,7 @@ class StartModSKL(StartMod):
         """
         Apply method Decision Tree regression
 
-        Source:
+        References:
             http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html
 
         :param data: pandas.core.frame.DataFrame
@@ -193,7 +195,7 @@ class StartModSKL(StartMod):
         """
         Apply method Random forest regression
 
-        Source:
+        References:
             http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html
 
         :param data:
@@ -220,7 +222,7 @@ class StartModSKL(StartMod):
         """
         Apply method Logistic regression
 
-        Source:
+        References:
             http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html
 
         :param data: pandas.core.frame.DataFrame
@@ -252,7 +254,7 @@ class StartModSKL(StartMod):
         """
         Apply k-Nearest Neighbours method to classify data
 
-        Source:
+        References:
             http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html
 
         :param data: pandas.core.frame.DataFrame
@@ -280,7 +282,7 @@ class StartModSKL(StartMod):
         """
         Apply Support Vector Machine method to classify data
 
-        Source:
+        References:
             http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
             http://mlkernels.readthedocs.io/en/latest/kernels.html
 
@@ -322,7 +324,7 @@ class StartModSKL(StartMod):
         """
         Apply Gaussian Naive Bayes method to classify data
 
-        Source:
+        References:
             http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html
 
         :param data: pandas.core.frame.DataFrame
@@ -345,8 +347,9 @@ class StartModSKL(StartMod):
     @classmethod
     def classification_random_forest(cls, data, dependent_label):
         """
-        Source:
+        References:
             http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
+
         :param data:
         :param dependent_label:
         :return:
@@ -358,7 +361,7 @@ class StartModSKL(StartMod):
         """
         Find the number of clusters using the elbow method.
 
-        Source:
+        References:
             http://www.awesomestats.in/python-cluster-validation/
 
         :param data: pandas.core.frame.DataFrame
@@ -394,7 +397,7 @@ class StartModSKL(StartMod):
         Requirement: run clustering_k_mean_noc first to find 'noc' (number of possible clusters)
         Apply method clustering k_means++ to cluster data with the given 'noc'
 
-        Source:
+        References:
             http://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html
 
         :param data: pandas.core.frame.DataFrame

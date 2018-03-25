@@ -21,6 +21,7 @@ from sklearn.decomposition import PCA
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import cross_val_score
 # from sklearn.pipeline import make_pipeline
 
@@ -46,7 +47,7 @@ class StartMod(StartML):
         This encoding is needed for feeding categorical data to many scikit-learn estimators,
         notably linear models and SVMs with the standard kernels.
 
-        Source:
+        References:
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html
 
@@ -128,7 +129,7 @@ class StartMod(StartML):
         """
         Split data by rows into training_data and test_data used for (regression, classification) methods
 
-        Source:
+        References:
             http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html
 
         :param data: pandas.core.frame.DataFrame
@@ -176,7 +177,7 @@ class StartMod(StartML):
         Support the evaluation on (regression) models by finding maximal pvalue (< pre-defined SL)
         and applying method Backward Elimination for feature selection
 
-        Source:
+        References:
             http://www.stephacking.com/multivariate-linear-regression-python-step-6-backward-elimination/
 
         :param data: pandas.core.frame.DataFrame
@@ -233,7 +234,7 @@ class StartMod(StartML):
         Standardization involves rescaling the features such that they have the properties
         of a standard normal distribution with a mean of zero and a standard deviation of one
 
-        Source:
+        References:
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html
             http://scikit-learn.org/stable/auto_examples/preprocessing/plot_scaling_importance.html
@@ -261,7 +262,7 @@ class StartMod(StartML):
         simply feature selection/ dimensionality reduction
         apply Backward Elimination, Forward Selection, Bidirectional Elimination, Score comparision
 
-        Source:
+        References:
             http://scikit-learn.org/stable/modules/feature_selection.html
 
         :param data: pandas.core.frame.DataFrame
@@ -313,7 +314,7 @@ class StartMod(StartML):
         """
         Benefit on low-memory and speed up the performance
 
-        Source:
+        References:
             http://scikit-learn.org/stable/modules/feature_extraction.html
             http://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.FeatureHasher.html
 
@@ -328,7 +329,7 @@ class StartMod(StartML):
         """
         Using Principal component analysis (PCA) to extract the most important independent variables (features)
 
-        Source:
+        References:
             http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html
 
         :param data: pandas.core.frame.DataFrame
@@ -348,7 +349,7 @@ class StartMod(StartML):
         """
         Renew data with new_feature using the new attributes_new_feature
 
-        Source:
+        References:
             https://triangleinequality.wordpress.com/2013/09/08/basic-feature-engineering-with-the-titanic-data/
 
         :param data: pandas.core.frame.DataFrame
@@ -404,7 +405,7 @@ class StartMod(StartML):
         Recall = TP / (TP + FN)
         F1 Score = 2 * Precision * Recall / (Precision + Recall)
 
-        Source:
+        References:
             http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics
             http://scikit-learn.org/stable/modules/model_evaluation.html#model-evaluation
             http://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html
@@ -423,15 +424,18 @@ class StartMod(StartML):
         else:
             print("Classification Report: \n", classification_report(y_true, y_pred))
             print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred, labels=np.unique(y_true)))
+
         print("\nAccuracy: \n", accuracy_score(y_true, y_pred))
+        print("\nMean_Squared_Error: \n", mean_squared_error(y_true, y_pred))
 
     @classmethod
     def validation(cls, classifier, x_train, y_train, cv=None):
         """
         Apply K-Fold Cross_Validation to estimate the model (classification)
 
-        Source:
+        References:
             http://scikit-learn.org/stable/modules/cross_validation.html
+            http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_val_score.html
 
         :param classifier:
         :param x_train: feature_values
@@ -439,14 +443,13 @@ class StartMod(StartML):
         :param cv (Cross_Validation) default is 10-fold if None
         :return:
         """
-        accuracies = cross_val_score(estimator=classifier, X=x_train, y=y_train, cv=cv)
+        if not cv:
+            accuracies = cross_val_score(estimator=classifier, X=x_train, y=y_train, cv=10)
+        else:
+            accuracies = cross_val_score(estimator=classifier, X=x_train, y=y_train, cv=cv)
         print("\nAccuracies: ", accuracies)
         print("\nMean of accuracies: ", accuracies.mean())
         print("\nStandard Deviation: ", accuracies.std())
-
-        accuracies = cross_val_score(estimator=classifier, X=x_train, y=y_train, cv=10)
-        accuracies.mean()
-        accuracies.std()
 
     @staticmethod
     def info_help():

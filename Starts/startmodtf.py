@@ -22,7 +22,7 @@ class StartModTF(StartMod):
         Description: StartModTF - Start Models Tensorflow
         Pre-made Estimators (regression, classification) and Custom Estimators
 
-        Sources:
+        References:
             https://www.tensorflow.org/api_docs/python/
             https://github.com/tensorflow/models/tree/master/samples/core/get_started
             https://github.com/tensorflow/models/tree/master/samples/cookbook/regression
@@ -88,7 +88,7 @@ class StartModTF(StartMod):
         """
         An input function for training
 
-        Source:
+        References:
             https://github.com/tensorflow/models/blob/master/samples/core/get_started/iris_data.py
 
         :param features:
@@ -113,7 +113,7 @@ class StartModTF(StartMod):
         """
         An input function for evaluation
 
-        Source:
+        References:
             https://www.tensorflow.org/api_docs/python/tf/estimator/inputs/pandas_input_fn
 
         :param features:
@@ -130,7 +130,7 @@ class StartModTF(StartMod):
         """
         An input function for prediction
 
-        Source:
+        References:
             https://www.tensorflow.org/api_docs/python/tf/estimator/inputs/pandas_input_fn
 
         :param test_features: from test_data (x_true)
@@ -147,7 +147,7 @@ class StartModTF(StartMod):
         """
         Setup feature columns into TensorFlow format (numeric, bucketized, hash_bucket)
 
-        Source:
+        References:
             https://www.tensorflow.org/get_started/feature_columns
 
         :param self:
@@ -181,7 +181,7 @@ class StartModTF(StartMod):
         """
         tbd
 
-        Source:
+        References:
             https://github.com/tensorflow/models/tree/master/samples/cookbook/regression
 
         :param data: Pandas-DataFrame
@@ -246,7 +246,7 @@ class StartModTF(StartMod):
         """
         Apply pre-made Estimator to classify data
 
-        Source:
+        References:
             https://www.tensorflow.org/api_docs/python/tf/contrib/learn/LinearClassifier
             https://www.tensorflow.org/api_docs/python/tf/contrib/learn/DNNClassifier
 
@@ -304,7 +304,7 @@ class StartModTF(StartMod):
         """
         Setup Keras and run the Sequential method to predict value
 
-        Source:
+        References:
             https://keras.io/getting-started/sequential-model-guide/
 
         :param data:

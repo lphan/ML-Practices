@@ -188,7 +188,7 @@ class StartML(object):
         e.g. compute mean value by column 'day'
             StartML.groupby_columns(data, columns=['values'], groupby_label=['day'], func=np.mean)
 
-        Source:
+        References:
             https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.groupby.html
 
         :param data: pandas.core.frame.DataFrame
@@ -218,6 +218,40 @@ class StartML(object):
         pass
 
     @classmethod
+    def compute_correlation_dataframe(cls, df1, df2=None):
+        """
+        Compute pairwise-Correlation based on Pearson Correlation between 2 data frames or data frame itself
+
+        References:
+            https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.corr.html
+            https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.corrwith.html
+            https://en.wikipedia.org/wiki/Pearson_correlation_coefficient
+
+        :param df1: pandas.core.frame.DataFrame
+        :param df2: pandas.core.frame.DataFrame
+        :return: pandas.core.frame.DataFrame or pandas.core.frame.DataFrame
+        """
+        if not df2:
+            return df1.corr()
+        else:
+            return df1.corrwith(df2)
+
+    @classmethod
+    def generate_correlation_matrix(cls, data):
+        """
+        Dimensionality reduction using truncated SVD
+
+        References:
+            https://en.wikipedia.org/wiki/Singular-value_decomposition
+            http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.TruncatedSVD.html
+            https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.corrcoef.html
+
+        :param data:
+        :return:
+        """
+        pass
+
+    @classmethod
     def detect_outliers(cls, data):
         """
         Algorithm: setup a threshold for error (maximal error).
@@ -227,7 +261,7 @@ class StartML(object):
         Algo functions in combination with plot-visual and observation.
         Outliers are the points outside the range [(Q1-1.5 IQR), (Q3+1.5 IQR)]
 
-        Source:
+        References:
             https://www.neuraldesigner.com/blog/3_methods_to_deal_with_outliers
             http://www.itl.nist.gov/div898/handbook/prc/section1/prc16.htm
 
@@ -681,6 +715,10 @@ class StartML(object):
         data_path_1: training_data
         data_path_2: preprocessed data without NaN
         data_path_3: test_data (new_data is used to test the model)
+
+        References:
+            https://docs.python.org/3/library/codecs.html#standard-encodings
+
         """
         StartML._arguments()
         if not StartML.kwargs:
@@ -688,7 +726,7 @@ class StartML(object):
 
         try:
             if StartML.kwargs['data_path_1']:
-                if StartML.kwargs['data_path_1'].endswith('.xlsx'):
+                if StartML.kwargs['data_path_1'].endswith('.xlsx') or StartML.kwargs['data_path_1'].endswith('.xls'):
                     data_path_1 = pd.read_excel(StartML.kwargs['data_path_1'])
                 elif StartML.kwargs['data_path_1'].endswith('.json'):
                     data_path_1 = pd.read_json(StartML.kwargs['data_path_1'])
@@ -698,7 +736,7 @@ class StartML(object):
                 data_path_1 = ''
 
             if StartML.kwargs['data_path_2']:
-                if StartML.kwargs['data_path_2'].endswith('.xlsx'):
+                if StartML.kwargs['data_path_2'].endswith('.xlsx') or StartML.kwargs['data_path_2'].endswith('.xls'):
                     data_path_2 = pd.read_excel(StartML.kwargs['data_path_2'])
                 elif StartML.kwargs['data_path_2'].endswith('.json'):
                     data_path_2 = pd.read_json(StartML.kwargs['data_path_2'])
@@ -708,7 +746,7 @@ class StartML(object):
                 data_path_2 = ''
 
             if StartML.kwargs['data_path_3']:
-                if StartML.kwargs['data_path_3'].endswith('.xlsx'):
+                if StartML.kwargs['data_path_3'].endswith('.xlsx') or StartML.kwargs['data_path_3'].endswith('.xls'):
                     data_path_3 = pd.read_excel(StartML.kwargs['data_path_3'])
                 elif StartML.kwargs['data_path_3'].endswith('.json'):
                     data_path_3 = pd.read_json(StartML.kwargs['data_path_3'])
