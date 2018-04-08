@@ -258,7 +258,7 @@ class StartML(object):
         if the computed error exceeds the threshold, then the data point will be listed as outlier.
         Choose to remove (clean) or neutralize using Minkowski-method
 
-        Algo functions in combination with plot-visual and observation.
+        Algorithm functions in combination with plot-visual and observation.
         Outliers are the points outside the range [(Q1-1.5 IQR), (Q3+1.5 IQR)]
 
         References:
@@ -269,6 +269,7 @@ class StartML(object):
         :return:
         """
         total_outliers = {}
+
         # Step1: find all outliers in every columns
         for col in data.columns:
             # min value
@@ -553,6 +554,27 @@ class StartML(object):
             return data.isnull().any()
 
     @classmethod
+    def pop_rows(cls, data, idx):
+        """
+        get all rows with idx out of data
+        :param data:
+        :param idx:
+        :return:
+        """
+        try:
+            pop_rows = [data.loc[id] for id in idx if id in data.index]
+
+            data.drop(idx, axis=0, inplace=True)
+
+        except ValueError:
+            print("ValueError, index ", idx, "does not exist")
+            import sys
+            sys.exit(1)
+
+        return pd.DataFrame(data=pop_rows, columns=data.columns)
+
+
+    @classmethod
     def process_nan_columns(cls, data):
         """
         pre_processing columns based on information given in the config.ini
@@ -668,6 +690,28 @@ class StartML(object):
             for col in StartML.nan_columns(data):
                 data[col] = data[col].fillna('Unknown')
         return data
+
+    @classmethod
+    def merge_df(cls, data, feature):
+        """
+        merge
+        :param data: list of data frames
+        :param feature: common feature in between data frames
+        :return:
+        """
+        if not data:
+            return
+
+        if len(data) == 1:
+            return data[0]
+
+        dat = data.pop()
+        for _ in range(len(data)):
+            item = data.pop()
+            tmp = dat.merge(item, how='left', on=[feature])
+            dat = tmp
+
+        return dat
 
     @staticmethod
     def obj_num_convert(data):

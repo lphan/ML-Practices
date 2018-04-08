@@ -64,6 +64,32 @@ class StartVis(StartML):
         plt.show()
 
     @classmethod
+    def vis_bar_groupby(cls, data, columns, group_by_column, x_label='', y_label='', title='', rot=0):
+        """
+        Visualize groupby-object in bar chart.
+
+        :param data: pandas.core.frame.DataFrame
+        :param columns:
+        :param group_by_column:
+        :param x_label:
+        :param y_label:
+        :param title:
+        :param rot: rotation (default = 0)
+        :return:
+        """
+
+        grouped_data = StartML.groupby_columns(data, columns, group_by_column)
+        # grouped_data = data[columns].groupby(by=group_by_column)
+        x = grouped_data.size()
+        x.plot.bar(label=str(group_by_column))
+        plt.title("Bar Chart group_by "+str(columns) + " " + title)
+        plt.xlabel(x_label)
+        plt.ylabel(y_label)
+        plt.xticks(rotation=rot)
+        plt.legend()
+        plt.show()
+
+    @classmethod
     def vis_hist(cls, data, columns, x_label='', y_label='', title='', func_filter=None, rot=0):
         """
         Display Histogram of data and labels, with filter-function
@@ -95,32 +121,6 @@ class StartVis(StartML):
         except TypeError:
             print("No numeric data to plot")
             return
-
-    @classmethod
-    def vis_bar_groupby(cls, data, columns, group_by_column, x_label='', y_label='', title='', rot=0):
-        """
-        Visualize groupby-object in bar chart.
-
-        :param data: pandas.core.frame.DataFrame
-        :param columns:
-        :param group_by_column:
-        :param x_label:
-        :param y_label:
-        :param title:
-        :param rot: rotation (default = 0)
-        :return:
-        """
-
-        grouped_data = StartML.groupby_columns(data, columns, group_by_column)
-        # grouped_data = data[columns].groupby(by=group_by_column)
-        x = grouped_data.size()
-        x.plot.bar(label=str(group_by_column))
-        plt.title("Bar Chart group_by "+str(columns) + " " + title)
-        plt.xlabel(x_label)
-        plt.ylabel(y_label)
-        plt.xticks(rotation=rot)
-        plt.legend()
-        plt.show()
 
     @classmethod
     def vis_boxplot(cls, data):
@@ -255,6 +255,17 @@ class StartVis(StartML):
         :return:
         """
         pass
+
+    @classmethod
+    def vis_square_matrix_plot(cls, data):
+    	"""
+    	plot data to show the strengthen connection between data points
+    	Input data is a square matrix and value of every item show the relationship between pairwise data points 
+    	in directed graph (set: alpha parameter to display the transparency)
+
+    	Used in Graph Analytics
+    	"""
+    	pass
 
     @staticmethod
     def info_help():
