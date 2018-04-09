@@ -9,6 +9,8 @@ __author__ = 'Long Phan'
 
 > startmodskl.py Start_module Models Scikit-Learn
 
+> startmodrec.py Start_module Recommendation System
+
 > startmodtf.py Start_module Models Tensorflow
 
 > startvis.py Start_module Visualization Matplotlib

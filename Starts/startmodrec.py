@@ -54,7 +54,7 @@ class StartModREC(StartMod):
         if len(data.columns) > 2:
             return data
         else:
-            pop = StartML.pop_rows(data, user_idx)
+            pop = StartML.pop_rows(data, user_idx, inplace=False)
 
             if manhattan and len(pop)==1:
                 neighbors = [(i,
@@ -74,17 +74,17 @@ class StartModREC(StartMod):
             nnb = pd.DataFrame(data=neighbors, columns=['idx', 'distance'])
             nnb.set_index('idx', inplace=True)
             nnb.sort_values(by='distance', ascending=True, inplace=True)
-            return nnb[0:5]
+            return nnb[1:k+1]
 
     @classmethod
-    def find_nearest_neighbors_by_correlation(cls, username, neighbors, k=5, Pearson=True):
+    def find_nearest_neighbors_by_correlation(cls, data, user_idx, k=5, Pearson=True):
         """
         return the most nearest neighbors based on computing 'Pearson' correlation
         """
         pass
 
     @classmethod
-    def find_nearest_neighbors_by_similarity(cls, username, neighbors, k=5, Cosine=True):
+    def find_nearest_neighbors_by_similarity(cls, data, user_idx, k=5, Cosine=True):
         """
         return the most nearest neighbors based on computing 'Cosine' Similarity
         """
@@ -102,7 +102,7 @@ class StartModREC(StartMod):
         pass
 
     @classmethod
-    def recommend_from_neighbors(cls, username, neighbors, nnd=True):
+    def recommend_from_neighbors(cls, data, user_idx, nnd=True):
         """
         return the most closest products for 'username' based on the similar information from neighbors
         if nnd choose function 'findNearestNeighborsDistance'

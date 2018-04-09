@@ -554,7 +554,7 @@ class StartML(object):
             return data.isnull().any()
 
     @classmethod
-    def pop_rows(cls, data, idx):
+    def pop_rows(cls, data, idx, inplace=True):
         """
         get all rows with idx out of data
         :param data:
@@ -563,8 +563,10 @@ class StartML(object):
         """
         try:
             pop_rows = [data.loc[id] for id in idx if id in data.index]
-
-            data.drop(idx, axis=0, inplace=True)
+            if inplace:
+                data.drop(idx, axis=0, inplace=True)
+            else:
+                data.drop(idx, axis=0, inplace=False)
 
         except ValueError:
             print("ValueError, index ", idx, "does not exist")
@@ -572,7 +574,6 @@ class StartML(object):
             sys.exit(1)
 
         return pd.DataFrame(data=pop_rows, columns=data.columns)
-
 
     @classmethod
     def process_nan_columns(cls, data):
