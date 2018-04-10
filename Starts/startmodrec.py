@@ -14,18 +14,6 @@ __author__ = 'Long Phan'
 from Starts.startmod import *
 from Starts.startvis import *
 
-from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import PolynomialFeatures
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import RandomForestRegressor
-from sklearn.linear_model import LogisticRegression
-
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.svm import SVC
-from sklearn.naive_bayes import GaussianNB
-
-from sklearn.cluster import KMeans
-
 
 class StartModREC(StartMod):
     """
@@ -49,8 +37,14 @@ class StartModREC(StartMod):
         """
         return the most nearest neighbors based on computing Distance 'Manhattan Distance' or 'Euclidean Distance'
         to the given username
+
+        :param data: pandas.core.frame.DataFrame (two feature columns representing x and y values)
+        :param user_idx:
+        :param k: number of nearest neighbors (default k=5)
+        :param manhattan: (default True). Otherwise, apply Euclidean distance
+        :return:
         """
-        neighbors = []
+
         if len(data.columns) > 2:
             return data
         else:

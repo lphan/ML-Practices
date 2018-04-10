@@ -110,6 +110,15 @@ class StartML(object):
         pass
 
     @classmethod
+    def head_dict(cls, data, h=5):
+        """
+        get the first elements in dict
+        :param data:
+        :return:
+        """
+        return list(data.items())[0:h]
+
+    @classmethod
     def find_value(cls, data, rows_id, column_name=''):
         """
         given data, column_name and row_id
@@ -203,6 +212,21 @@ class StartML(object):
         else:
             # return grouped.aggregate(func)
             return grouped[columns].agg(func)
+
+    @classmethod
+    def groupby_rows(cls, data, groupby_label, func=None):
+        """
+        groupby values which have the same rows_id identified by column
+        """
+        grouped = data[groupby_label].unique()
+        newlist = {}
+        for item in grouped:
+            key = data[data[groupby_label]==item]
+            value = key.drop(groupby_label, axis=1).to_dict()
+            new = {item: value}
+            newlist.update(new)
+
+        return newlist
 
     @classmethod
     def reduceby_rows(cls, data, operations):
@@ -557,7 +581,7 @@ class StartML(object):
     def pop_rows(cls, data, idx, inplace=True):
         """
         get all rows with idx out of data
-        :param data:
+        :param data: pandas.core.frame.DataFrame
         :param idx:
         :return:
         """
