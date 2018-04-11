@@ -119,6 +119,42 @@ class StartML(object):
         return list(data.items())[0:h]
 
     @classmethod
+    def intersect_dict(cls, dict1, dict2):
+        """
+        return the common key_value pairs
+        :param dict1:
+        :param dict2:
+        :return:
+        """
+        return [item for item in list(dict1.items()) if item[1] in dict2.values()]
+
+    @classmethod
+    def findMaxMinValueDict(cls, data, ma=True):
+        """
+        return the data (key, value) with max/ min value
+        (room for improvement of performance)
+        :param data: dict-type
+        :param ma: default max if True (min if False)
+        :return: data: dict-type
+        """
+        if ma:
+            return dict([(k, v) for k, v in data.items() if v == max(data.values())])
+        else:
+            return dict([(k, v) for k, v in data.items() if v == min(data.values())])
+
+    @classmethod
+    def getkeyby_value(cls, data, value):
+        """
+        return a list of pair key_value which contain the certain value
+
+        :param data: dict_type
+        :param value:
+        :return:
+        """
+        # return [l for l in list(dict) if l[1] == value]
+        return [k for k in data if data.get(k) == value]
+
+    @classmethod
     def find_value(cls, data, rows_id, column_name=''):
         """
         given data, column_name and row_id
@@ -217,7 +253,13 @@ class StartML(object):
     def groupby_rows(cls, data, groupby_label, func=None):
         """
         groupby values which have the same rows_id identified by column
+
+        :param data: pandas.core.frame.DataFrame
+        :param groupby_label:
+        :param func:
+        :return:
         """
+
         grouped = data[groupby_label].unique()
         newlist = {}
         for item in grouped:
@@ -432,20 +474,6 @@ class StartML(object):
             return dict([(c, np.count_nonzero((data == c).values)) for c in data.unique()])
         else:
             return dict([(value, np.count_nonzero((data == value).values))])
-
-    @classmethod
-    def getKeyValueDict(cls, data, ma=True):
-        """
-        return the data (key, value) with max/ min value
-        (room for improvement of performance)
-        :param data: dict-type
-        :param ma: default max if True (min if False)
-        :return: data: dict-type
-        """
-        if ma:
-            return dict([(k, v) for k, v in data.items() if v == max(data.values())])
-        else:
-            return dict([(k, v) for k, v in data.items() if v == min(data.values())])
 
     @classmethod
     def orderby_kv(cls, data, keyvalue):
