@@ -71,15 +71,68 @@ class StartModREC(StartMod):
             return nnb[1:k+1]
 
     @classmethod
-    def find_nearest_neighbors_by_correlation(cls, data, k=5):
+    def find_nearest_neighbors_by_correlation(cls, data, user_id, rating_id, user_key):
         """
         return the most nearest neighbors based on computing 'Pearson' correlation
 
-        :param data:
-        :param k:
+        :param data: pandas.core.frame.DataFrame
+        :param user_id: feature_column
+        :param rating_id: feature_column
+        :param user_key: specific user id as a row_value
         :return:
         """
-        pass
+        column_rating = data.drop([user_id, rating_id], axis=1).columns
+
+        # group by rows and convert data to dict-type
+        data = StartML.groupby_rows(data, user_id)
+
+        # show the first 3 key_values
+        StartML.head_dict(data, h=3)
+
+        print(user_key, data[user_key][rating_id])
+
+        for cr in column_rating:
+            print(cr, data[user_key][cr])
+        print("\n")
+
+        rating_user = []
+        rating_list = []
+        correl = []
+
+        x = list(data.keys())
+        x.remove(user_key)
+        for k1 in x:
+            # find the common visited placeID between user 'U1011' and others
+            inter = StartML.intersect_dict(data[k1][rating_id], data[user_key][rating_id])
+            if len(inter):
+                print(k1, inter)
+                for k2 in inter:
+                    rating_list = [data[k1][cr][k2[0]] for cr in column_rating]
+
+                    place_key = StartML.getkeyby_value(data[user_key][rating_id], k2[1])
+                    for k in place_key:
+                        rating_user = [data[user_key][cr].get(k) for cr in column_rating]
+
+                print(k1, "rating_list: ", rating_list)
+                print(user_key, "rating_user: ", rating_user)
+
+                # create result as dataframe
+                if len(rating_user) == len(rating_list):
+                    df = {user_key: rating_user, k1: rating_list}
+                    pdf = pd.DataFrame(df, columns=[user_key, k1])
+                    print(pdf)
+                    # compute Pearson correlation
+                    r = StartModREC.pearson(pdf)
+                    print(r)
+
+                    # add all correlation results into a list
+                    correl.append((k1, r))
+                    rating_user = []
+                    rating_list = []
+                print("\n")
+
+        return correl
+
 
     @classmethod
     def pearson(cls, data):
@@ -112,10 +165,8 @@ class StartModREC(StartMod):
             print("denominator ", denominator)
             if denominator == 0:
                 return 0
-
-            r = numerator / denominator
-
-            return r
+            else:
+                return numerator / denominator
 
     @classmethod
     def find_nearest_neighbors_by_similarity(cls, data, user_idx, k=5, Cosine=True):
