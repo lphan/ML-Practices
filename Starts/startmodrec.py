@@ -25,8 +25,8 @@ class StartModREC(StartMod):
 
             Start:
             jupyter notebook
-            -> from startmodskl import *
-            -> info_modskl
+            -> from startmodrec import *
+            -> info_modrec
     """
 
     def __init__(self):
@@ -145,9 +145,7 @@ class StartModREC(StartMod):
         if len(data) == 0:
             return 0
 
-        if len(data.columns) > 2:
-            return data
-        else:
+        if len(data.columns) == 2:            
             x = data[data.columns[0]].values
             y = data[data.columns[1]].values
             for i in range(len(data)):
@@ -167,6 +165,8 @@ class StartModREC(StartMod):
                 return 0
             else:
                 return numerator / denominator
+        else:
+            return data
 
     @classmethod
     def find_nearest_neighbors_by_similarity(cls, data, user_idx, k=5, Cosine=True):
@@ -207,4 +207,4 @@ class StartModREC(StartMod):
         return info
 
 
-info_modskl = StartMod.info_help()
+info_modrec = StartModREC.info_help()
