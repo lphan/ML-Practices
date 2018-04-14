@@ -86,16 +86,23 @@ class StartMongo(StartDB):
         return self.coll_name
 
     def insert_data(self, data):
-        data = DataFrame([data], columns=data.keys())
+        """
+        Insert data into database
+
+        :param data:
+        :return:
+        """
+        # convert data into json_format
         data_json = json.loads(data.to_json(orient='records'))
 
         # insert json-data into database
         # print(data_json)
         self.db_coll.insert(data_json)
 
-    # Read data from MongoDB out
     def read_data(self, key_value=None):
         """
+        Read data from MongoDB out
+
         Reference:
             https://mindey.com/blog/how_to_read_a_mongodb_into_pandas_dataframe
 
@@ -109,15 +116,9 @@ class StartMongo(StartDB):
                 cursor = self.db_coll.find()
 
             print("\nQuerying data from MongoDB .....\n")
-            tmp = []
 
-            for o, observation in enumerate(cursor):
-                print(o, observation)
-
-                tmp.append(observation)
-
-            # TODO: convert and return data as dataframe
-            df = DataFrame(tmp)
+            # convert and return data as dataframe
+            df = DataFrame([observation for o, observation in enumerate(cursor)])
             return df
 
         except Exception as e:

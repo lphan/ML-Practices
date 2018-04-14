@@ -15,6 +15,8 @@ __author__ = 'Long Phan'
 
 > startvis.py Start_module Visualization Matplotlib
 
+> startdb.py Start_module Operations API with Database
+
 ### Install dependencies
 OS platform: Fedora
 
