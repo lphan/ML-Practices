@@ -17,17 +17,28 @@ __author__ = 'Long Phan'
 
 > startdb.py Start_module Operations API with Database
 
+### Tech (Frameworks)
+> OS platform: Fedora
+
+> Programming language: Python3
+
+> Data Analysis: Pandas, Numpy, Scipy
+
+> Machine Learning models: scikit-learn, Tensorflow, Keras
+
+> Visualization: Matplotlib 
+
+> Big Data tools: Spark
+
+> Database: MongoDB
+
 ### Install dependencies
-OS platform: Fedora
-
-Python3
-
-Using pip to install the dependencies (Pandas, Numpy, Scipy, matplotlib, Scikit-learn, Tensorflow, Keras, Spark)
 > sudo pip3 install -r requirements.txt
 
 > sudo apt-get install python3-mpltoolkits.basemap  (extra for basemap package)
 
-Source: https://matplotlib.org/basemap/users/installing.html
+Source: 
+	https://matplotlib.org/basemap/users/installing.html
 
 
 ### References
@@ -42,3 +53,5 @@ Source: https://matplotlib.org/basemap/users/installing.html
 > https://github.com/matplotlib/matplotlib
 
 > https://github.com/apache/spark
+
+> https://github.com/mongodb/mongo

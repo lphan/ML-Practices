@@ -205,6 +205,7 @@ class StartVis(StartML):
     @classmethod
     def vis_basemap(cls, data, plot=False):
         """
+        Visual the Geo-coordinates Latitude Longitude
         References:
             https://matplotlib.org/basemap/
 
@@ -230,10 +231,11 @@ class StartVis(StartML):
 
         if mag and not plot:
             print("Scatter function ...")
-            earth.scatter(x, y, mag, marker='.', color='red')
+            mag = [s**2 for s in mag]
+            earth.scatter(x, y, s=mag, marker='.', color='red')
         else:
             print("Plot function ...")
-            earth.plot(x, y, "x", markersize=12, color='red')
+            earth.plot(x, y, markersize=12, marker='x', color='red')
 
         # setup basemap
         # earth.etopo(alpha=0.1)
@@ -258,14 +260,14 @@ class StartVis(StartML):
 
     @classmethod
     def vis_square_matrix_plot(cls, data):
-    	"""
-    	plot data to show the strengthen connection between data points
-    	Input data is a square matrix and value of every item show the relationship between pairwise data points 
-    	in directed graph (set: alpha parameter to display the transparency)
+        """
+        plot data to show the strengthen connection between data points
+        Input data is a square matrix and value of every item show the relationship between pairwise data points
+        in directed graph (set: alpha parameter to display the transparency)
 
-    	Used in Graph Analytics
-    	"""
-    	pass
+        Used in Graph Analytics
+        """
+        pass
 
     @staticmethod
     def info_help():

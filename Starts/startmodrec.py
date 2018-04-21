@@ -22,7 +22,8 @@ class StartModREC(StartMod):
 
         References:
             http://www.guidetodatamining.com/
-
+			https://spark.apache.org/mllib/
+			
             Start:
             jupyter notebook
             -> from startmodrec import *
