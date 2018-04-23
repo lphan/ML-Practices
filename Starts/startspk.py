@@ -12,12 +12,14 @@
 __author__ = 'Long Phan'
 
 
-import configparser
-import pandas as pd
-import numpy as np
-import collections
+# import configparser
+# import pandas as pd
+# import numpy as np
 from pyspark import SparkConf, SparkContext
+from pyspark.sql import SparkSession
+from pyspark.sql import Row
 
+import collections
 
 class StartSPK(object):
     """
@@ -37,28 +39,27 @@ class StartSPK(object):
     # init keywords arguments
     kwargs = {}
 
-    def __init__(self, appname, pathfile):
-        self.conf = SparkConf().setMaster("local").setAppName(appname)
-        self.sc = SparkContext(conf=self.conf)
-        self.data = self.sc.textFile(pathfile)
+    def __init__(self, app_name, path_file, config_opt="", config_val="", rdd=True):
+
+        # create SparkContext for RDD object and import data from source
+        # self.spark_conf = (SparkConf().setAppName(appname))
+        self.spark_conf = SparkConf().setMaster("local").setAppName(app_name).set(config_opt, config_val)
+        self.spark_cont = SparkContext(conf=self.spark_conf)
+
+        # create SparkSession for DataFrame object
+        self.spark_sess = (SparkSession.builder.appName(app_name)
+                           .config(config_opt, config_val).getOrCreate())
+
+        if rdd:
+            self.data = self.spark_cont.textFile(path_file)
+        else:
+            self.data = self.spark_sess.sparkContext.textFile(path_file)
 
     def get_dat(self):
-        return self.data
+        return self.data, self.spark_cont, self.spark_sess
 
     @classmethod
-    def create_SparkSQL(cls, data, sql_command):
-        """
-
-        :param data:
-        :return:
-        """
-        # scheme = spark.createDataFrame(data)
-        # scheme.createOrReplaceTempView("title")
-        # sql_obj = spark.sql(sql_command)
-        pass
-
-    @classmethod
-    def connect_createSpkObj(cls, data):
+    def create_SpkObj(cls, data):
         """
 
         :param data:
@@ -75,20 +76,25 @@ class StartSPK(object):
         """
         pass
 
+    @staticmethod
+    def info_help():
+
+        return {
+            "info_help_StartSPK": StartSPK.__name__,
+            "StartSPK.kwargs": "Show key words arguments from config.ini",
+        }
+
+
+class SparkRDD(StartSPK):
+
+    def __init__(self, app_name, path_file):
+        StartSPK.__init__(self, app_name, path_file)
+
     @classmethod
     def execute_RDDops(cls, data):
         """
 
         :param data: DataSet
-        :return:
-        """
-        pass
-
-    @classmethod
-    def execute_SQLops(cls, data):
-        """
-
-        :param data: DataFrame
         :return:
         """
         pass
@@ -223,24 +229,45 @@ class StartSPK(object):
         """
         pass
 
-    @staticmethod
-    def info_help():
-
-        return {
-            "info_help_StartSPK": StartSPK.__name__,
-            "StartSPK.kwargs": "Show key words arguments from config.ini",
-        }
-
 
 class StartSpkSQL(StartSPK):
 
-    def __init__(self, appname, pathfile):
-        StartSPK.__init__(self, appname, pathfile)
+    def __init__(self, app_name, path_file):
+        StartSPK.__init__(self, app_name, path_file)
+
+    def map_data(self, data):
+        """
+        Map and create dataframe object
+        :param data:
+        :return:
+        """
+        pass
 
     @classmethod
     def sparksql(cls,data):
         """
         process all SQL-spark style with dataframe
+
+        :param data: DataFrame
+        :return:
+        """
+        pass
+
+    @classmethod
+    def query_SparkSQL(cls, data, sql_command):
+        """
+
+        :param data:
+        :return:
+        """
+        # scheme = spark.createDataFrame(data)
+        # scheme.createOrReplaceTempView("title")
+        # sql_obj = spark.sql(sql_command)
+        pass
+
+    @classmethod
+    def execute_SQLops(cls, data):
+        """
 
         :param data: DataFrame
         :return:
