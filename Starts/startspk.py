@@ -21,6 +21,7 @@ from pyspark.sql import Row
 
 import collections
 
+
 class StartSPK(object):
     """
     Description: StartSPK - Start Apache Spark

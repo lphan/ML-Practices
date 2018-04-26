@@ -60,17 +60,17 @@ class StartVis(StartML):
         plt.xlabel(x_label)
         plt.ylabel(y_label)
         plt.xticks(rotation=rot)
-        plt.legend()
+        # plt.legend()
         plt.show()
 
     @classmethod
-    def vis_bar_groupby(cls, data, columns, group_by_column, x_label='', y_label='', title='', rot=0):
+    def vis_bar_groupby(cls, data, columns, gb_columns, x_label='', y_label='', title='', rot=0):
         """
         Visualize groupby-object in bar chart.
 
         :param data: pandas.core.frame.DataFrame
         :param columns:
-        :param group_by_column:
+        :param gb_columns: groupby columns
         :param x_label:
         :param y_label:
         :param title:
@@ -78,14 +78,18 @@ class StartVis(StartML):
         :return:
         """
 
-        grouped_data = StartML.groupby_columns(data, columns, group_by_column)
-        # grouped_data = data[columns].groupby(by=group_by_column)
-        x = grouped_data.size()
-        x.plot.bar(label=str(group_by_column))
-        plt.title("Bar Chart group_by "+str(columns) + " " + title)
+        grouped_data = StartML.groupby_columns(data, columns, gb_columns)  # dict-type
+
+        # compute left and height for bar-chart
+        le = np.arange(len(grouped_data.keys()))
+        he = [len(grouped_data[k]) for k in grouped_data.keys()]
+
+        print("Values:", he)
+        plt.bar(left=le, height=he, width=0.5)
+        plt.xticks(le, (grouped_data.keys()), rotation=rot)
+        plt.title("Bar Chart group_by " + str(columns) + " " + title)
         plt.xlabel(x_label)
         plt.ylabel(y_label)
-        plt.xticks(rotation=rot)
         plt.legend()
         plt.show()
 

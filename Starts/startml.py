@@ -240,7 +240,7 @@ class StartML(object):
         :param columns: list of columns need to be grouped
         :param groupby_label: need to be one of the given columns
         :param func: e.g. np.mean, np.median, np.mode, etc.
-        :return: DataFrameGroupBy object (which can be used to compute further)
+        :return: dict-object (which can be used to compute further)
         """
         grouped = data.groupby(groupby_label)
         if func is None:
