@@ -7,7 +7,7 @@
 
 > jupyter notebook x_foldername/x_filename.ipynb
 
-> More information: check out folder 'Starts'
+> More information: check out package Starts
 
 ### Notices about the using data  
 All the using data are from the official public sources (scikit-learn, UCI, Kaggle) for the purpose of study, practice Machine Learning.

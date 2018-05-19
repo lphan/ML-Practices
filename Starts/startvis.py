@@ -12,13 +12,12 @@
 __author__ = 'Long Phan'
 # import pyqtgraph
 # import graphviz
-import matplotlib.pyplot as plt
-
 # import seaborn
 # import plotly
 # import plotnine
+import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-from matplotlib.pylab import rcParams
+# from matplotlib.pylab import rcParams
 from Starts.startml import *
 
 

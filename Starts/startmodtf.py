@@ -346,6 +346,14 @@ class StartModTF(StartMod):
 
         return model, y_true, y_predict
 
+    @classmethod
+    def regularization(cls):
+    	"""
+    	e.g. Dropout to prevent Neural Networks from Overfitting
+    		Grid_Search to tune the hyperparameter
+    	"""
+    	pass
+
     @staticmethod
     def info_help():
         info = {

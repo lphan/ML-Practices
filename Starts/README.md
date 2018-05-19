@@ -37,7 +37,9 @@ __author__ = 'Long Phan'
 ### Install dependencies
 > sudo pip3 install -r requirements.txt
 
-> sudo apt-get install python3-mpltoolkits.basemap  (extra for basemap package)
+> Ubuntu: sudo apt-get install python3-mpltoolkits.basemap; sudo apt-get install libgeos-dev
+
+> Fedora: sudo dnf install python3-basemap; sudo dnf install geos-devel; sudo dnf install geos
 
 Source: 
 	https://matplotlib.org/basemap/users/installing.html
