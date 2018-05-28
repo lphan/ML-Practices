@@ -17,8 +17,9 @@ __author__ = 'Long Phan'
 # import plotnine
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
-# from matplotlib.pylab import rcParams
+from matplotlib.pylab import rcParams
 from Starts.startml import *
+rcParams['figure.figsize'] = 20, 6
 
 
 class StartVis(StartML):

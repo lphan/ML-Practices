@@ -13,7 +13,10 @@ __author__ = 'Long Phan'
 
 import tensorflow as tf
 from keras.models import Sequential
-from keras.layers import Dense
+from keras.layers import Dense, Flatten, Conv1D, Dropout
+from keras.optimizers import SGD
+from keras.initializers import random_uniform
+
 from Starts.startmod import *
 
 
@@ -37,22 +40,30 @@ class StartModTF(StartMod):
         """
         setup parameters for neuron network
         :param data: pandas.core.frame.DataFrame
-        :param label:
+        :param label: target_feature
         """
         self.data = data
         if label is None:
-            self.n_classes = 2  # default setup 2 classes
+            self.n_classes = 2  # default setup 2 classes for binary classification (2 values e.g. 0 and 1)
             self.label = None
-        else:
+
+        elif len(label) == 1:
             self.n_classes = len(data[label].unique())
             self.label = label
+
+        else:
+            self.label = label  # regression
 
         self.hidden_units = [10, 10]    # default setup 10 neuron in 2 layers
         self.optimizer = "Adagrad"      # default Adagrad optimizer
         self.activation_fn = "relu"     # default 'relu' function
         self.learning_rate = 0.001      # default 0.001
         self.steps = 1000               # default training_steps 1000
-        self.batch_size = 10            # default batch_size 10 (correspond with available system memory capacity to avoid outofmemory_error, small for many features, big for performance)
+
+        # (correspond with available system memory capacity to avoid outofmemory_error,
+        # small for many features, big for performance)
+        self.batch_size = 10            # default batch_size 10
+
         self.num_epochs = 1             # default number of epochs 1
         self.feature_scl = False        # default turn off feature scaling
 
@@ -61,6 +72,7 @@ class StartModTF(StartMod):
         return self.hidden_units, self.optimizer, self.activation_fn, self.learning_rate, \
                self.steps, self.batch_size, self.num_epochs, self.feature_scl
 
+    # reset all attributes in neural network
     def _set_attributes(self, dict_params):
         self.hidden_units = dict_params['hidden_units']
         self.optimizer = dict_params['optimizer']
@@ -78,7 +90,7 @@ class StartModTF(StartMod):
         print("Learning_Rate: {}".format(self.learning_rate), "\n")
         print("Training_Steps: {}".format(self.steps), "\n")
         print("Batch_Size: {}".format(self.batch_size), "\n")
-        print("Number_of_epochs: {}".format(self.activation_fn), "\n")
+        print("Number_of_epochs: {}".format(self.num_epochs), "\n")
         print("Feature_Scaling: {}".format(self.feature_scl), "\n")
 
     update_parameters = property(_get_attributes, _set_attributes)
@@ -297,10 +309,12 @@ class StartModTF(StartMod):
         # final_pred = [pred['class_ids'][0] for pred in list(result_predict)]
         # StartMod.metrics_report(self.y_test.values, final_pred)
         # print(type(self.y_test))
+        # TODO: convert y_predict into numeric_values
+        self.data['predicted'] = y_predict
 
         return classifier, y_true, y_predict
 
-    def keras_sequential(self, data, dependent_label, hidden_layers=1, output_signals = 1):
+    def keras_sequential(self, data, hidden_layers=1, output_signals=1):
         """
         Setup Keras and run the Sequential method to predict value
 
@@ -313,16 +327,16 @@ class StartModTF(StartMod):
         :param output_signals: default 1 (when there's only 1 categorical column)
         :return: Keras-Sequential object, the actual (true) value, the predicted value
         """
+        # split data
+        x_train, x_eval, y_train, y_eval = StartMod.split_data(data, self.label)
+
         # Initialising the ANN
         model = Sequential()
-
-        x_train, x_true, y_train, y_true = StartMod.split_data(data, dependent_label)
 
         # tbd: use parameter tuning to find the exact number of nodes in the hidden-layer
         # default = number of features
         input_signals = x_train.shape[1]
 
-        # Create n=2 layers neural network (idea: setup parameters 'how many layers' from config.ini)
         # Adding the input layer and the first hidden layer, activation function as rectifier function
         model.add(Dense(activation="relu", input_dim=x_train.shape[1], units=input_signals,
                         kernel_initializer="uniform"))
@@ -337,21 +351,123 @@ class StartModTF(StartMod):
         # Compiling the ANN with optimizer='adam'
         model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
 
-        # fit the keras_model to the training_data and see the real time training of model on data with result of loss
+        # Fit the keras_model to the training_data and see the real time training of model on data with result of loss
         # and accuracy. The smaller batch_size and higher epochs, the better the result. However, slow_computing!
         model.fit(x_train, y_train, batch_size=self.batch_size, epochs=self.num_epochs)
 
-        # predictions and evaluating the model
-        y_predict = model.predict(x_true)
+        # Predictions and evaluating the model
+        y_pred = model.predict(x_eval)
 
-        return model, y_true, y_predict
+        # Evaluate the model
+        scores = model.evaluate(x_train, y_train)
+        print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
+
+        return model, y_eval, y_pred
+
+    def keras_cnn_1d(self, momentum=0.2, seed=10, dropout_rate=0.2, n_filters=32, kernel_size=1, padding="same"):
+        """
+        Setup Keras hyper_parameters, Kernel_initializer 's parameter and find regression_value for (multiple) label(s)
+
+        :param momentum: SGD's parameters
+        :param seed: Setup hyperparameters (default is 10)
+        :param dropout_rate: Regularization technique to prevent Neural Networks from Overfitting
+        :param n_filters: number of filters (default is 32)
+        :param kernel_size:
+        :param padding: Output dim has the same size as Input dim (default is 'same')
+        :return:
+
+        Reference:
+            https://keras.io/optimizers/
+            https://keras.io/initializers/
+            https://keras.io/layers/core/#dropout
+
+        :return:
+        """
+        # Convert to the right dimension row, column, 1-channel in Numpy array
+        X_data = self.data.drop(self.label, axis=1)
+        Y_data = self.data[self.label]
+
+        # Normalizing data
+        scaler = MinMaxScaler()
+        scaler.fit(X_data)
+        X_data = pd.DataFrame(data=scaler.transform(X_data), columns=X_data.columns, index=X_data.index)
+
+        # Split data into training_data and evaluation_data
+        x_train, x_eval, y_train, y_eval = train_test_split(X_data, Y_data, test_size=0.2, random_state=101)
+
+        # Number of feature columns in training_data
+        input_dimension = len(x_train.columns)
+        x_train = x_train.values.reshape(x_train.shape[0], x_train.shape[1], 1)
+        y_train = y_train.as_matrix()
+
+        # Init hyper parameter
+        np.random.seed(seed)
+        hidden_initializer = random_uniform(seed=seed)
+
+        # Number of layers and neurons in every layers (in numpy array e.g. [1000, 500, 250, 3])
+        hidden_units = self.hidden_units
+
+        # Create model and add hidden layers
+        model = Sequential()
+
+        # Conv1D needs 2 dimension -> input_shape=(1000,1), similarly Conv2D needs 3 dim, Conv3D needs 4 dim
+        model.add(Conv1D(input_shape=(input_dimension, 1), activation=self.activation_fn, filters=n_filters,
+                         kernel_size=kernel_size, padding=padding))
+        model.add(Conv1D(activation=self.activation_fn, filters=n_filters, kernel_size=kernel_size))
+
+        # Flattens the input
+        model.add(Flatten())
+
+        # Applies Dropout to the input
+        model.add(Dropout(dropout_rate))
+
+        # Use output of CNN as input of ANN, e.g. units = np.array([1000, 500, 250, 3])
+        # print(hidden_units[0])
+        model.add(Dense(units=hidden_units[0], input_dim=input_dimension, kernel_initializer=hidden_initializer,
+                        activation=self.activation_fn))
+        if len(hidden_units[1:-1])>0:
+            for i, v in enumerate(hidden_units[1:-1]):
+                # print(i, v)
+                model.add(Dense(units=v, kernel_initializer=hidden_initializer, activation=self.activation_fn))
+        # print(hidden_units[-1:][0])
+        model.add(Dense(units=hidden_units[-1:][0], kernel_initializer=hidden_initializer))
+
+        # reset optimizer
+        sgd = SGD(lr=self.learning_rate, momentum=momentum)
+        self.optimizer = sgd
+
+        # compile and train model with training_data
+        model.compile(loss='mean_squared_error', optimizer=self.optimizer, metrics=['accuracy'])
+        model.fit(x_train, y_train, epochs=self.num_epochs, batch_size=self.batch_size)
+
+        # Evaluate the model
+        scores = model.evaluate(x_train, y_train)
+        print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
+
+        # Predict value
+        y_pred = model.predict(x_eval.values.reshape(x_eval.shape[0], x_eval.shape[1], 1))
+        y_pred = pd.DataFrame(data=y_pred, columns=y_eval.columns)
+
+        return model, y_eval, y_pred
+
+    def keras_rnn(self):
+        """
+        Time Series model
+        Setup Keras and find regression_value for (multiple) label(s)
+
+        Reference:
+
+
+        :return:
+        """
+        pass
 
     @classmethod
     def regularization(cls):
     	"""
-    	e.g. Dropout to prevent Neural Networks from Overfitting
-    		Grid_Search to tune the hyperparameter
-    	"""
+        e.g. Dropout to prevent Neural Networks from Overfitting
+            Grid_Search to tune the hyper_parameter
+        """
     	pass
 
     @staticmethod
