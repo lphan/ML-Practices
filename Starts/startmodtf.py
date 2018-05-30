@@ -64,13 +64,13 @@ class StartModTF(StartMod):
         # small for many features, big for performance)
         self.batch_size = 10            # default batch_size 10
 
-        self.num_epochs = 1             # default number of epochs 1
+        self.nr_epochs = 1             # default number of epochs 1
         self.feature_scl = False        # default turn off feature scaling
 
     # get and set methods for attributes
     def _get_attributes(self):
         return self.hidden_units, self.optimizer, self.activation_fn, self.learning_rate, \
-               self.steps, self.batch_size, self.num_epochs, self.feature_scl
+               self.steps, self.batch_size, self.nr_epochs, self.feature_scl
 
     # reset all attributes in neural network
     def _set_attributes(self, dict_params):
@@ -80,7 +80,7 @@ class StartModTF(StartMod):
         self.learning_rate = dict_params['learning_rate']
         self.steps = dict_params['steps']
         self.batch_size = dict_params['batch_size']
-        self.num_epochs = dict_params['num_epochs']
+        self.nr_epochs = dict_params['num_epochs']
         self.feature_scl = dict_params['feature_scl']
 
     def info_parameters(self):
@@ -90,13 +90,13 @@ class StartModTF(StartMod):
         print("Learning_Rate: {}".format(self.learning_rate), "\n")
         print("Training_Steps: {}".format(self.steps), "\n")
         print("Batch_Size: {}".format(self.batch_size), "\n")
-        print("Number_of_epochs: {}".format(self.num_epochs), "\n")
+        print("Number_of_epochs: {}".format(self.nr_epochs), "\n")
         print("Feature_Scaling: {}".format(self.feature_scl), "\n")
 
     update_parameters = property(_get_attributes, _set_attributes)
 
     @classmethod
-    def train_input_func(cls, features, labels, batch_size, epochs):
+    def train_input_func(cls, features, labels, batch_size, nr_epochs):
         """
         An input function for training
 
@@ -106,12 +106,12 @@ class StartModTF(StartMod):
         :param features:
         :param labels:
         :param batch_size:
-        :param epochs:
+        :param nr_epochs:
         :return:
         """
 
         return tf.estimator.inputs.pandas_input_fn(x=features, y=labels, batch_size=batch_size,
-                                                   num_epochs=epochs, shuffle=True)
+                                                   num_epochs=nr_epochs, shuffle=True)
         # Alternatives:
         # tensors = (dict(features), labels)
         #
@@ -292,12 +292,12 @@ class StartModTF(StartMod):
 
         # Train the Model
         train_input_func = StartModTF.train_input_func(features=x_train, labels=y_train,
-                                                       batch_size=self.batch_size, epochs=self.num_epochs)
+                                                       batch_size=self.batch_size, nr_epochs=self.nr_epochs)
         classifier.train(input_fn=train_input_func, steps=self.steps)
 
         # Evaluation
         eval_input_func = StartModTF.eval_input_fn(features=x_train, label=y_train,
-                                                   batch_size=self.batch_size, epochs=self.num_epochs)
+                                                   batch_size=self.batch_size, epochs=self.nr_epochs)
         result_eval = classifier.evaluate(input_fn=eval_input_func)
         print("\n", result_eval)
 
@@ -353,7 +353,7 @@ class StartModTF(StartMod):
 
         # Fit the keras_model to the training_data and see the real time training of model on data with result of loss
         # and accuracy. The smaller batch_size and higher epochs, the better the result. However, slow_computing!
-        model.fit(x_train, y_train, batch_size=self.batch_size, epochs=self.num_epochs)
+        model.fit(x_train, y_train, batch_size=self.batch_size, epochs=self.nr_epochs)
 
         # Predictions and evaluating the model
         y_pred = model.predict(x_eval)
@@ -438,7 +438,7 @@ class StartModTF(StartMod):
 
         # compile and train model with training_data
         model.compile(loss='mean_squared_error', optimizer=self.optimizer, metrics=['accuracy'])
-        model.fit(x_train, y_train, epochs=self.num_epochs, batch_size=self.batch_size)
+        model.fit(x_train, y_train, epochs=self.nr_epochs, batch_size=self.batch_size)
 
         # Evaluate the model
         scores = model.evaluate(x_train, y_train)
@@ -450,7 +450,7 @@ class StartModTF(StartMod):
 
         return model, y_eval, y_pred
 
-    def keras_rnn(self):
+    def keras_rnn_lstm(self):
         """
         Time Series model
         Setup Keras and find regression_value for (multiple) label(s)

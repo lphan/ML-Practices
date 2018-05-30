@@ -23,6 +23,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import GridSearchCV
 # from sklearn.pipeline import make_pipeline
 
 import statsmodels.formula.api as sm
@@ -429,18 +430,23 @@ class StartMod(StartML):
         print("\nMean_Squared_Error: \n", mean_squared_error(y_true, y_pred))
 
     @classmethod
-    def validation(cls, classifier, x_train, y_train, cv=None):
+    def validation(cls, classifier, x_train, y_train, parameters=[], cv=None, tune=False):
         """
         Apply K-Fold Cross_Validation to estimate the model (classification)
 
         References:
             http://scikit-learn.org/stable/modules/cross_validation.html
             http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_val_score.html
+            https://www.jeremyjordan.me/hyperparameter-tuning/
+            http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
+            http://scikit-learn.org/stable/modules/grid_search.html
 
         :param classifier:
         :param x_train: feature_values
         :param y_train: categorical_values
         :param cv (Cross_Validation) default is 10-fold if None
+        :param parameters (used for tuning hyperparameters) default is []
+        :param tune (turn on grid search method to find the best parameters for model) default is False
         :return:
         """
         if not cv:
@@ -450,6 +456,21 @@ class StartMod(StartML):
         print("\nAccuracies: ", accuracies)
         print("\nMean of accuracies: ", accuracies.mean())
         print("\nStandard Deviation: ", accuracies.std())
+
+        if tune:
+            # setup grid search input parameters to tune the hyper parameter e.g. n_jobs=-1 for large data set
+            gs = GridSearchCV(estimator=classifier, param_grid=parameters, scoring='accuracy', cv=cv, n_jobs=-1)
+            gs = gs.fit(x_train, y_train)
+
+            best_accuracy = gs.best_score_
+            best_parameters = gs.best_params_
+
+            print("Best accuracy: ", best_accuracy)
+            print("Best parameters: ", best_parameters)
+
+            return accuracies, gs
+
+        return accuracies
 
     @staticmethod
     def info_help():

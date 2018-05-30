@@ -409,6 +409,17 @@ class StartModSKL(StartMod):
 
         return k_means, y_clusters
 
+    @classmethod
+    def xgboost(cls, data):
+        """
+        References:
+            http://xgboost.readthedocs.io/en/latest/model.html
+
+        :param data:
+        :return:
+        """
+        pass
+
     @staticmethod
     def info_help():
         info = {
