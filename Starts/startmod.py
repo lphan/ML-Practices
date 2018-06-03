@@ -24,7 +24,11 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import GridSearchCV
+from sklearn.linear_model import Ridge
+from sklearn.linear_model import Lasso
+from sklearn.linear_model import ElasticNet
 # from sklearn.pipeline import make_pipeline
+# from sklearn.ensemble.partial_dependence import plot_partial_dependence
 
 import statsmodels.formula.api as sm
 
@@ -70,6 +74,7 @@ class StartMod(StartML):
         try:
             for label_column in label_columns:
                 label_idx = data.columns.get_loc(label_column)
+
                 # label_encoder to turn object-column into number-column
                 label_encoder = LabelEncoder()
                 x_values[:, label_idx] = label_encoder.fit_transform(x_values[:, label_idx])
@@ -175,7 +180,7 @@ class StartMod(StartML):
     @classmethod
     def backward_eliminate(cls, data, x_data, y_data):
         """
-        Support the evaluation on (regression) models by finding maximal pvalue (< pre-defined SL)
+        Support the evaluation on (regression) models by finding maximal p_value (< pre-defined SL)
         and applying method Backward Elimination for feature selection
 
         References:
@@ -188,8 +193,9 @@ class StartMod(StartML):
         """
 
         # Start Method Backward Elimination for feature selection
-        # Step 1: select a significance level to stay
+        # Step 1: init a significance level to stay
         sl = 0.05
+
         # initiate data for x with full columns
         x_opt = x_data[:, [i for i in range(len(data.columns))]]
 
@@ -213,6 +219,7 @@ class StartMod(StartML):
     def feature_columns(cls, data, label=None):
         """
         find and return object and non-object columns
+        
         :param data: pandas.core.frame.DataFrame
         :param label: default is None
         :return: list of non_obj_feature, list of obj_feature
@@ -240,7 +247,7 @@ class StartMod(StartML):
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html
             http://scikit-learn.org/stable/auto_examples/preprocessing/plot_scaling_importance.html
 
-        :param data:
+        :param data: pandas.core.frame.DataFrame or numpy.array
         :param type_pd: default True to convert data in Pandas Data-Frame
         :return: data in scaled format
         """
@@ -397,6 +404,75 @@ class StartMod(StartML):
         return data.drop(features, axis=1)
 
     @classmethod
+    def regularization(cls, data, dependent_label):
+        """
+        apply technique of ridge regression L2 and lasso (Least Absolute Shrinkage and Selection Operator) regression L1
+        to avoid overfitting (when p>n, many more features than observations "wide matrix"):
+            by (Lasso regression) shrinking some of the parameters to zero (therefore getting rid of some features) and
+            by (Ridge regression) making some of the parameters very small without setting them to zero.
+            by (Elastic net regression) which is basically a hybrid of ridge and lasso regression for big dataset
+
+        1. Ridge:
+            It shrinks the parameters, therefore it is mostly used to prevent multicollinearity.
+            It reduces the model complexity by coefficient shrinkage.
+            It uses L2 regularization technique.
+
+        2. LASSO (Least Absolute Shrinkage Selector Operator):
+            It selects the only some feature while reduces the coefficients of others to zero
+            It is generally used when we have more number of features, because it automatically does feature selection.
+            It uses L1 regularization technique
+
+        3. Elastic Net Regression
+
+        References:
+            https://www.analyticsvidhya.com/blog/2017/06/a-comprehensive-guide-for-linear-ridge-and-lasso-regression/
+            https://www.analyticsvidhya.com/blog/2016/01/complete-tutorial-ridge-lasso-regression-python/
+            https://codingstartups.com/practical-machine-learning-ridge-regression-vs-lasso/
+            https://towardsdatascience.com/regularization-in-machine-learning-76441ddcf99a
+            http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Ridge.html
+            http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.Lasso.html
+
+        :param data: pandas.core.frame.DataFrame
+        :param dependent_label:
+        :return:
+        """
+        # split data into feature (independent) values and dependent values in type Numpy.array
+        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
+
+        # Ridge
+        ridgeReg = Ridge(alpha=0.05, normalize=True)
+        ridgeReg.fit(x_train, y_train)
+        y_pred_rr = ridgeReg.predict(x_test)
+        print("Ridge coef_ attribute", ridgeReg.coef_)
+        print("Ridge independent term", ridgeReg.intercept_)
+        print("Ridge evaluation using r-square: ", ridgeReg.score(x_test, y_test))
+
+        # Lasso
+        lassoReg = Lasso(alpha=0.3, normalize=True)
+        lassoReg.fit(x_train, y_train)
+        y_pred_lr = lassoReg.predict(x_test)
+        print("Lasso coef_ attribute", lassoReg.coef_)
+        print("Lasso independent term", lassoReg.intercept_)
+        print("Lasso evaluation using r-square: ", lassoReg.score(x_test, y_test))
+        
+        # Elastic net
+        enReg = ElasticNet(alpha=1, l1_ratio=0.5, normalize=False)
+        enReg.fit(x_train, y_train)
+        y_pred_er = enReg.predict(x_test)
+        print("Elastic net coef_ attribute", enReg.coef_)
+        print("Elastic net independent term", enReg.intercept_)
+        print("Elastic net evaluation using r-square: ", enReg.score(x_test, y_test))
+
+        print("\nMetrics report")
+        print("Ridge regression: ", StartMod.metrics_report(y_test, y_pred_rr))
+        print("Lasso regression: ", StartMod.metrics_report(y_test, y_pred_lr))
+        print("Elastic net regression: ", StartMod.metrics_report(y_test, y_pred_er))
+        print("\nValidation")
+        print("Ridge: ", StartMod.validation(ridgeReg, x_train, y_train))
+        print("\nLasso: ", StartMod.validation(lassoReg, x_train, y_train))
+        print("\nElastic net: ", StartMod.validation(enReg, x_train, y_train))
+
+    @classmethod
     def metrics_report(cls, y_true, y_pred, target_names=None):
         """
         measure the quality of the models (comparing results before and after running prediction)
@@ -449,6 +525,9 @@ class StartMod(StartML):
         :param tune (turn on grid search method to find the best parameters for model) default is False
         :return:
         """
+        # estimate the contribution of the matching feature to the prediction function
+        print(sorted(classifier.feature_importances_))
+
         if not cv:
             accuracies = cross_val_score(estimator=classifier, X=x_train, y=y_train, cv=10)
         else:
@@ -467,6 +546,14 @@ class StartMod(StartML):
 
             print("Best accuracy: ", best_accuracy)
             print("Best parameters: ", best_parameters)
+            print("Best: %f using %s" % (gs.best_score_, gs.best_params_))
+
+            means = gs.cv_results_['mean_test_score']
+            stds = gs.cv_results_['std_test_score']
+            params = gs.cv_results_['params']
+
+            for mean, stdev, param in zip(means, stds, params):
+                print("Mean: %f, Standard Deviation: (%f), Parameters: %r" % (mean, stdev, param))
 
             return accuracies, gs
 

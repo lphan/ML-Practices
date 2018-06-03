@@ -19,10 +19,17 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import GradientBoostingRegressor
 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.naive_bayes import GaussianNB
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.ensemble import GradientBoostingClassifier
+from xgboost import XGBClassifier
+from sklearn.ensemble import VotingClassifier
+from xgboost import plot_importance
 
 from sklearn.cluster import KMeans
 
@@ -66,14 +73,20 @@ class StartModSKL(StartMod):
         x_test = sc_x.transform(x_test)
 
         if poly:
+            # setup default degree
+            deg = 3
+
             # fit polynomial regression degree level = 3, with training-data
-            reg_poly = PolynomialFeatures(degree=3)
+            reg_poly = PolynomialFeatures(degree=deg)
             x_poly = reg_poly.fit_transform(x_train)
             reg_poly.fit(x_poly, y_train)
 
             # apply linear regression to polynomial data
             lin_reg_2 = LinearRegression()
             lin_reg_2.fit(x_poly, y_train)
+
+            print("Calculating coefficients: ", lin_reg_2.coef_)
+            print("Evaluation using r-square: ", lin_reg_2.score(x_test, y_test))
 
             # predict value on testing data by applying polynomial regression object
             y_predict = lin_reg_2.predict(reg_poly.fit_transform(x_test))
@@ -84,22 +97,25 @@ class StartModSKL(StartMod):
             return reg_poly, y_test, y_predict
         else:
             # fit model with training-data
-            reg_lin = LinearRegression()
-            reg_lin.fit(x_train, y_train)
+            lin_reg = LinearRegression()
+            lin_reg.fit(x_train, y_train)
+
+            print("Calculating coefficients: ", lin_reg.coef_)
+            print("Evaluation using r-square: ", lin_reg.score(x_test, y_test))
 
             # estimate the model by cross_validation method and training_data
             # StartMod.validation(reg_lin, x_train, y_train)
 
             # Visualizing
-            StartVis.vis_obj_predict(x_train, y_train, reg_lin)
+            StartVis.vis_obj_predict(x_train, y_train, lin_reg)
 
             # Predicting the Test and return the predicted result
-            y_predict = reg_lin.predict(x_test)
+            y_predict = lin_reg.predict(x_test)
 
             # Visualizing
-            StartVis.vis_obj_predict(x_test, y_test, reg_lin)
+            StartVis.vis_obj_predict(x_test, y_test, lin_reg)
 
-            return reg_lin, y_test, y_predict
+            return lin_reg, y_test, y_predict
 
     @classmethod
     def regression_multi_linear(cls, data, dependent_label, pr=True):
@@ -137,6 +153,18 @@ class StartModSKL(StartMod):
         # Execute Linear Regression on optimal value, fit model with training-data
         reg = LinearRegression()
         reg.fit(x_train, y_train)
+
+        print("Calculating coefficients: ", reg.coef_)
+        print("Evaluation using r-square: ", reg.score(x_test, y_test))
+
+        # checking the magnitude of coefficients
+        predictors = x_train.columns
+
+        # sort all coefficients of all features (columns)
+        coef = pd.Series(reg.coef_, predictors).sort_values()
+
+        # plot all coefficients to see which features have the most impact on model
+        coef.plot(kind='bar', title='Modal Coefficients')
 
         # Estimate the model by cross_validation method and training_data (not appropriate method for regression_models)
         # StartMod.validation(reg, x_train, y_train)
@@ -200,7 +228,7 @@ class StartModSKL(StartMod):
 
         :param data:
         :param dependent_label:
-        :param n_estimators: the number of trees in the forest.
+        :param n_est: the number of trees in the forest.
         :param ens: ensemble learning by decision tree and other regression model
         :return:
         """
@@ -209,7 +237,7 @@ class StartModSKL(StartMod):
         reg_rf = RandomForestRegressor(n_estimators=n_est, random_state=0)
         reg_rf.fit(x_train, y_train)
 
-        # if ens (ensemble learning), re_implement random forest by applying other regression_model as one decision tree
+        # If ens (ensemble learning), re_implement random forest by applying other regression_model as one decision tree
         # then get the mean result from every decision tree
 
         # Predicting a new result
@@ -345,16 +373,157 @@ class StartModSKL(StartMod):
         return clf_gnb, y_test, y_predict
 
     @classmethod
-    def classification_random_forest(cls, data, dependent_label):
+    def classification_rf(cls, data, dependent_label, num_trees, max_features):
         """
+        Apply Ensemble Random Forest for classification
+
         References:
             http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
+            http://scikit-learn.org/stable/modules/ensemble.html#random-forests
+            https://machinelearningmastery.com/ensemble-machine-learning-algorithms-python-scikit-learn/
+
+
+        :param data:
+        :param dependent_label:
+        :param num_trees: number of decision trees
+        :param max_features: number of maximal features to select randomly
+        :return:
+        """
+        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
+
+        # In order to reduce the size of the model, you can change these parameters:
+        # min_samples_split, min_samples_leaf, max_leaf_nodes and max_depth
+        # setup n_jobs=-1 to setup all cores available on the machine are used
+        clf_rf = RandomForestClassifier(n_estimators=num_trees, max_features=max_features, n_jobs=-1)
+        clf_rf.fit(x_train, y_train)
+
+        # predict the test set results
+        y_predict = clf_rf.predict(x_test)
+
+        # estimate the model by cross_validation method and training_data
+        StartMod.validation(clf_rf, x_train, y_train)
+
+        return clf_rf, y_test, y_predict
+
+    @classmethod
+    def classification_adab(cls, data, dependent_label, num_trees=30, seed=7):
+        """
+        Apply Ensemble AdaBoost for classification
+
+        References:
+            http://scikit-learn.org/stable/modules/ensemble.html#adaboost
+
+        :param data:
+        :param dependent_label:
+        :param num_trees:
+        :param seed:
+        :return:
+        """
+        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
+
+        clf_adab = AdaBoostClassifier(n_estimators=num_trees, random_state=seed)
+        clf_adab.fit(x_train, y_train)
+
+        # predict the test set results
+        y_predict = clf_adab.predict(x_test)
+
+        # estimate the model by cross_validation method and training_data
+        StartMod.validation(clf_adab, x_train, y_train)
+
+        return clf_adab, y_test, y_predict
+
+    @classmethod
+    def classification_sgb(cls, data, dependent_label, num_trees=30, seed=7, regression=False):
+        """
+        Apply Ensemble Stochastic Gradient Boosting for classification
+
+        References:
+            http://scikit-learn.org/stable/modules/ensemble.html#gradient-tree-boosting
+            http://scikit-learn.org/stable/modules/ensemble.html#loss-functions
+
+        :param data:
+        :param dependent_label:
+        :param num_trees:
+        :param seed:
+        :param regression:
+        :return:
+        """
+        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
+
+        if regression:
+            clf_sgb = GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=1, random_state=0,
+                                            loss='ls')
+        else:
+            clf_sgb = GradientBoostingClassifier(n_estimators=num_trees, learning_rate=1.0, max_depth=1, random_state=seed,
+                                             loss='deviance')
+        clf_sgb.fit(x_train, y_train)
+
+        # predict the test set results
+        y_predict = clf_sgb.predict(x_test)
+
+        # estimate the model by cross_validation method and training_data
+        StartMod.validation(clf_sgb, x_train, y_train)
+
+        return clf_sgb, y_test, y_predict
+
+    @classmethod
+    def classification_xgb(cls, data, dependent_label):
+        """
+        Apply Extreme Gradient Boosting (XGBoost) method to classify data
+
+        References:
+            http://xgboost.readthedocs.io/en/latest/model.html
+            https://machinelearningmastery.com/xgboost-python-mini-course/
+            http://scikit-learn.org/stable/modules/ensemble.html
 
         :param data:
         :param dependent_label:
         :return:
         """
-        pass
+        # split data into feature (independent) values and dependent values in type Numpy.array
+        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
+        # print(type(x_train), type(y_train))
+
+        clf_xgb = XGBClassifier()
+        clf_xgb.fit(x_train, y_train)
+
+        # Predicting the Test set results
+        y_predict = clf_xgb.predict(x_test)
+
+        # estimate the model by cross_validation method and training_data
+        StartMod.validation(clf_xgb, x_train, y_train)
+
+        plot_importance(clf_xgb)
+
+        return clf_xgb, y_test, y_predict
+        # return x_train, x_test, y_train, y_test
+
+    @classmethod
+    def classification_voting(cls, models, data, dependent_label):
+        """
+        voting ensemble model for classification by combining the predictions from multiple machine learning algorithms.
+        parameter:
+            voting='hard': mode label
+            voting='soft': weighted average value
+
+        References:
+            http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.VotingClassifier.html
+            http://scikit-learn.org/stable/modules/ensemble.html#voting-classifier
+
+        :param models:
+        :param data:
+        :param dependent_label:
+        :return:
+        """
+        # split data into feature (independent) values and dependent values in type Numpy.array
+        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
+
+        ensemble = VotingClassifier(models)
+
+        # estimate the model by cross_validation method and training_data
+        StartMod.validation(ensemble, x_train, y_train)
+
+        return ensemble
 
     @classmethod
     def clustering_k_mean_noc(cls, data, plot=False):
@@ -365,6 +534,7 @@ class StartModSKL(StartMod):
             http://www.awesomestats.in/python-cluster-validation/
 
         :param data: pandas.core.frame.DataFrame
+        :param plot: show plot (default is False)
         :return: plot of data to identify number of clusters (still manually)
         """
         cluster_errors = []
@@ -410,11 +580,11 @@ class StartModSKL(StartMod):
         return k_means, y_clusters
 
     @classmethod
-    def xgboost(cls, data):
+    def ensemble(cls, data):
         """
         References:
-            http://xgboost.readthedocs.io/en/latest/model.html
-
+            http://scikit-learn.org/stable/modules/ensemble.html
+            https://machinelearningmastery.com/ensemble-machine-learning-algorithms-python-scikit-learn/
         :param data:
         :return:
         """

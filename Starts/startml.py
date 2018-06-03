@@ -872,7 +872,8 @@ class StartML(object):
             "StartML.nan_columns(data)": StartML.nan_columns.__doc__,
             "StartML.nan_rows(data)": StartML.nan_rows.__doc__,
             "train_data": train_data.__class__,
-            "nonan_data": nonan_data.__class__
+            "nonan_data": nonan_data.__class__,
+            "test_data": test_data.__class__,
         }
 
 
