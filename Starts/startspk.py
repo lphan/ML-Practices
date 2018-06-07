@@ -15,11 +15,18 @@ __author__ = 'Long Phan'
 # import configparser
 # import pandas as pd
 # import numpy as np
+# import collections
 from pyspark import SparkConf, SparkContext
 from pyspark.sql import SparkSession
 from pyspark.sql import Row
-
-import collections
+from pyspark.sql.functions import *
+from pyspark.mllib.linalg import Vectors, SparseVector
+from pyspark.mllib.regression import LabeledPoint
+from pyspark.mllib.tree import DecisionTree
+from pyspark.mllib.util import MLUtils
+from pyspark.mllib.recommendation import ALS
+from pyspark.ml.feature import *
+from pyspark.ml import Pipeline
 
 
 class StartSPK(object):
@@ -29,6 +36,7 @@ class StartSPK(object):
 
     References:
         https://pages.databricks.com/mastering-advanced-analytics-apache-spark.html
+        https://docs.cloud.databricks.com/
         https://spark.apache.org/sql/
         https://spark.apache.org/docs/latest/sql-programming-guide.html
 
@@ -86,7 +94,7 @@ class StartSPK(object):
         }
 
 
-class SparkRDD(StartSPK):
+class StartSpkRDD(StartSPK):
 
     def __init__(self, app_name, path_file):
         StartSPK.__init__(self, app_name, path_file)
@@ -274,6 +282,26 @@ class StartSpkSQL(StartSPK):
         :return:
         """
         pass
+
+
+class SpkML(StartSPK):
+    def __init__(self, app_name, path_file):
+        StartSPK.__init__(self, app_name, path_file)
+
+
+class SpkVis(StartSPK):
+    def __init__(self, app_name, path_file):
+        StartSPK.__init__(self, app_name, path_file)
+
+
+class SpkGraphX(StartSPK):
+    def __init__(self, app_name, path_file):
+        StartSPK.__init__(self, app_name, path_file)
+
+
+class SpkStream(StartSPK):
+    def __init__(self, app_name, path_file):
+        StartSPK.__init__(self, app_name, path_file)
 
 
 # E.g. data = StartSPK(appname='AppName', pathfile='.../file.csv')
