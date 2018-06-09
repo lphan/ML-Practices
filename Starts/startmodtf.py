@@ -341,7 +341,7 @@ class StartModTF(StartMod):
         np.random.seed(10)
         hidden_initializer = random_uniform(seed=10)
         input_dimension = len(x_train.columns)  # or input_dimension = len(x_train.shape[1])
-        
+
         # default = number of features, input_signals = x_train.shape[1] = hidden_units[0]
         # Adding the input layer and the first hidden layer, activation function as rectifier function
         model.add(Dense(units=hidden_units[0], input_dim=input_dimension, kernel_initializer=hidden_initializer,
