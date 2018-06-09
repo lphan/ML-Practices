@@ -559,16 +559,5 @@ class StartMod(StartML):
 
         return accuracies
 
-    @staticmethod
-    def info_help():
-        info = {
-            "info_help_StartMod": StartMod.__name__,
-            "StartMod.split_data": StartMod.split_data.__doc__,
-            "StartMod.feature_engineering(data)": StartMod.feature_engineering.__doc__,
-            "StartMod.feature_engineering_merge_cols(data)": StartMod.feature_engineering_merge_cols.__doc__,
-            }
-
-        return info
-
 
 info_mod = StartMod.info_help()

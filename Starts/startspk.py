@@ -19,6 +19,7 @@ __author__ = 'Long Phan'
 from pyspark import SparkConf, SparkContext
 from pyspark.sql import SparkSession
 from pyspark.sql import Row
+from pyspark.sql.types import *
 from pyspark.sql.functions import *
 from pyspark.mllib.linalg import Vectors, SparseVector
 from pyspark.mllib.regression import LabeledPoint
@@ -27,7 +28,8 @@ from pyspark.mllib.util import MLUtils
 from pyspark.mllib.recommendation import ALS
 from pyspark.ml.feature import *
 from pyspark.ml import Pipeline
-
+from pyspark.ml.clustering import KMeans
+# from graphframes import GraphFrame
 
 class StartSPK(object):
     """
@@ -48,7 +50,8 @@ class StartSPK(object):
     # init keywords arguments
     kwargs = {}
 
-    def __init__(self, app_name, path_file, config_opt="", config_val="", rdd=True):
+    # TODO: pass multiple path through path_files
+    def __init__(self, app_name, path_files, config_opt="", config_val=""):
 
         # create SparkContext for RDD object and import data from source
         # self.spark_conf = (SparkConf().setAppName(appname))
@@ -58,11 +61,25 @@ class StartSPK(object):
         # create SparkSession for DataFrame object
         self.spark_sess = (SparkSession.builder.appName(app_name)
                            .config(config_opt, config_val).getOrCreate())
+        self.path_files = path_files
 
+    def import_data(self, path_file, rdd=True):
         if rdd:
             self.data = self.spark_cont.textFile(path_file)
         else:
             self.data = self.spark_sess.sparkContext.textFile(path_file)
+
+        return self.data
+
+    # TODO: import multiple files to create multiple dataframes in Spark
+    # def get_df_from_csv_paths(paths):
+    #
+    #     df = pyspark.read.format("csv").option("header", "false"). \
+    #         schema(custom_schema). \
+    #         option('delimiter', '\t'). \
+    #         option('mode', 'DROPMALFORMED'). \
+    #         load(paths.split(','))
+    #     return df
 
     def get_dat(self):
         return self.data, self.spark_cont, self.spark_sess
@@ -240,6 +257,11 @@ class StartSpkRDD(StartSPK):
 
 
 class StartSpkSQL(StartSPK):
+    """
+    Execute different operation on data using SQL-style query like:
+        window, column, max, desc, col, date_format, StringIndexer, OneHotEnconder
+        , Pipeline
+    """
 
     def __init__(self, app_name, path_file):
         StartSPK.__init__(self, app_name, path_file)

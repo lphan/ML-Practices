@@ -59,6 +59,7 @@ class StartModTF(StartMod):
         self.activation_fn = "relu"     # default 'relu' function
         self.learning_rate = 0.001      # default 0.001
         self.steps = 1000               # default training_steps 1000
+        self.loss = 'mean_squared_error'
 
         # (correspond with available system memory capacity to avoid outofmemory_error,
         # small for many features, big for performance)
@@ -82,6 +83,7 @@ class StartModTF(StartMod):
         self.batch_size = dict_params['batch_size']
         self.nr_epochs = dict_params['num_epochs']
         self.feature_scl = dict_params['feature_scl']
+        self.loss = dict_params['loss_fn']
 
     def info_parameters(self):
         print("\nHidden_units: {}".format(self.hidden_units), "\n")
@@ -92,6 +94,7 @@ class StartModTF(StartMod):
         print("Batch_Size: {}".format(self.batch_size), "\n")
         print("Number_of_epochs: {}".format(self.nr_epochs), "\n")
         print("Feature_Scaling: {}".format(self.feature_scl), "\n")
+        print("Loss_function: {}".format(self.loss), "\n")
 
     update_parameters = property(_get_attributes, _set_attributes)
 
@@ -314,45 +317,52 @@ class StartModTF(StartMod):
 
         return classifier, y_true, y_predict
 
-    def keras_sequential(self, data, hidden_layers=1, output_signals=1):
+    def keras_sequential(self, output_signals=1):
         """
         Setup Keras and run the Sequential method to predict value
 
         References:
             https://keras.io/getting-started/sequential-model-guide/
 
-        :param data:
-        :param dependent_label: sequential-object model, predicted value, actual (true) value
-        :param hidden_layers: number of hidden layers (default 1)
         :param output_signals: default 1 (when there's only 1 categorical column)
         :return: Keras-Sequential object, the actual (true) value, the predicted value
         """
         # split data
-        x_train, x_eval, y_train, y_eval = StartMod.split_data(data, self.label)
+        x_train, x_eval, y_train, y_eval = StartMod.split_data(self.data, self.label)
 
         # Initialising the ANN
         model = Sequential()
 
         # tbd: use parameter tuning to find the exact number of nodes in the hidden-layer
-        # default = number of features
-        input_signals = x_train.shape[1]
+        # Number of layers and neurons in every layers (in numpy array e.g. [1000, 500, 250, 3])
+        hidden_units = self.hidden_units
 
+        # Init hyper parameter
+        np.random.seed(10)
+        hidden_initializer = random_uniform(seed=10)
+        input_dimension = len(x_train.columns)  # or input_dimension = len(x_train.shape[1])
+        
+        # default = number of features, input_signals = x_train.shape[1] = hidden_units[0]
         # Adding the input layer and the first hidden layer, activation function as rectifier function
-        model.add(Dense(activation="relu", input_dim=x_train.shape[1], units=input_signals,
-                        kernel_initializer="uniform"))
+        model.add(Dense(units=hidden_units[0], input_dim=input_dimension, kernel_initializer=hidden_initializer,
+                        activation=self.activation_fn))
 
         # Adding the second hidden layer, activation function as rectifier function
-        for _ in range(hidden_layers):
-            model.add(Dense(activation="relu", units=input_signals, kernel_initializer="uniform"))
+        # print(hidden_units)
+        for i in range(len(hidden_units)-2):
+            # print(i+1, hidden_units[i+1])
+            model.add(Dense(activation="relu", units=hidden_units[i+1], kernel_initializer="uniform"))
 
         # Adding the output layer (in case of there's only one dependent_label), activation function as sigmoid function
+        output_signals = hidden_units[-1:][0]
         model.add(Dense(activation="sigmoid", units=output_signals, kernel_initializer="uniform"))
 
         # Compiling the ANN with optimizer='adam'
-        model.compile(optimizer='adam', loss='binary_crossentropy', metrics=['accuracy'])
+        model.compile(optimizer='adam', loss=self.loss, metrics=['accuracy'])
 
         # Fit the keras_model to the training_data and see the real time training of model on data with result of loss
         # and accuracy. The smaller batch_size and higher epochs, the better the result. However, slow_computing!
+        # print(x_train.shape, y_train.shape)
         model.fit(x_train, y_train, batch_size=self.batch_size, epochs=self.nr_epochs)
 
         # Predictions and evaluating the model
@@ -425,11 +435,13 @@ class StartModTF(StartMod):
         # print(hidden_units[0])
         model.add(Dense(units=hidden_units[0], input_dim=input_dimension, kernel_initializer=hidden_initializer,
                         activation=self.activation_fn))
+
         if len(hidden_units[1:-1])>0:
             for i, v in enumerate(hidden_units[1:-1]):
                 # print(i, v)
                 model.add(Dense(units=v, kernel_initializer=hidden_initializer, activation=self.activation_fn))
         # print(hidden_units[-1:][0])
+        # Output signal hidden_units[-1:][0]
         model.add(Dense(units=hidden_units[-1:][0], kernel_initializer=hidden_initializer))
 
         # reset optimizer
@@ -437,7 +449,7 @@ class StartModTF(StartMod):
         self.optimizer = sgd
 
         # compile and train model with training_data
-        model.compile(loss='mean_squared_error', optimizer=self.optimizer, metrics=['accuracy'])
+        model.compile(loss=self.loss, optimizer=self.optimizer, metrics=['accuracy'])
         model.fit(x_train, y_train, epochs=self.nr_epochs, batch_size=self.batch_size)
 
         # Evaluate the model
@@ -480,8 +492,6 @@ class StartModTF(StartMod):
         return info
 
 
-smtf = StartModTF(train_data)
-smtf.info_help()
 # update parameters
 # new_param={'hidden_units':[10,10,10], 'optimizer':'Adam', 'activation_fn':'sigmoid', 'learning_rate': 0.0001,
 #            'steps':2000, 'batch_size':10, 'num_epochs':10, 'feature_scl':True}

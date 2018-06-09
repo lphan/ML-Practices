@@ -49,9 +49,8 @@ class StartML(object):
             print("Error open file config.ini")
             return
 
-        data_path_1 = config['paths']['data_path_1']
-        data_path_2 = config['paths']['data_path_2']
-        data_path_3 = config['paths']['data_path_3']
+        # pass data from config file to local var
+        data_path = config['paths']['data_path']
 
         exclude_obj_col = config.getboolean('StartML', 'exclude_object_column')
         nan_drop_col = config.getboolean('StartML', 'nan_drop_column')
@@ -60,9 +59,7 @@ class StartML(object):
         nan_mean = config.getboolean('StartML', 'nan_mean')
         nan_mean_neighbors = config.getboolean('StartML', 'nan_mean_neighbors')
 
-        StartML.kwargs.update({"data_path_1": data_path_1,
-                               "data_path_2": data_path_2,
-                               "data_path_3": data_path_3,
+        StartML.kwargs.update({"data_path": data_path,
                                "drop_obj_col": exclude_obj_col,
                                "nan_drop_col": nan_drop_col,
                                "nan_drop_row": nan_drop_row,
@@ -808,49 +805,46 @@ class StartML(object):
     @staticmethod
     def run():
         """
-        Read data from data_set .csv and convert them into Pandas Data Frame
-        data_path_1: training_data
-        data_path_2: preprocessed data without NaN
-        data_path_3: test_data (new_data is used to test the model)
+        run data processing pipeline
+        """
+        pass
+
+    @staticmethod
+    def import_data():
+        """
+        Read data from data_set .csv and convert them into Pandas Data Frame and append them into a list
 
         References:
             https://docs.python.org/3/library/codecs.html#standard-encodings
-
         """
         StartML._arguments()
         if not StartML.kwargs:
             return
 
+        df = []
         try:
-            if StartML.kwargs['data_path_1']:
-                if StartML.kwargs['data_path_1'].endswith('.xlsx') or StartML.kwargs['data_path_1'].endswith('.xls'):
-                    data_path_1 = pd.read_excel(StartML.kwargs['data_path_1'])
-                elif StartML.kwargs['data_path_1'].endswith('.json'):
-                    data_path_1 = pd.read_json(StartML.kwargs['data_path_1'])
-                else:
-                    data_path_1 = pd.read_csv(StartML.kwargs['data_path_1'])
-            else:
-                data_path_1 = ''
+            if StartML.kwargs['data_path']:
+                paths = StartML.kwargs['data_path'].split(',')
+                for path in paths:
 
-            if StartML.kwargs['data_path_2']:
-                if StartML.kwargs['data_path_2'].endswith('.xlsx') or StartML.kwargs['data_path_2'].endswith('.xls'):
-                    data_path_2 = pd.read_excel(StartML.kwargs['data_path_2'])
-                elif StartML.kwargs['data_path_2'].endswith('.json'):
-                    data_path_2 = pd.read_json(StartML.kwargs['data_path_2'])
-                else:
-                    data_path_2 = pd.read_csv(StartML.kwargs['data_path_2'])
-            else:
-                data_path_2 = ''
+                    # remove space before and after string
+                    path = path.strip()
 
-            if StartML.kwargs['data_path_3']:
-                if StartML.kwargs['data_path_3'].endswith('.xlsx') or StartML.kwargs['data_path_3'].endswith('.xls'):
-                    data_path_3 = pd.read_excel(StartML.kwargs['data_path_3'])
-                elif StartML.kwargs['data_path_3'].endswith('.json'):
-                    data_path_3 = pd.read_json(StartML.kwargs['data_path_3'])
-                else:
-                    data_path_3 = pd.read_csv(StartML.kwargs['data_path_3'])
+                    if path.endswith('.xlsx') or path.endswith('.xls'):
+                        data_exl = pd.read_excel(path)
+                        df.append(data_exl)
+                    elif path.endswith('.json'):
+                        data_json = pd.read_json(path)
+                        df.append(data_json)
+                    elif path.endswith('.csv'):
+                        data_csv = pd.read_csv(path)
+                        df.append(data_csv)
+                    else:
+                        print('Unknown format')
+                        return
             else:
-                data_path_3 = ''
+                print("Data is not given")
+                return
 
         except FileNotFoundError as fe:
             print("\nFileNotFoundError, data does not exist", fe)
@@ -858,7 +852,7 @@ class StartML(object):
             import sys
             sys.exit(1)
 
-        return data_path_1, data_path_2, data_path_3
+        return df
 
     @staticmethod
     def info_help():
@@ -871,22 +865,15 @@ class StartML(object):
             "StartML.pre_processing_rows(data)": StartML.process_nan_rows.__doc__,
             "StartML.nan_columns(data)": StartML.nan_columns.__doc__,
             "StartML.nan_rows(data)": StartML.nan_rows.__doc__,
-            "train_data": train_data.__class__,
-            "nonan_data": nonan_data.__class__,
-            "test_data": test_data.__class__,
+            "data": data.__class__
         }
 
 
-train_data, nonan_data, test_data = StartML.run()
-
-# Remove leading and trailing spaces in columns
-if isinstance(train_data, pd.DataFrame):
-    # if not train_data.empty:
-    train_data.columns = [col.strip() for col in train_data.columns]
-
-if isinstance(nonan_data, pd.DataFrame):
-    # if not test_data.empty:
-    nonan_data.columns = [col.strip() for col in nonan_data.columns]
+data = []
+for dat in StartML.import_data():
+    if isinstance(dat, pd.DataFrame):
+        dat.columns = [col.strip() for col in dat.columns]
+        data.append(dat)
 
 info_ml = StartML.info_help()
 
