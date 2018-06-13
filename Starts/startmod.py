@@ -131,7 +131,7 @@ class StartMod(StartML):
         pass
 
     @classmethod
-    def split_data(cls, data, dependent_label, test_size=0.2, random_state=0, type_pd=True, split=True):
+    def split_data(cls, data, dependent_label=None, test_size=0.2, random_state=0, type_pd=True, split=True):
         """
         Split data by rows into training_data and test_data used for (regression, classification) methods
 
@@ -151,6 +151,11 @@ class StartMod(StartML):
         # x = data.iloc[:, :-1].values
         # y = data.iloc[:, 1].values
         # save the dependent value into y
+
+        if not dependent_label and not type_pd and isinstance(data, np.ndarray):
+            # split data into train and test in ratio 8:2
+            train, test = train_test_split(data, test_size=test_size)
+            return train, test
 
         if type_pd:
             # convert to type Pandas DataFrame
@@ -237,7 +242,7 @@ class StartMod(StartML):
             return non_obj_feature, obj_feature
 
     @classmethod
-    def feature_scaling(cls, data, type_pd=True, std=True):
+    def feature_scaling(cls, data, feature_range=None, type_pd=True, std=True):
         """
         Standardization involves rescaling the features such that they have the properties
         of a standard normal distribution with a mean of zero and a standard deviation of one
@@ -259,10 +264,10 @@ class StartMod(StartML):
             if std:
                 scaler = StandardScaler(copy=True, with_mean=True, with_std=True)
             else:
-                scaler = MinMaxScaler()
+                scaler = MinMaxScaler(feature_range=feature_range)
             # Compute the mean and std to be used for later scaling
             scaler.fit(data)
-            return scaler.transform(data)
+            return scaler, scaler.transform(data)
 
     @classmethod
     def feature_selection(cls, data, rm_columns, dependent_label=None, rm=False, pr=True):

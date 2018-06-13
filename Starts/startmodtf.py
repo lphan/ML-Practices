@@ -13,10 +13,10 @@ __author__ = 'Long Phan'
 
 import tensorflow as tf
 from keras.models import Sequential
-from keras.layers import Dense, Flatten, Conv1D, Dropout
+from keras.layers import Dense, Flatten, Conv1D, Dropout, LSTM
 from keras.optimizers import SGD
 from keras.initializers import random_uniform
-
+from math import sqrt
 from Starts.startmod import *
 
 
@@ -41,6 +41,10 @@ class StartModTF(StartMod):
         setup parameters for neuron network
         :param data: pandas.core.frame.DataFrame
         :param label: target_feature
+
+        References:
+            https://keras.io/losses/
+            https://keras.io/optimizers/
         """
         self.data = data
         if label is None:
@@ -54,14 +58,14 @@ class StartModTF(StartMod):
         else:
             self.label = label  # regression
 
-        self.hidden_units = [10, 10]    # default setup 10 neuron in 2 layers
-        self.optimizer = "Adagrad"      # default Adagrad optimizer
-        self.activation_fn = "relu"     # default 'relu' function
-        self.learning_rate = 0.001      # default 0.001
-        self.steps = 1000               # default training_steps 1000
-        self.loss = 'mean_squared_error'
+        self.hidden_units = [10, 10]        # default setup 10 neuron in 2 layers
+        self.optimizer = "Adagrad"          # default Adagrad optimizer
+        self.activation_fn = "relu"         # default 'relu' function
+        self.learning_rate = 0.001          # default 0.001
+        self.steps = 1000                   # default training_steps 1000
+        self.loss = 'mean_squared_error'    # other options: binary_crossentropy, categorical_crossentropy
 
-        # (correspond with available system memory capacity to avoid outofmemory_error,
+        # (correspond with available system memory capacity to avoid out_of_memory_error,
         # small for many features, big for performance)
         self.batch_size = 10            # default batch_size 10
 
@@ -432,7 +436,6 @@ class StartModTF(StartMod):
         model.add(Dropout(dropout_rate))
 
         # Use output of CNN as input of ANN, e.g. units = np.array([1000, 500, 250, 3])
-        # print(hidden_units[0])
         model.add(Dense(units=hidden_units[0], input_dim=input_dimension, kernel_initializer=hidden_initializer,
                         activation=self.activation_fn))
 
@@ -440,6 +443,7 @@ class StartModTF(StartMod):
             for i, v in enumerate(hidden_units[1:-1]):
                 # print(i, v)
                 model.add(Dense(units=v, kernel_initializer=hidden_initializer, activation=self.activation_fn))
+
         # print(hidden_units[-1:][0])
         # Output signal hidden_units[-1:][0]
         model.add(Dense(units=hidden_units[-1:][0], kernel_initializer=hidden_initializer))
@@ -462,25 +466,180 @@ class StartModTF(StartMod):
 
         return model, y_eval, y_pred
 
-    def keras_rnn_lstm(self):
+    def keras_rnn_lstm_onestep_univ(self, repeats=10, nb_neurons=1):
         """
-        Time Series model
-        Setup Keras and find regression_value for (multiple) label(s)
+        Build recurrent neural network RNN using Long-Short Term Memory LSTM for a one-step univariate time series
+        forecasting problem
 
         Reference:
+            https://keras.io/layers/recurrent/#lstm
+            https://machinelearningmastery.com/time-series-forecasting-long-short-term-memory-network-python/
 
+        :return:
+        """
 
+        # frame a sequence as a supervised learning problem
+        def timeseries_to_supervised(data, lag=1):
+            df = pd.Series(data)
+            columns = pd.Series(data=[df.shift(i) for i in range(1, lag + 1)])
+            new_df = pd.concat([columns[0], df], axis=1)
+            new_df.fillna(0, inplace=True)
+            return new_df
+
+        # create a different series
+        def difference(dataset, interval=1):
+            diff = list()
+            for i in range(interval, len(dataset)):
+                value = dataset[i] - dataset[i - interval]
+                diff.append(value)
+            return pd.Series(diff)
+
+        # invert difference value
+        def inverse_difference(history, yhat, interval=1):
+            return yhat + history[-interval]
+
+        # inverse scaling for a forecasted value
+        def invert_scale(scaler, X, value):
+            new_row = [x for x in X] + [value]
+            array = np.array(new_row)
+            array = array.reshape(1, len(array))
+            inverted = scaler.inverse_transform(array)
+            return inverted[0, -1]
+
+        # fit an LSTM network to training data
+        def fit_lstm(train, nb_epoch, neurons):
+            """
+            The LSTM layer expects input to be in a matrix
+            :param train:
+            :param nb_epoch:
+            :param neurons:
+            :return:
+            """
+            X, y = train[:, 0:-1], train[:, -1]
+            # reshape X into tuple of Samples/TimeSteps/Features format, so keep it simple as
+            # one separate sample, with one timestep and one feature.
+            X = X.reshape(X.shape[0], 1, X.shape[1])
+
+            # init Keras Sequential model with 1 output
+            # batch_input_shape = tuple that specifies the expected number of observations to read each batch,
+            # the number of time steps, and the number of features.
+            model = Sequential()
+            model.add(LSTM(neurons, batch_input_shape=(self.batch_size, X.shape[1], X.shape[2]), stateful=True))
+            model.add(Dense(1))
+
+            # set loss='mean_squared_error', optimizer='adam'
+            model.compile(loss=self.loss, optimizer=self.optimizer)
+            for i in range(nb_epoch):
+                model.fit(X, y, epochs=1, batch_size=self.batch_size, verbose=0, shuffle=False)
+                model.reset_states()
+            return model
+
+        # make a one-step forecast
+        def forecast_lstm(model, X):
+            X = X.reshape(1, 1, len(X))
+            yhat = model.predict(X, batch_size=self.batch_size)
+            return yhat[0, 0]
+
+        # transform data to be stationary
+        raw_values = self.data[self.label].values
+        diff_values = difference(raw_values)
+
+        # transform data to be supervised learning
+        supervised = timeseries_to_supervised(diff_values, 1)
+        supervised_values = supervised.values
+
+        # transform the scale of the data
+        scaler, supervised_values_scaled = StartMod.feature_scaling(supervised_values, feature_range=(-1, 1),
+                                                                    type_pd=False)
+
+        # split data into train and test set
+        train_scaled, test_scaled = StartMod.split_data(data=supervised_values_scaled, type_pd=False, test_size=0.1)
+
+        # repeat experiment from parameter repeat
+        error_scores = list()
+        for r in range(repeats):
+            # fit the model with different parameters fit_lstm(train_scaled, 3000, 4), or (train_scaled, 1500, 1)
+            lstm_model = fit_lstm(train_scaled, self.nr_epochs, nb_neurons)
+
+            # forecast the entire training dataset to build up state for forecasting ??
+            # ->  train_scaled[:, 0] is the original value in first column
+            # ->  train_scaled[:, 1] is the shifted one-time step value
+            train_reshaped = train_scaled[:, 0].reshape(len(train_scaled), 1, 1)
+            lstm_model.predict(train_reshaped, batch_size=self.batch_size)
+
+            # walk-forward validation on the test data by predicting on test_scaled to measure the model's performance
+            y_pred = list()
+
+            for i in range(len(test_scaled)):
+                # make one-step forecast as supervised learning
+                # y = test_scaled[i, 1] is the shifted one-time step values
+                # X, y = test_scaled[i, 0:-1], test_scaled[i, -1]
+                # convert X into numpy array to get its shape and its length
+                X, y = np.array([test_scaled[i, 0]]), test_scaled[i, 1]
+                X = X.reshape(1, 1, len(X))
+                yhat = lstm_model.predict(X, batch_size=self.batch_size)
+                # print("------ yhat ", yhat)
+                yhat = yhat[0, 0]
+
+                # invert scaling
+                yhat = invert_scale(scaler, X, yhat)
+                # print("------ yhat invert_scale", yhat)
+
+                # invert differencing
+                yhat = inverse_difference(raw_values, yhat, len(test_scaled) + 1 - i)
+                # print("------ yhat invert_difference", yhat)
+
+                # store forecast
+                y_pred.append(yhat)
+                expected = raw_values[len(train_scaled) + i + 1]
+                print('At time point=%d, Predicted=%f, Expected=%f' % (i + 1, yhat, expected))
+
+            # report performance by measuring RMSE from truth value in test_scaled and predicted value for every repeat
+            y_eval = raw_values[-len(test_scaled):]
+            rmse = sqrt(mean_squared_error(y_eval, y_pred))
+            print('%d) Test RMSE: %.3f' % (r + 1, rmse), '\n')
+            # print(len(raw_values[len(train_scaled)+1:]), len(predictions), len(raw_values[-len(test_scaled):]))
+            error_scores.append(rmse)
+
+        # summarize results
+        results = pd.DataFrame()
+        results['rmse'] = error_scores
+        print(results.describe())
+        results.boxplot()
+
+        return lstm_model, raw_values[-len(test_scaled):], y_pred
+
+    def keras_rnn_lstm_onestep_multiv(self):
+        """
+        Build recurrent neural network RNN using Long-Short Term Memory LSTM for a one-step multivariate time series
+        forecasting problem
+
+        Reference:
+            https://keras.io/layers/recurrent/#lstm
+            https://machinelearningmastery.com/multivariate-time-series-forecasting-lstms-keras/
+        :return:
+        """
+        pass
+
+    def keras_rnn_lstm_multisteps(self):
+        """
+        Build recurrent neural network RNN using Long-Short Term Memory LSTM for a multi-step time series
+        forecasting problem
+
+        Reference:
+            https://keras.io/layers/recurrent/#lstm
+            https://machinelearningmastery.com/multi-step-time-series-forecasting-long-short-term-memory-networks-python/
         :return:
         """
         pass
 
     @classmethod
     def regularization(cls):
-    	"""
+        """
         e.g. Dropout to prevent Neural Networks from Overfitting
             Grid_Search to tune the hyper_parameter
         """
-    	pass
+        pass
 
     @staticmethod
     def info_help():
@@ -494,5 +653,5 @@ class StartModTF(StartMod):
 
 # update parameters
 # new_param={'hidden_units':[10,10,10], 'optimizer':'Adam', 'activation_fn':'sigmoid', 'learning_rate': 0.0001,
-#            'steps':2000, 'batch_size':10, 'num_epochs':10, 'feature_scl':True}
+#            'steps':2000, 'batch_size':10, 'num_epochs':10, 'feature_scl':True, 'loss_fn':'mean_squared_error'}
 # smtf.update_parameters=new_param

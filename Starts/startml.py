@@ -15,7 +15,6 @@ __author__ = 'Long Phan'
 import configparser
 import pandas as pd
 import numpy as np
-
 from sklearn.preprocessing import Imputer
 
 
@@ -831,13 +830,13 @@ class StartML(object):
                     path = path.strip()
 
                     if path.endswith('.xlsx') or path.endswith('.xls'):
-                        data_exl = pd.read_excel(path)
+                        data_exl = pd.read_excel(path, low_memory=False)
                         df.append(data_exl)
                     elif path.endswith('.json'):
-                        data_json = pd.read_json(path)
+                        data_json = pd.read_json(path, low_memory=False)
                         df.append(data_json)
                     elif path.endswith('.csv'):
-                        data_csv = pd.read_csv(path)
+                        data_csv = pd.read_csv(path, low_memory=False)
                         df.append(data_csv)
                     else:
                         print('Unknown format')
