@@ -1,9 +1,14 @@
 # ML-Practices
 Loop_of_the_path_to_DataScience_and_MachineLearning:
+
 	1. Study/ review the theories in Machine Learning from different Sources
+
 	2. Implement/ improve the algorithm using Python3 and its frameworks 
+
 	3. Analyse the data from public sources (scikit-learn, UCI, Kaggle)
+
 	4. Integrate the implementation into the package Starts
+
 
 Status of the analysed data packages: On-going updated
 

@@ -63,7 +63,7 @@ class StartModTF(StartMod):
         self.activation_fn = "relu"         # default 'relu' function
         self.learning_rate = 0.001          # default 0.001
         self.steps = 1000                   # default training_steps 1000
-        self.loss = 'mean_squared_error'    # other options: binary_crossentropy, categorical_crossentropy
+        self.loss = 'mean_squared_error'    # option: binary_crossentropy, categorical_crossentropy, mean_absolute_error
 
         # (correspond with available system memory capacity to avoid out_of_memory_error,
         # small for many features, big for performance)
@@ -466,7 +466,7 @@ class StartModTF(StartMod):
 
         return model, y_eval, y_pred
 
-    def keras_rnn_lstm_onestep_univ(self, repeats=10, nb_neurons=1):
+    def keras_rnn_lstm_onestep_univ(self, repeats=10):
         """
         Build recurrent neural network RNN using Long-Short Term Memory LSTM for a one-step univariate time series
         forecasting problem
@@ -507,29 +507,28 @@ class StartModTF(StartMod):
             return inverted[0, -1]
 
         # fit an LSTM network to training data
-        def fit_lstm(train, nb_epoch, neurons):
+        def fit_lstm(train):
             """
             The LSTM layer expects input to be in a matrix
             :param train:
-            :param nb_epoch:
-            :param neurons:
             :return:
             """
             X, y = train[:, 0:-1], train[:, -1]
-            # reshape X into tuple of Samples/TimeSteps/Features format, so keep it simple as
+            # reshape X to the 3D format (Samples, TimeSteps, Features) for LSTM, so keep it simple as
             # one separate sample, with one timestep and one feature.
             X = X.reshape(X.shape[0], 1, X.shape[1])
 
-            # init Keras Sequential model with 1 output
+            # init Keras Sequential model with 1 hidden layer with x_given neurons and 1 output
             # batch_input_shape = tuple that specifies the expected number of observations to read each batch,
             # the number of time steps, and the number of features.
             model = Sequential()
-            model.add(LSTM(neurons, batch_input_shape=(self.batch_size, X.shape[1], X.shape[2]), stateful=True))
-            model.add(Dense(1))
+            model.add(LSTM(self.hidden_units[0], batch_input_shape=(self.batch_size, X.shape[1], X.shape[2]),
+                           stateful=True))
+            model.add(Dense(self.hidden_units[1]))  # 1 for 1 output
 
             # set loss='mean_squared_error', optimizer='adam'
             model.compile(loss=self.loss, optimizer=self.optimizer)
-            for i in range(nb_epoch):
+            for i in range(self.nr_epochs):
                 model.fit(X, y, epochs=1, batch_size=self.batch_size, verbose=0, shuffle=False)
                 model.reset_states()
             return model
@@ -559,7 +558,7 @@ class StartModTF(StartMod):
         error_scores = list()
         for r in range(repeats):
             # fit the model with different parameters fit_lstm(train_scaled, 3000, 4), or (train_scaled, 1500, 1)
-            lstm_model = fit_lstm(train_scaled, self.nr_epochs, nb_neurons)
+            lstm_model = fit_lstm(train_scaled)
 
             # forecast the entire training dataset to build up state for forecasting ??
             # ->  train_scaled[:, 0] is the original value in first column
