@@ -45,6 +45,7 @@ class StartModTF(StartMod):
         References:
             https://keras.io/losses/
             https://keras.io/optimizers/
+
         """
         self.data = data
         if label is None:
@@ -79,6 +80,13 @@ class StartModTF(StartMod):
 
     # reset all attributes in neural network
     def _set_attributes(self, dict_params):
+        """
+        Reference:
+            https://machinelearningmastery.com/5-step-life-cycle-neural-network-models-keras/
+
+        :param dict_params:
+        :return:
+        """
         self.hidden_units = dict_params['hidden_units']
         self.optimizer = dict_params['optimizer']
         self.activation_fn = dict_params['activation_fn']
@@ -116,9 +124,6 @@ class StartModTF(StartMod):
         :param nr_epochs:
         :return:
         """
-
-        return tf.estimator.inputs.pandas_input_fn(x=features, y=labels, batch_size=batch_size,
-                                                   num_epochs=nr_epochs, shuffle=True)
         # Alternatives:
         # tensors = (dict(features), labels)
         #
@@ -126,6 +131,8 @@ class StartModTF(StartMod):
         #
         # # Shuffle, repeat, and batch the examples.
         # return dataset.shuffle(1000).repeat().batch(batch_size)
+        return tf.estimator.inputs.pandas_input_fn(x=features, y=labels, batch_size=batch_size,
+                                                   num_epochs=nr_epochs, shuffle=True)
 
     @classmethod
     def eval_input_fn(cls, features, label, batch_size, epochs):
@@ -321,6 +328,28 @@ class StartModTF(StartMod):
 
         return classifier, y_true, y_predict
 
+    @classmethod
+    def regularization(cls):
+        """
+        e.g. Dropout to prevent Neural Networks from Overfitting
+            Grid_Search to tune the hyper_parameter
+        """
+        pass
+
+    @staticmethod
+    def info_help():
+        info = {
+            "info_help_StartModTF": StartModTF.__name__,
+            "StartModTF.(data)": StartModTF.regressor_custom.__doc__
+            }
+
+        return info
+
+
+class StartModTFANN(StartModTF):
+    def __init__(self, data, label):
+        StartModTF.__init__(self, data, label)
+
     def keras_sequential(self, output_signals=1):
         """
         Setup Keras and run the Sequential method to predict value
@@ -373,10 +402,15 @@ class StartModTF(StartMod):
         y_pred = model.predict(x_eval)
 
         # Evaluate the model
-        scores = model.evaluate(x_train, y_train)
-        print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
+        scores, accuracy = model.evaluate(x_train, y_train)
+        print("\nModel %s: Scores: %.2f%%, Accuracy: %.2f%%" % (model.metrics_names[1], scores[1]*100, accuracy*100))
 
         return model, y_eval, y_pred
+
+
+class StartModTFCNN(StartModTF):
+    def __init__(self, data, label):
+        StartModTF.__init__(self, data, label)
 
     def keras_cnn_1d(self, momentum=0.2, seed=10, dropout_rate=0.2, n_filters=32, kernel_size=1, padding="same"):
         """
@@ -457,14 +491,19 @@ class StartModTF(StartMod):
         model.fit(x_train, y_train, epochs=self.nr_epochs, batch_size=self.batch_size)
 
         # Evaluate the model
-        scores = model.evaluate(x_train, y_train)
-        print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
+        scores, accuracy = model.evaluate(x_train, y_train)
+        print("\nModel %s: Scores: %.2f%%, Accuracy: %.2f%%" % (model.metrics_names[1], scores[1]*100, accuracy*100))
 
         # Predict value
         y_pred = model.predict(x_eval.values.reshape(x_eval.shape[0], x_eval.shape[1], 1))
         y_pred = pd.DataFrame(data=y_pred, columns=y_eval.columns)
 
         return model, y_eval, y_pred
+
+
+class StartModTFRNN(StartModTF):
+    def __init__(self, data, label):
+        StartModTF.__init__(self, data, label)
 
     def keras_rnn_lstm_onestep_univ(self, repeats=10):
         """
@@ -479,18 +518,18 @@ class StartModTF(StartMod):
         """
 
         # frame a sequence as a supervised learning problem
-        def timeseries_to_supervised(data, lag=1):
-            df = pd.Series(data)
+        def timeseries_to_supervised(dat, lag=1):
+            df = pd.Series(dat)
             columns = pd.Series(data=[df.shift(i) for i in range(1, lag + 1)])
             new_df = pd.concat([columns[0], df], axis=1)
             new_df.fillna(0, inplace=True)
             return new_df
 
         # create a different series
-        def difference(dataset, interval=1):
+        def difference(dat, interval=1):
             diff = list()
-            for i in range(interval, len(dataset)):
-                value = dataset[i] - dataset[i - interval]
+            for i in range(interval, len(dat)):
+                value = dat[i] - dat[i - interval]
                 diff.append(value)
             return pd.Series(diff)
 
@@ -631,24 +670,6 @@ class StartModTF(StartMod):
         :return:
         """
         pass
-
-    @classmethod
-    def regularization(cls):
-        """
-        e.g. Dropout to prevent Neural Networks from Overfitting
-            Grid_Search to tune the hyper_parameter
-        """
-        pass
-
-    @staticmethod
-    def info_help():
-        info = {
-            "info_help_StartModTF": StartModTF.__name__,
-            "StartModTF.(data)": StartModTF.regressor_custom.__doc__
-            }
-
-        return info
-
 
 # update parameters
 # new_param={'hidden_units':[10,10,10], 'optimizer':'Adam', 'activation_fn':'sigmoid', 'learning_rate': 0.0001,

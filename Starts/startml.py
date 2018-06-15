@@ -830,7 +830,7 @@ class StartML(object):
                     path = path.strip()
 
                     if path.endswith('.xlsx') or path.endswith('.xls'):
-                        data_exl = pd.read_excel(path, low_memory=False)
+                        data_exl = pd.read_excel(path)
                         df.append(data_exl)
                     elif path.endswith('.json'):
                         data_json = pd.read_json(path, low_memory=False)

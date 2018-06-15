@@ -131,7 +131,7 @@ class StartVis(StartML):
         """
         visual boxplot all data features to detect the possible outliers in every features
 
-        :param data:
+        :param data: pandas.core.frame.DataFrame
         :return:
         """
         fig = plt.figure(1, figsize=(9, 6))
@@ -144,6 +144,22 @@ class StartVis(StartML):
 
         bp = ax.boxplot(data_to_plot)
         plt.title("Visual Boxplot")
+        plt.show()
+
+    @classmethod
+    def vis_subplot(cls, data):
+        """
+        show subplot of all features columns in data
+        :param data: pandas.core.frame.DataFrame
+        :return:
+        """
+        idx = 1
+        plt.figure(figsize=(15, 10))
+        for col in data.columns:
+            plt.subplot(len(data.columns), 1, idx)
+            plt.plot(data[col])  # plt.plot(nonan_data[col].values)
+            plt.title(col, y=0.2, loc='right')
+            idx += 1
         plt.show()
 
     @classmethod
