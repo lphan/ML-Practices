@@ -1,4 +1,26 @@
-# ML-Practices
+# ML-Practices (beta)
+
+## INTRO: Few things that I want to tell you
+
+as a person who are very passionate about Data Science, Machine Learning and Deep Learning so that I want to develop a framework layer in between many popular frameworks (Pandas, Numpy, Matplotlib, statsmodels, Tensorflow, Spark, etc.). 
+In a short description, package 'Starts' is 'Wrapper' package with the functions which are written with simple algorithms and easy to run and apply as well as exploit the power of many other data analysis frameworks. 
+ 
+I have two goals with this work and I hope it will work in one day:
+- for the person who are like me and want to study Machine Learning 'Learn by Doing' are able to get into Machine Learning's technique lightly with less effort and overcome the raw-theories's barrier.
+- for the person who want to analyse data and get the result/ information asap but do not have much time to deal with the complexity of many different frameworks. 
+
+"
+By taking a look on the real examples and see how data are being analysed, 
+install the frameworks you need and do the similar ways like one of examples,
+improve your result by converting your ideas into the new functions like one of the already given functions in package you like. 
+"
+
+- You can always extend this package 'Starts' and share with other people the new functions/ workflows/ frameworks you like. 
+- Everyone can do programming and you must not be a professional programmer to be able to get the insight from your data. 
+
+Finally, it's Open Source on Open Data. Please feel free to do and to share. It's Great.
+In a Github's way, just 'fork, do what you like and pull request'
+
 Loop_of_the_path_to_DataScience_and_MachineLearning:
 
 	1. Study/ review the theories in Machine Learning from different Sources
@@ -10,7 +32,7 @@ Loop_of_the_path_to_DataScience_and_MachineLearning:
 	4. Integrate the implementation into the package Starts
 
 
-Status of the analysed data packages: On-going updated
+## Status of the analysed data packages: On-going updated
 
 > 1_USGS: analyse Pesticide Use in Agriculture. Which compounds are used most frequently in the United States?
 
@@ -40,18 +62,18 @@ Status of the analysed data packages: On-going updated
 
 > 14_NSIDC: analyse data daily-sea-ice-extent NSIDC National Snow & Ice Data Center
 
+
 ### How-To: run the script .ipynb with jupyter notebook
-> data need to be downloaded from the reference link in x_foldername 
+data need to be downloaded from the reference link in x_foldername 
 
-> copy and overwrite the file config.ini and modify the data path accordingly.
+copy and overwrite the file config.ini and modify the data path accordingly.
 
-> jupyter notebook x_foldername/x_filename.ipynb
+jupyter notebook x_foldername/x_filename.ipynb
 
-> More information: check out package Starts
+More information: please check out package Starts
 
 
-### References:
+### Data Sources:
 > https://www.kaggle.com/
 
 > https://archive.ics.uci.edu/ml/index.php
-

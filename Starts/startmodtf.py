@@ -65,6 +65,7 @@ class StartModTF(StartMod):
         self.learning_rate = 0.001          # default 0.001
         self.steps = 1000                   # default training_steps 1000
         self.loss = 'mean_squared_error'    # option: binary_crossentropy, categorical_crossentropy, mean_absolute_error
+        self.drop_out = 0.2
 
         # (correspond with available system memory capacity to avoid out_of_memory_error,
         # small for many features, big for performance)
@@ -75,8 +76,8 @@ class StartModTF(StartMod):
 
     # get and set methods for attributes
     def _get_attributes(self):
-        return self.hidden_units, self.optimizer, self.activation_fn, self.learning_rate, \
-               self.steps, self.batch_size, self.nr_epochs, self.feature_scl
+        return self.hidden_units, self.optimizer, self.activation_fn, self.learning_rate, self.steps, self.loss, \
+               self.drop_out, self.rec_drop_out, self.batch_size, self.nr_epochs, self.feature_scl
 
     # reset all attributes in neural network
     def _set_attributes(self, dict_params):
@@ -96,6 +97,8 @@ class StartModTF(StartMod):
         self.nr_epochs = dict_params['num_epochs']
         self.feature_scl = dict_params['feature_scl']
         self.loss = dict_params['loss_fn']
+        self.drop_out = dict_params['drop_out']
+        self.rec_drop_out = dict_params['rec_drop_out']
 
     def info_parameters(self):
         print("\nHidden_units: {}".format(self.hidden_units), "\n")
@@ -107,6 +110,8 @@ class StartModTF(StartMod):
         print("Number_of_epochs: {}".format(self.nr_epochs), "\n")
         print("Feature_Scaling: {}".format(self.feature_scl), "\n")
         print("Loss_function: {}".format(self.loss), "\n")
+        print("Drop_out: {}".format(self.drop_out), "\n")
+        print("Recurrent_drop_out: {}".format(self.rec_drop_out), "\n")
 
     update_parameters = property(_get_attributes, _set_attributes)
 
@@ -329,7 +334,7 @@ class StartModTF(StartMod):
         return classifier, y_true, y_predict
 
     @classmethod
-    def regularization(cls):
+    def regularization_nn(cls):
         """
         e.g. Dropout to prevent Neural Networks from Overfitting
             Grid_Search to tune the hyper_parameter
@@ -412,13 +417,12 @@ class StartModTFCNN(StartModTF):
     def __init__(self, data, label):
         StartModTF.__init__(self, data, label)
 
-    def keras_cnn_1d(self, momentum=0.2, seed=10, dropout_rate=0.2, n_filters=32, kernel_size=1, padding="same"):
+    def keras_cnn_1d(self, momentum=0.2, seed=10, n_filters=32, kernel_size=1, padding="same"):
         """
         Setup Keras hyper_parameters, Kernel_initializer 's parameter and find regression_value for (multiple) label(s)
 
         :param momentum: SGD's parameters
         :param seed: Setup hyperparameters (default is 10)
-        :param dropout_rate: Regularization technique to prevent Neural Networks from Overfitting
         :param n_filters: number of filters (default is 32)
         :param kernel_size:
         :param padding: Output dim has the same size as Input dim (default is 'same')
@@ -466,8 +470,8 @@ class StartModTFCNN(StartModTF):
         # Flattens the input
         model.add(Flatten())
 
-        # Applies Dropout to the input
-        model.add(Dropout(dropout_rate))
+        # Regularization technique to prevent Neural Networks from Overfitting
+        model.add(Dropout(self.drop_out))
 
         # Use output of CNN as input of ANN, e.g. units = np.array([1000, 500, 250, 3])
         model.add(Dense(units=hidden_units[0], input_dim=input_dimension, kernel_initializer=hidden_initializer,
@@ -562,7 +566,7 @@ class StartModTFRNN(StartModTF):
             # the number of time steps, and the number of features.
             model = Sequential()
             model.add(LSTM(self.hidden_units[0], batch_input_shape=(self.batch_size, X.shape[1], X.shape[2]),
-                           stateful=True))
+                           stateful=True, dropout=self.drop_out, recurrent_dropout=self.rec_drop_out))
             model.add(Dense(self.hidden_units[1]))  # 1 for 1 output
 
             # set loss='mean_squared_error', optimizer='adam'

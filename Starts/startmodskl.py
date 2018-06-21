@@ -24,6 +24,8 @@ from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.naive_bayes import GaussianNB
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import BaggingClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import GradientBoostingClassifier
@@ -52,7 +54,7 @@ class StartModSKL(StartMod):
         pass
 
     @classmethod
-    def regression_linear(cls, data, dependent_label, poly=False):
+    def regression_linear(cls, data, dependent_label, poly=False, vis=True):
         """
         Apply method Linear regression y = ax + b (one independent variable, one dependent_label)
 
@@ -86,13 +88,18 @@ class StartModSKL(StartMod):
             lin_reg_2.fit(x_poly, y_train)
 
             print("Calculating coefficients: ", lin_reg_2.coef_)
-            print("Evaluation using r-square: ", lin_reg_2.score(x_test, y_test))
+            # print("Evaluation using r-square: ", lin_reg_2.score(x_test, y_test))
 
             # predict value on testing data by applying polynomial regression object
             y_predict = lin_reg_2.predict(reg_poly.fit_transform(x_test))
 
             # estimate the model by cross_validation method and training_data
             # StartMod.validation(reg_poly, x_train, y_train)
+
+            if vis:
+                # Visual the result
+                StartVis.vis_obj_predict(list(range(len(x_test))), y_test, y_predict,
+                                         title='Training vs predicted data')
 
             return reg_poly, y_test, y_predict
         else:
@@ -106,19 +113,18 @@ class StartModSKL(StartMod):
             # estimate the model by cross_validation method and training_data
             # StartMod.validation(reg_lin, x_train, y_train)
 
-            # Visualizing
-            StartVis.vis_obj_predict(x_train, y_train, lin_reg)
-
             # Predicting the Test and return the predicted result
             y_predict = lin_reg.predict(x_test)
 
-            # Visualizing
-            StartVis.vis_obj_predict(x_test, y_test, lin_reg)
+            if vis:
+                # Visualizing
+                StartVis.vis_obj_predict(list(range(len(x_test))), y_test, y_predict,
+                                         title='Training vs predicted data')
 
             return lin_reg, y_test, y_predict
 
     @classmethod
-    def regression_multi_linear(cls, data, dependent_label, pr=True):
+    def regression_multi_linear(cls, data, dependent_label, pr=True, vis=True):
         """
         Apply method Multiple Linear regression y = b0 + b1.x1 + b2.x2 + ... + bn.xn
         choose the optimal feature_columns using algorithm Backward Elimination
@@ -154,34 +160,34 @@ class StartModSKL(StartMod):
         reg = LinearRegression()
         reg.fit(x_train, y_train)
 
-        print("Calculating coefficients: ", reg.coef_)
-        print("Evaluation using r-square: ", reg.score(x_test, y_test))
-
-        # checking the magnitude of coefficients
-        predictors = x_train.columns
-
-        # sort all coefficients of all features (columns)
-        coef = pd.Series(reg.coef_, predictors).sort_values()
-
-        # plot all coefficients to see which features have the most impact on model
-        coef.plot(kind='bar', title='Modal Coefficients')
+        print("\nCalculating coefficients: ", reg.coef_)
+        print("\nEvaluation using r-square: ", reg.score(x_test, y_test))
 
         # Estimate the model by cross_validation method and training_data (not appropriate method for regression_models)
         # StartMod.validation(reg, x_train, y_train)
 
-        # Visualizing
-        StartVis.vis_obj_predict(x_train, y_train, reg)
-
         # Predicting the Test and return the predicted result
         y_predict = reg.predict(x_test)
 
-        # Visualizing
-        StartVis.vis_obj_predict(x_test, y_test, reg)
+        # # checking the magnitude of features
+        # features = data.columns.drop(dependent_label)
+        # print(len(features), len(reg.coef_), data.columns, features)
+
+        if vis:
+            # plot all coefficients to see which features have the most impact on model
+            # reg_coefficient = pd.DataFrame(data=reg.coef_, index=features)
+            # plt.figure(1)
+            # reg_coefficient.plot(kind='bar')
+            # plt.title("Feature_Important")
+            # plt.xticks(rotation=45)
+
+            # Visual the result
+            StartVis.vis_obj_predict(list(range(len(x_test))), y_test, y_predict, title='Training vs predicted data')
 
         return reg, y_test, y_predict
 
     @classmethod
-    def regression_decision_tree(cls, data, dependent_label, random_state=0):
+    def regression_decision_tree(cls, data, dependent_label, random_state=0, vis=False):
         """
         Apply method Decision Tree regression
 
@@ -207,14 +213,24 @@ class StartModSKL(StartMod):
         # Estimate the model by cross_validation method and training_data
         # StartMod.validation(reg_dt, x_train, y_train)
 
-        # Visualizing
-        StartVis.vis_obj_predict(x_train, y_train, reg_dt)
+        # checking the magnitude of features
+        features = data.columns.drop(dependent_label)
+        features_important = reg_dt.feature_importances_
+        print("Features: ", features, "\nFeatures_Important: ", features_important)
 
-        # Predicting a new result
+        # Predict
         y_predict = reg_dt.predict(x_true)
 
-        # Visualizing
-        StartVis.vis_obj_predict(x_true, y_true, reg_dt)
+        if vis:
+            # plot all coefficients to see which features have the most impact on model
+            data_features = pd.DataFrame(data=features_important, index=features)
+            plt.figure(1)
+            data_features.plot(kind='bar')
+            plt.title("Feature_Important")
+            plt.xticks(rotation=45)
+
+            # Visual the result
+            StartVis.vis_obj_predict(list(range(len(x_true))), y_true, y_predict, title='Training vs predicted data')
 
         return reg_dt, y_true, y_predict
 
@@ -226,7 +242,7 @@ class StartModSKL(StartMod):
         References:
             http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html
 
-        :param data:
+        :param data: pandas.core.frame.DataFrame
         :param dependent_label:
         :param n_est: the number of trees in the forest.
         :param ens: ensemble learning by decision tree and other regression model
@@ -246,15 +262,24 @@ class StartModSKL(StartMod):
         return reg_rf, y_true, y_predict
 
     @classmethod
-    def regression_logistic(cls, data, dependent_label):
+    def regression_logistic(cls, data, dependent_label, random_state=None, solver='liblinear'):
         """
-        Apply method Logistic regression
+        Apply method Regularized logistic regression:
+        Solver:
+            For small datasets, ‘liblinear’ is a good choice, whereas ‘sag’ and ‘saga’ are faster for large ones.
+
+            For multiclass problems, only ‘newton-cg’, ‘sag’, ‘saga’ and ‘lbfgs’ handle multinomial loss; ‘
+                liblinear’ is limited to one-versus-rest schemes.
+
+            ‘newton-cg’, ‘lbfgs’ and ‘sag’ only handle L2 penalty, whereas ‘liblinear’ and ‘saga’ handle L1 penalty.
 
         References:
             http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html
 
         :param data: pandas.core.frame.DataFrame
         :param dependent_label: categorical column
+        :param random_state: default None
+        :param solver: default 'liblinear', others: {‘newton-cg’, ‘lbfgs’, ‘sag’, ‘saga’}
         :return: LogisticRegression object, true_test_result, predicted_result
         """
         # # save the dependent value into y
@@ -274,6 +299,9 @@ class StartModSKL(StartMod):
 
         # estimate the model by cross_validation method and training_data
         StartMod.validation(reg_log, x_train, y_train)
+
+        # estimate regularization
+        StartMod.regularization(data, dependent_label)
 
         return reg_log, y_test, y_predict
 
@@ -373,6 +401,33 @@ class StartModSKL(StartMod):
         return clf_gnb, y_test, y_predict
 
     @classmethod
+    def classification_bagged_dt(cls, data, dependent_label, num_trees, seed = 7):
+        """
+
+        References:
+            https://machinelearningmastery.com/ensemble-machine-learning-algorithms-python-scikit-learn/
+            http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.BaggingClassifier.html
+        :param data: pandas.core.frame.DataFrame
+        :param dependent_label:
+        :param num_trees:
+        :param seed:
+        :return:
+        """
+        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
+
+        cart = DecisionTreeClassifier()
+        clf_bdt = BaggingClassifier(base_estimator=cart, n_estimators=num_trees, random_state=seed)
+        clf_bdt.fit(x_train, y_train)
+
+        # predict the test set results
+        y_predict = clf_bdt.predict(x_test)
+
+        # estimate the model by cross_validation method and training_data
+        StartMod.validation(clf_bdt, x_train, y_train)
+
+        return clf_bdt, y_test, y_predict
+
+    @classmethod
     def classification_rf(cls, data, dependent_label, num_trees, max_features):
         """
         Apply Ensemble Random Forest for classification
@@ -383,7 +438,7 @@ class StartModSKL(StartMod):
             https://machinelearningmastery.com/ensemble-machine-learning-algorithms-python-scikit-learn/
 
 
-        :param data:
+        :param data: pandas.core.frame.DataFrame
         :param dependent_label:
         :param num_trees: number of decision trees
         :param max_features: number of maximal features to select randomly
@@ -413,7 +468,7 @@ class StartModSKL(StartMod):
         References:
             http://scikit-learn.org/stable/modules/ensemble.html#adaboost
 
-        :param data:
+        :param data: pandas.core.frame.DataFrame
         :param dependent_label:
         :param num_trees:
         :param seed:
@@ -441,7 +496,7 @@ class StartModSKL(StartMod):
             http://scikit-learn.org/stable/modules/ensemble.html#gradient-tree-boosting
             http://scikit-learn.org/stable/modules/ensemble.html#loss-functions
 
-        :param data:
+        :param data: pandas.core.frame.DataFrame
         :param dependent_label:
         :param num_trees:
         :param seed:
@@ -476,7 +531,7 @@ class StartModSKL(StartMod):
             https://machinelearningmastery.com/xgboost-python-mini-course/
             http://scikit-learn.org/stable/modules/ensemble.html
 
-        :param data:
+        :param data: pandas.core.frame.DataFrame
         :param dependent_label:
         :return:
         """
@@ -511,7 +566,7 @@ class StartModSKL(StartMod):
             http://scikit-learn.org/stable/modules/ensemble.html#voting-classifier
 
         :param models:
-        :param data:
+        :param data: pandas.core.frame.DataFrame
         :param dependent_label:
         :return:
         """

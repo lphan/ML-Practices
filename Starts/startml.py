@@ -779,6 +779,25 @@ class StartML(object):
         return data
 
     @staticmethod
+    def resampling_interpolate(data, option):
+        """
+        Resampling (Upsampling and Downsampling) involves changing the frequency of your time series observations
+        Object must have a datetime-like index
+        Using the interpolation to fill the gap inside data
+
+        Reference:
+            http://benalexkeen.com/resampling-time-series-data-with-pandas/
+            https://machinelearningmastery.com/resample-interpolate-time-series-data-python/
+            http://pandas.pydata.org/pandas-docs/stable/generated/pandas.Series.resample.html
+            http://pandas.pydata.org/pandas-docs/stable/timeseries.html#resampling
+
+        :param data: pandas.core.frame.DataFrame
+        :param option: apply to time series index via Day/ Month/ Year
+        :return:
+        """
+        pass
+
+    @staticmethod
     def nan_summary(data):
         """
         display summary about all NaN values in data

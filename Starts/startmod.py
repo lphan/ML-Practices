@@ -13,16 +13,22 @@ __author__ = 'Long Phan'
 
 
 from Starts.startml import *
+from Starts.startvis import *
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
-from sklearn.model_selection import train_test_split
 from sklearn.decomposition import PCA
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
+from sklearn.metrics import precision_score
+from sklearn.metrics import recall_score
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import r2_score
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import KFold
 from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_predict
 from sklearn.model_selection import GridSearchCV
 from sklearn.linear_model import Ridge
 from sklearn.linear_model import Lasso
@@ -122,18 +128,21 @@ class StartMod(StartML):
             return data
 
     @classmethod
-    def split_columns(cls, data):
+    def split_columns(cls, data, cols):
         """
         Split data by feature_columns into 2 different datasets
-        :param data:
-        :return:
+        :param data: pandas.core.frame.DataFrame
+        :param cols: list of columns feature e.g. cols = [['a', 'b'], 'c']
+        :return: list of pandas data frames splitted by columns
         """
-        pass
+        dat = [data[cols[i]] for i in range(len(cols))]
+        return dat
 
     @classmethod
-    def split_data(cls, data, dependent_label=None, test_size=0.2, random_state=0, type_pd=True, split=True):
+    def split_data(cls, data, dependent_label=None, test_size=0.2, random_state=0, type_pd=True, split=True, cv=False):
         """
         Split data by rows into training_data and test_data used for (regression, classification) methods
+        TODO: split data into 3 parts (training, validation, test)
 
         References:
             http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html
@@ -144,6 +153,7 @@ class StartMod(StartML):
         :param random_state: (default is 0)
         :param type_pd: (default is Pandas Dataframe)
         :param split: (default is True)
+        :param cv: cross_validation to split data into 3 parts (default is False)
         :return: x_train, x_test, y_train, y_test (default type Pandas DataFrame)
         """
 
@@ -158,8 +168,8 @@ class StartMod(StartML):
             return train, test
 
         if type_pd:
-            # convert to type Pandas DataFrame
-            # y = data.pop(dependent_label)  # should not use pop, instead of using data[dependent_label]
+            # keep type Pandas DataFrame
+            # y = data.pop(dependent_label)  # should use data[dependent_label], instead of using pop
             y = data[dependent_label]
             x = data
         else:
@@ -172,9 +182,16 @@ class StartMod(StartML):
             return x, y
 
         try:
-            # split data
+            # split data into training set and test set
             x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size,
                                                                 random_state=random_state, shuffle=True)
+
+            if cv:
+                # split data into training set, validation set and test set
+                x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=test_size,
+                                                                  random_state=random_state, shuffle=True)
+                return x_train, x_val, x_test, y_train, y_val, y_test
+
         except ValueError:
             print("Data set is not valid yet, need to be preprocessed first")
             print("No splitting happen")
@@ -223,7 +240,7 @@ class StartMod(StartML):
     @classmethod
     def feature_columns(cls, data, label=None):
         """
-        find and return object and non-object columns
+        Find and return object and non-object columns
         
         :param data: pandas.core.frame.DataFrame
         :param label: default is None
@@ -257,7 +274,7 @@ class StartMod(StartML):
         :return: data in scaled format
         """
         if type_pd:
-            # convert data in Pandas DataFrame, apply Min_Max method
+            # convert data in Pandas DataFrame, apply Min_Max method manually
             data[data.columns] = data[data.columns].apply(lambda x: (x - x.min()) / (x.max() - x.min()))
             return data
         else:
@@ -265,6 +282,7 @@ class StartMod(StartML):
                 scaler = StandardScaler(copy=True, with_mean=True, with_std=True)
             else:
                 scaler = MinMaxScaler(feature_range=feature_range)
+
             # Compute the mean and std to be used for later scaling
             scaler.fit(data)
             return scaler, scaler.transform(data)
@@ -272,7 +290,7 @@ class StartMod(StartML):
     @classmethod
     def feature_selection(cls, data, rm_columns, dependent_label=None, rm=False, pr=True):
         """
-        simply feature selection/ dimensionality reduction
+        Function to simplify feature selection and dimensionality reduction respectively
         apply Backward Elimination, Forward Selection, Bidirectional Elimination, Score comparision
 
         References:
@@ -285,7 +303,7 @@ class StartMod(StartML):
         :param pr: turn on/ off print function (default: True to turn on)
         :return:
         """
-        # calculate R_Squared & adj_R_Squared with full feature_columns
+        # split data and calculate R_Squared & adj_R_Squared with full feature_columns
         X, y = StartMod.split_data(data, dependent_label, type_pd=False, split=False)
 
         try:
@@ -311,8 +329,8 @@ class StartMod(StartML):
 
             regressor_ols = sm.OLS(endog=y, exog=X).fit()
             if print:
-                print("RSquared: ", regressor_ols.rsquared)
-                print("Adj_RSquared: ", regressor_ols.rsquared_adj)
+                print("R_Squared: ", regressor_ols.rsquared)
+                print("Adj_R_Squared: ", regressor_ols.rsquared_adj)
                 print("\n", regressor_ols.summary())
 
         # if yes, return data without column
@@ -411,7 +429,7 @@ class StartMod(StartML):
     @classmethod
     def regularization(cls, data, dependent_label):
         """
-        apply technique of ridge regression L2 and lasso (Least Absolute Shrinkage and Selection Operator) regression L1
+        Apply technique of Ridge regression L2 and Lasso (Least Absolute Shrinkage and Selection Operator) regression L1
         to avoid overfitting (when p>n, many more features than observations "wide matrix"):
             by (Lasso regression) shrinking some of the parameters to zero (therefore getting rid of some features) and
             by (Ridge regression) making some of the parameters very small without setting them to zero.
@@ -448,7 +466,7 @@ class StartMod(StartML):
         ridgeReg = Ridge(alpha=0.05, normalize=True)
         ridgeReg.fit(x_train, y_train)
         y_pred_rr = ridgeReg.predict(x_test)
-        print("Ridge coef_ attribute", ridgeReg.coef_)
+        print("Ridge coef_attribute", ridgeReg.coef_)
         print("Ridge independent term", ridgeReg.intercept_)
         print("Ridge evaluation using r-square: ", ridgeReg.score(x_test, y_test))
 
@@ -456,7 +474,7 @@ class StartMod(StartML):
         lassoReg = Lasso(alpha=0.3, normalize=True)
         lassoReg.fit(x_train, y_train)
         y_pred_lr = lassoReg.predict(x_test)
-        print("Lasso coef_ attribute", lassoReg.coef_)
+        print("Lasso coef_attribute", lassoReg.coef_)
         print("Lasso independent term", lassoReg.intercept_)
         print("Lasso evaluation using r-square: ", lassoReg.score(x_test, y_test))
         
@@ -464,7 +482,7 @@ class StartMod(StartML):
         enReg = ElasticNet(alpha=1, l1_ratio=0.5, normalize=False)
         enReg.fit(x_train, y_train)
         y_pred_er = enReg.predict(x_test)
-        print("Elastic net coef_ attribute", enReg.coef_)
+        print("Elastic net coef_attribute", enReg.coef_)
         print("Elastic net independent term", enReg.intercept_)
         print("Elastic net evaluation using r-square: ", enReg.score(x_test, y_test))
 
@@ -480,7 +498,7 @@ class StartMod(StartML):
     @classmethod
     def metrics_report(cls, y_true, y_pred, target_names=None):
         """
-        measure the quality of the models (comparing results before and after running prediction)
+        Measure the quality of the models (comparing results before and after running prediction)
 
         Accuracy = (TP + TN) / (TP + TN + FP + FN)
         Precision = TP / (TP + FP)
@@ -507,44 +525,62 @@ class StartMod(StartML):
             print("Classification Report: \n", classification_report(y_true, y_pred))
             print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred, labels=np.unique(y_true)))
 
-        print("\nAccuracy: \n", accuracy_score(y_true, y_pred))
         print("\nMean_Squared_Error: \n", mean_squared_error(y_true, y_pred))
+        acc = accuracy_score(y_true, y_pred)
+        prec = precision_score(y_true, y_pred)
+        rec = recall_score(y_true, y_pred)
+        print("\nAccuracy Score: \n", acc)
+        print("\nPrecision Score: \n", prec)
+        print("\nRecall Score: \n", rec)
+        print("\nF-Score: \n", 2*prec*rec/ (prec+rec))
 
     @classmethod
-    def validation(cls, classifier, x_train, y_train, parameters=[], cv=None, tune=False):
+    def validation(cls, model, x_val, y_val, parameters=[], cv=None, tune=False):
         """
         Apply K-Fold Cross_Validation to estimate the model (classification)
 
         References:
+            http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.KFold.html
             http://scikit-learn.org/stable/modules/cross_validation.html
             http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_val_score.html
+            https://towardsdatascience.com/train-test-split-and-cross-validation-in-python-80b61beca4b6
             https://www.jeremyjordan.me/hyperparameter-tuning/
             http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
             http://scikit-learn.org/stable/modules/grid_search.html
 
-        :param classifier:
-        :param x_train: feature_values
-        :param y_train: categorical_values
+        :param model:
+        :param x_val: x_validation_feature_values
+        :param y_val: y_validation_categorical_values
         :param cv (Cross_Validation) default is 10-fold if None
         :param parameters (used for tuning hyperparameters) default is []
         :param tune (turn on grid search method to find the best parameters for model) default is False
         :return:
         """
         # estimate the contribution of the matching feature to the prediction function
-        print(sorted(classifier.feature_importances_))
+        # TODO: visualize plot_bar feature_importances corresponding to its features_label
+        print(sorted(model.feature_importances_))
+        # print("Features: ", features, "\nFeatures_Important: ", features_important)
 
         if not cv:
-            accuracies = cross_val_score(estimator=classifier, X=x_train, y=y_train, cv=10)
+            scores = cross_val_score(estimator=model, X=x_val, y=y_val, cv=10)
         else:
-            accuracies = cross_val_score(estimator=classifier, X=x_train, y=y_train, cv=cv)
-        print("\nAccuracies: ", accuracies)
-        print("\nMean of accuracies: ", accuracies.mean())
-        print("\nStandard Deviation: ", accuracies.std())
+            scores = cross_val_score(estimator=model, X=x_val, y=y_val, cv=cv)
+        print("\nCross_validated scores: ", scores)
+        print("\nMean of cross_validated scores: ", scores.mean())
+        print("\nStandard Deviation of cross_validated scores: ", scores.std())
+
+        # Plot cross_validated predictions
+        predictions = cross_val_predict(model, x_val, y_val, cv=6)
+        plt.scatter(y_val, predictions)
+
+        # calculate R_Squared to measure the cross_predicted accuracy of the model
+        accuracy = r2_score(y_val, predictions)
+        print("Cross_predicted accuracy:", accuracy)
 
         if tune:
             # setup grid search input parameters to tune the hyper parameter e.g. n_jobs=-1 for large data set
-            gs = GridSearchCV(estimator=classifier, param_grid=parameters, scoring='accuracy', cv=cv, n_jobs=-1)
-            gs = gs.fit(x_train, y_train)
+            gs = GridSearchCV(estimator=model, param_grid=parameters, scoring='accuracy', cv=cv, n_jobs=-1)
+            gs = gs.fit(x_val, y_val)
 
             best_accuracy = gs.best_score_
             best_parameters = gs.best_params_
@@ -560,9 +596,9 @@ class StartMod(StartML):
             for mean, stdev, param in zip(means, stds, params):
                 print("Mean: %f, Standard Deviation: (%f), Parameters: %r" % (mean, stdev, param))
 
-            return accuracies, gs
+            return scores, gs
 
-        return accuracies
+        return scores
 
 
 info_mod = StartMod.info_help()

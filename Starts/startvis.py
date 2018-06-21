@@ -167,26 +167,24 @@ class StartVis(StartML):
         pass
 
     @classmethod
-    def vis_obj_predict(cls, x, y, obj_pred):
+    def vis_obj_predict(cls, x_index, y_true, y_pred, title):
         """
         Visualizing result of the predicting object
 
-        :param x:
-        :param y:
-        :param obj_pred:
+        :param x_index:
+        :param y_true:
+        :param y_pred:
+        :param title:
         :return:
         """
-
-        if x.shape == y.shape:
-            plt.scatter(x, y, color='red')
-        try:
-            plt.plot(x, obj_pred.predict(x), color='blue')
-            plt.title(type(obj_pred))
-            plt.xlabel(str(type(x)))
-            plt.ylabel(str(type(y)))
-            plt.show()
-        except AttributeError:
-            print("Object has no Attribute predict, invalid object")
+        plt.figure()
+        plt.bar(x_index, y_true, align='center', alpha=1)
+        plt.bar(x_index, y_pred, align='center', alpha=1)
+        plt.title(title)
+        plt.xlabel(str(type(x_index)))
+        plt.ylabel(str(type(y_true)))
+        plt.legend()
+        plt.show()
 
     @classmethod
     def vis_clustering(cls, data, y_clusters, x_label='', y_label='', ts=False):
