@@ -7,19 +7,16 @@ In a short description, package 'Starts' is 'Wrapper' package with the functions
  
 I have two goals with this work and I hope it will work in one day:
 - for the person who are like me and want to study Machine Learning 'Learn by Doing' are able to get into Machine Learning's technique lightly with less effort and overcome the raw-theories's barrier.
-- for the person who want to analyse data and get the result/ information asap but do not have much time to deal with the complexity of many different frameworks. 
+- for the person who want to analyse data and get the result/ information asap, but do not have much time to deal with the complexity of many different frameworks. 
 
 "
 By taking a look on the real examples and see how data are being analysed, 
-install the frameworks you need and do the similar ways like one of examples,
-improve your result by converting your ideas into the new functions like one of the already given functions in package you like. 
+install the frameworks you need and do the similar ways like one of the examples,
+improve your result by transforming your ideas into the new functions you like. 
+You can always extend/ change/ update this package 'Starts'. 
 "
 
-- You can always extend this package 'Starts' and share with other people the new functions/ workflows/ frameworks you like. 
-- Everyone can do programming and you must not be a professional programmer to be able to get the insight from your data. 
-
-Finally, it's Open Source on Open Data. Please feel free to do and to share. It's Great.
-In a Github's way, just 'fork, do what you like and pull request'
+- Finally, it's Open Source on Open Data. In a Github's way, just 'fork, do what you like and pull request'
 
 Loop_of_the_path_to_DataScience_and_MachineLearning:
 
@@ -27,7 +24,7 @@ Loop_of_the_path_to_DataScience_and_MachineLearning:
 
 	2. Implement/ improve the algorithm using Python3 and its frameworks 
 
-	3. Analyse the data from public sources (scikit-learn, UCI, Kaggle)
+	3. Analyzes the data from public sources (scikit-learn, UCI, Kaggle)
 
 	4. Integrate the implementation into the package Starts
 
@@ -77,3 +74,5 @@ More information: please check out package Starts
 > https://www.kaggle.com/
 
 > https://archive.ics.uci.edu/ml/index.php
+
+> http://scikit-learn.org/stable/datasets/index.html

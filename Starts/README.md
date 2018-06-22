@@ -19,9 +19,7 @@ __author__ = 'Long Phan'
 
 > startdb.py Start_module Operations API with Database
 
-> ...
-
-### Tech (Frameworks)
+### Tech stack (Frameworks)
 > OS platform: Fedora
 
 > Programming language: Python3
@@ -35,6 +33,8 @@ __author__ = 'Long Phan'
 > Big Data tools: Spark
 
 > Database: MongoDB
+
+> cont.
 
 ### Install dependencies
 > sudo pip3 install -r requirements.txt
