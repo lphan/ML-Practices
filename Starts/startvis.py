@@ -221,7 +221,7 @@ class StartVis(StartML):
         plt.show()
 
     @classmethod
-    def vis_basemap(cls, data, plot=False):
+    def vis_basemap(cls, data, magnitude=False):
         """
         Visual the Geo-coordinates Latitude Longitude
         References:
@@ -247,13 +247,13 @@ class StartVis(StartML):
         plt.figure(figsize=(16, 14))
         plt.title("Observation locations")
 
-        if mag and not plot:
+        if mag:
             print("Scatter function ...")
-            mag = [s**2 for s in mag]
-            earth.scatter(x, y, s=mag, marker='.', color='red')
+            size = [s**2 for s in mag]
+            earth.scatter(x, y, s=size, marker='.', color='red')
         else:
             print("Plot function ...")
-            earth.plot(x, y, markersize=12, marker='x', color='red')
+            earth.scatter(x, y, s=5, marker='x', color='red')
 
         # setup basemap
         # earth.etopo(alpha=0.1)

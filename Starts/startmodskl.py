@@ -262,6 +262,15 @@ class StartModSKL(StartMod):
         return reg_rf, y_true, y_predict
 
     @classmethod
+    def regression_svr(cls, data, dependent_label):
+        """
+
+        :param data:
+        :return:
+        """
+        pass
+
+    @classmethod
     def regression_logistic(cls, data, dependent_label, random_state=None, solver='liblinear'):
         """
         Apply method Regularized logistic regression:

@@ -68,7 +68,7 @@ class StartML(object):
         print("local_kwargs", StartML.kwargs)
 
     @classmethod
-    def convert_time_series(cls, data, time_column, format=True, add_day=False):
+    def convert_time_series(cls, data, time_column, format=None, add_day=False):
         """
         convert dataset into time_series dataset
 
@@ -77,10 +77,11 @@ class StartML(object):
         :param format: default True if time_column is in date_time format, False if in millisecond
         :return: new_data
         """
-        if format:
+        if not format:
             data.index = pd.to_datetime(data.pop(time_column))
         else:
-            data.index = pd.to_datetime(data.pop(time_column), unit='ms')
+            data.index = pd.to_datetime(data.pop(time_column), unit='ms', format=format)
+
         if add_day:
             data['day'] = [t.weekday() for t in data.index]
         data = data.sort_index()
@@ -317,7 +318,7 @@ class StartML(object):
     def detect_outliers(cls, data):
         """
         Algorithm: setup a threshold for error (maximal error).
-        if the computed error exceeds the threshold, then the data point will be listed as outlier.
+        if the computed error exceeds the threshold, then the data point will be listed as outlier (anomaly detection).
         Choose to remove (clean) or neutralize using Minkowski-method
 
         Algorithm functions in combination with plot-visual and observation.
@@ -368,6 +369,40 @@ class StartML(object):
         #
         # tbd Step3: remove or keep it by modifying its values
         return total_outliers
+
+    @classmethod
+    def anomaly_detection(cls, data):
+        """
+        Detect anomaly features
+        Application like: Fraud detection, monitoring machines in data center
+
+        Transform non_Gaussian features into Gaussian features using e.g. function log(..)
+        Using:
+            1. Original model
+                manually create additional features to capture anomalies (unusual combinations of values)
+            2. Multivariate Gaussian Distribution,
+                calculate population mean, variance matrix Sigma
+                automatically capture correlations between features
+
+        References:
+            https://en.wikipedia.org/wiki/Anomaly_detection
+            https://www.youtube.com/watch?v=g2YBWQnqOpw&index=90&list=PLLssT5z_DsK-h9vYZkQkYNWcItqhlRJLN
+            https://www.youtube.com/watch?v=JjB58InuTqM&list=PLLssT5z_DsK-h9vYZkQkYNWcItqhlRJLN&index=94
+            https://www.youtube.com/watch?v=YRS-IB3vCow&list=PLLssT5z_DsK-h9vYZkQkYNWcItqhlRJLN&index=95
+
+        :param data:
+        :return:
+        """
+        pass
+
+    @classmethod
+    def anomaly_feature_detect(cls, data):
+        """
+
+        :param data:
+        :return:
+        """
+        pass
 
     @classmethod
     def applyby_func(cls, data, columns, ops):

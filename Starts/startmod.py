@@ -359,6 +359,7 @@ class StartMod(StartML):
     def feature_extraction(cls, data, dependent_variable):
         """
         Using Principal component analysis (PCA) to extract the most important independent variables (features)
+        (Dimensionality Reduction)
 
         References:
             http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html
