@@ -22,8 +22,8 @@ class StartModREC(StartMod):
 
         References:
             http://www.guidetodatamining.com/
-			https://spark.apache.org/mllib/
-			
+            https://spark.apache.org/mllib/
+
             Start:
             jupyter notebook
             -> from startmodrec import *
@@ -184,6 +184,26 @@ class StartModREC(StartMod):
         Reference:
             http://www.grouplens.org/papers/pdf/www10_sarwar.pdf
 
+        """
+        pass
+
+    @classmethod
+    def recommend_content_based(cls, data):
+        """
+        References:
+            https://www.youtube.com/watch?v=9siFuMMHNIA&index=97&list=PLLssT5z_DsK-h9vYZkQkYNWcItqhlRJLN
+
+        :param data:
+        :return:
+        """
+        pass
+
+    @classmethod
+    def recommend_coll_filter(cls, data):
+        """
+
+        :param data:
+        :return:
         """
         pass
 

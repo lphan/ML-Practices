@@ -48,15 +48,19 @@ class StartModTF(StartMod):
 
         """
         self.data = data
-        if label is None:
+
+        if len(label) == 0:
+            # print("NO LABEL")
             self.n_classes = 2  # default setup 2 classes for binary classification (2 values e.g. 0 and 1)
             self.label = None
 
         elif len(label) == 1:
-            self.n_classes = len(data[label].unique())
+            # print("LABEL = 1")
+            self.n_classes = len(data[label[0]].unique())
             self.label = label
 
         else:
+            # print("LABEL REST")
             self.label = label  # regression
 
         self.hidden_units = [10, 10]        # default setup 10 neuron in 2 layers
@@ -66,13 +70,14 @@ class StartModTF(StartMod):
         self.steps = 1000                   # default training_steps 1000
         self.loss = 'mean_squared_error'    # option: binary_crossentropy, categorical_crossentropy, mean_absolute_error
         self.drop_out = 0.2
+        self.rec_drop_out = 0.2
 
         # (correspond with available system memory capacity to avoid out_of_memory_error,
         # small for many features, big for performance)
-        self.batch_size = 10            # default batch_size 10
+        self.batch_size = 10                # default batch_size 10
 
-        self.nr_epochs = 1             # default number of epochs 1
-        self.feature_scl = False        # default turn off feature scaling
+        self.nr_epochs = 1                  # default number of epochs 1
+        self.feature_scl = False            # default turn off feature scaling
 
     # get and set methods for attributes
     def _get_attributes(self):
@@ -301,6 +306,7 @@ class StartModTF(StartMod):
         fea_cols = self.setup_feature_columns(x_train)
 
         if model_lin:
+            print(self.n_classes)
             classifier = tf.estimator.LinearClassifier(feature_columns=fea_cols, n_classes=self.n_classes,
                                                        optimizer='Ftrl')
         else:
@@ -328,10 +334,11 @@ class StartModTF(StartMod):
         # final_pred = [pred['class_ids'][0] for pred in list(result_predict)]
         # StartMod.metrics_report(self.y_test.values, final_pred)
         # print(type(self.y_test))
-        # TODO: convert y_predict into numeric_values
-        self.data['predicted'] = y_predict
-
-        return classifier, y_true, y_predict
+        # convert y_predict into numeric_values, Convert the predicted value y_pred and show the metrics_report
+        final_pred = [pred['class_ids'][0] for pred in list(y_predict)]
+        final_pred
+        # self.data['predicted'] = y_predict
+        return classifier, y_true, final_pred
 
     @classmethod
     def regularization_nn(cls):
@@ -400,7 +407,7 @@ class StartModTFANN(StartModTF):
 
         # Fit the keras_model to the training_data and see the real time training of model on data with result of loss
         # and accuracy. The smaller batch_size and higher epochs, the better the result. However, slow_computing!
-        # print(x_train.shape, y_train.shape)
+        print(x_train.shape, y_train.shape)
         model.fit(x_train, y_train, batch_size=self.batch_size, epochs=self.nr_epochs)
 
         # Predictions and evaluating the model
@@ -408,7 +415,7 @@ class StartModTFANN(StartModTF):
 
         # Evaluate the model
         scores, accuracy = model.evaluate(x_train, y_train)
-        print("\nModel %s: Scores: %.2f%%, Accuracy: %.2f%%" % (model.metrics_names[1], scores[1]*100, accuracy*100))
+        print("\nModel %s: Scores: %.2f%%, Accuracy: %.2f%%" % (model, scores*100, accuracy*100))
 
         return model, y_eval, y_pred
 
@@ -676,6 +683,7 @@ class StartModTFRNN(StartModTF):
         pass
 
 # update parameters
-# new_param={'hidden_units':[10,10,10], 'optimizer':'Adam', 'activation_fn':'sigmoid', 'learning_rate': 0.0001,
-#            'steps':2000, 'batch_size':10, 'num_epochs':10, 'feature_scl':True, 'loss_fn':'mean_squared_error'}
+# new_param={'hidden_units':[input_dim,2,1], 'optimizer':'Adam', 'activation_fn':'sigmoid', 'learning_rate': 0.0001,
+#            'steps':2000, 'batch_size':10, 'num_epochs':2, 'feature_scl':True, 'loss_fn':'binary_crossentropy',
+#            'drop_out':0.2, 'rec_drop_out':0.5}
 # smtf.update_parameters=new_param

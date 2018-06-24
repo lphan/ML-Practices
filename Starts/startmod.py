@@ -501,9 +501,10 @@ class StartMod(StartML):
         """
         Measure the quality of the models (comparing results before and after running prediction)
 
-        Accuracy = (TP + TN) / (TP + TN + FP + FN)
-        Precision = TP / (TP + FP)
-        Recall = TP / (TP + FN)
+        Binary Classification:
+            Accuracy = (TP + TN) / (TP + TN + FP + FN)
+            Precision = TP / (TP + FP)
+            Recall = TP / (TP + FN)
         F1 Score = 2 * Precision * Recall / (Precision + Recall)
 
         References:
@@ -512,6 +513,7 @@ class StartMod(StartML):
             http://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html
             http://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html
             http://scikit-learn.org/stable/modules/generated/sklearn.metrics.accuracy_score.html
+            http://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_score.html
 
         :param y_true: the truth values
         :param y_pred: the predicted values
@@ -527,10 +529,19 @@ class StartMod(StartML):
             print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred, labels=np.unique(y_true)))
 
         print("\nMean_Squared_Error: \n", mean_squared_error(y_true, y_pred))
+
         acc = accuracy_score(y_true, y_pred)
-        prec = precision_score(y_true, y_pred)
-        rec = recall_score(y_true, y_pred)
         print("\nAccuracy Score: \n", acc)
+
+        if len(np.unique(y_true))==2:
+            print("binary")
+            prec = precision_score(y_true, y_pred)
+            rec = recall_score(y_true, y_pred)
+        else:
+            print("set average")
+            prec = precision_score(y_true, y_pred, average='micro')
+            rec = recall_score(y_true, y_pred, average='micro')
+
         print("\nPrecision Score: \n", prec)
         print("\nRecall Score: \n", rec)
         print("\nF-Score: \n", 2*prec*rec/ (prec+rec))
@@ -539,6 +550,7 @@ class StartMod(StartML):
     def validation(cls, model, x_val, y_val, parameters=[], cv=None, tune=False):
         """
         Apply K-Fold Cross_Validation to estimate the model (classification)
+        Bias vs Variance
 
         References:
             http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.KFold.html
