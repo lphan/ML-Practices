@@ -346,10 +346,16 @@ class StartModSKL(StartMod):
     def classification_svm(cls, data, dependent_label, kernel='rbf'):
         """
         Apply Support Vector Machine method to classify data
+        Advice:
+            n = number of features, m = number of training data
+            n > m: use logistic regression or SVM without a kernel (linear kernel)
+            n is small, m intermediate: use SVM with Gaussian kernel ('rbf' radial basis function)
+            n is small, m is large: create/ add more features, then logistic regression or SVM without a kernel
 
         References:
             http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
             http://mlkernels.readthedocs.io/en/latest/kernels.html
+            https://www.youtube.com/watch?v=FCUBwP-JTsA&list=PLLssT5z_DsK-h9vYZkQkYNWcItqhlRJLN&index=75
 
         :param data: pandas.core.frame.DataFrame
         :param dependent_label: categorical column

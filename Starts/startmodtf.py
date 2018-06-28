@@ -76,7 +76,7 @@ class StartModTF(StartMod):
         # small for many features, big for performance)
         self.batch_size = 10                # default batch_size 10
 
-        self.nr_epochs = 1                  # default number of epochs 1
+        self.nr_epochs = 1                  # default number of epochs 1 (for large dataset) and 10 (for small dataset)
         self.feature_scl = False            # default turn off feature scaling
 
     # get and set methods for attributes

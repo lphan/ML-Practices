@@ -2,7 +2,7 @@
 
 ## INTRO: 
 
-as a person who is very passionate about Data Science, Machine Learning and Deep Learning so that I want to learn by doing a framework layer in between many popular frameworks (Pandas, Numpy, Matplotlib, statsmodels, Tensorflow, Spark, etc.). 
+as a person who is very passionate about Data Science, Machine Learning and Deep Learning so that I want to 'learn by doing' a framework layer in between many popular frameworks (Pandas, Numpy, Matplotlib, statsmodels, Tensorflow, Spark, etc.). 
 In a short description, package 'Starts' is a 'Wrapper' package with the functions which are written with simple algorithms and easy to run and apply as well as exploit the power of many other data analysis frameworks. 
  
 I have two goals with this work:

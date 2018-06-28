@@ -505,7 +505,7 @@ class StartMod(StartML):
             Accuracy = (TP + TN) / (TP + TN + FP + FN)
             Precision = TP / (TP + FP)
             Recall = TP / (TP + FN)
-        F1 Score = 2 * Precision * Recall / (Precision + Recall)
+            F1 Score = (2 * Precision * Recall) / (Precision + Recall)
 
         References:
             http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics
@@ -552,6 +552,14 @@ class StartMod(StartML):
         Apply K-Fold Cross_Validation to estimate the model (classification)
         Bias vs Variance
 
+        Debugging a learning algorithm:
+            - Get more training data
+            - Try smaller sets of features
+            - Try getting additional features
+            - Try adding polynomial features
+            - Try decreasing regularization parameter
+            - Try increasing regularization parameter
+
         References:
             http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.KFold.html
             http://scikit-learn.org/stable/modules/cross_validation.html
@@ -560,6 +568,7 @@ class StartMod(StartML):
             https://www.jeremyjordan.me/hyperparameter-tuning/
             http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
             http://scikit-learn.org/stable/modules/grid_search.html
+            https://www.youtube.com/watch?v=yoYA1MFpYRg&index=64&list=PLLssT5z_DsK-h9vYZkQkYNWcItqhlRJLN
 
         :param model:
         :param x_val: x_validation_feature_values
