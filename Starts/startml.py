@@ -191,13 +191,13 @@ class StartML(object):
         :return: DataFrame object
         """
 
-        # init empty DataFrame
-        x = pd.DataFrame(columns=data.columns)
-
-        # append/ fill DataFrame with values
-        for v in values:
-            x = x.append(pd.DataFrame(data[data[column] == v], columns=data.columns))
-        return x
+        # # init empty DataFrame
+        # x = pd.DataFrame(columns=data.columns)
+        #
+        # # append/ fill DataFrame with values
+        # for v in values:
+        #     x = x.append(pd.DataFrame(data[data[column] == v], columns=data.columns))
+        return [pd.DataFrame(data[data[column] == v], columns=data.columns) for v in values]
 
     @classmethod
     def idx_reset(cls, data):
@@ -258,14 +258,14 @@ class StartML(object):
         """
 
         grouped = data[groupby_label].unique()
-        newlist = {}
+        new_list = {}
         for item in grouped:
             key = data[data[groupby_label]==item]
             value = key.drop(groupby_label, axis=1).to_dict()
             new = {item: value}
-            newlist.update(new)
+            new_list.update(new)
 
-        return newlist
+        return new_list
 
     @classmethod
     def reduceby_rows(cls, data, operations):

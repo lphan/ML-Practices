@@ -66,7 +66,7 @@ class StartModTF(StartMod):
         self.hidden_units = [10, 10]        # default setup 10 neuron in 2 layers
         self.optimizer = "Adagrad"          # default Adagrad optimizer
         self.activation_fn = "relu"         # default 'relu' function
-        self.learning_rate = 0.001          # default 0.001
+        self.learning_rate = 0.001          # default 0.001 -> 0.01 -> 0.1
         self.steps = 1000                   # default training_steps 1000
         self.loss = 'mean_squared_error'    # option: binary_crossentropy, categorical_crossentropy, mean_absolute_error
         self.drop_out = 0.2
@@ -78,6 +78,14 @@ class StartModTF(StartMod):
 
         self.nr_epochs = 1                  # default number of epochs 1 (for large dataset) and 10 (for small dataset)
         self.feature_scl = False            # default turn off feature scaling
+
+        # others hyper parameters: momentum, mini batchsize,
+        # Reducing Overfitting:
+        #   regularization for neural network: L1, L2
+        #   dropout regularization: shrink weights
+        #   other regularization: data augmentation, early stopping
+
+        # choose NN architectures: RNN, CNN, others
 
     # get and set methods for attributes
     def _get_attributes(self):
@@ -336,7 +344,7 @@ class StartModTF(StartMod):
         # print(type(self.y_test))
         # convert y_predict into numeric_values, Convert the predicted value y_pred and show the metrics_report
         final_pred = [pred['class_ids'][0] for pred in list(y_predict)]
-        final_pred
+
         # self.data['predicted'] = y_predict
         return classifier, y_true, final_pred
 
@@ -423,6 +431,38 @@ class StartModTFANN(StartModTF):
 class StartModTFCNN(StartModTF):
     def __init__(self, data, label):
         StartModTF.__init__(self, data, label)
+        self.filter_size = [3, 3]
+        self.n_filters = 1
+        self.n_padding = 1
+        self.n_strides = 1
+
+        # Types of layer:
+        # Convolution (conv), Pooling (pool), Fully connected (fc)
+        # Max Pooling, Average Pooling
+        # E.g.:
+        #   LeNet-5, AlexNet, VGG
+        #   ResNet (Residual Network)
+        #   Inception Network
+
+    # reset all attributes in neural network
+    def _set_attributes(self, dict_params):
+        """
+        Reference:
+            https://machinelearningmastery.com/5-step-life-cycle-neural-network-models-keras/
+
+        :param dict_params:
+        :return:
+        """
+        self.filter_size = dict_params['filter_size']
+        self.n_filters = dict_params['n_filters']
+        self.n_padding = dict_params['n_padding']
+        self.n_strides = dict_params['n_strides']
+
+    def info_parameters(self):
+        print("\nfilter_size: {}".format(self.filter_size), "\n")
+        print("n_filters: {}".format(self.n_filters), "\n")
+        print("n_padding: {}".format(self.n_padding), "\n")
+        print("n_strides: {}".format(self.n_strides), "\n")
 
     def keras_cnn_1d(self, momentum=0.2, seed=10, n_filters=32, kernel_size=1, padding="same"):
         """
@@ -627,7 +667,6 @@ class StartModTFRNN(StartModTF):
                 X, y = np.array([test_scaled[i, 0]]), test_scaled[i, 1]
                 X = X.reshape(1, 1, len(X))
                 yhat = lstm_model.predict(X, batch_size=self.batch_size)
-                # print("------ yhat ", yhat)
                 yhat = yhat[0, 0]
 
                 # invert scaling
@@ -678,6 +717,14 @@ class StartModTFRNN(StartModTF):
         Reference:
             https://keras.io/layers/recurrent/#lstm
             https://machinelearningmastery.com/multi-step-time-series-forecasting-long-short-term-memory-networks-python/
+        :return:
+        """
+        pass
+
+    def exp_weighted_avg(self):
+        """
+        compute exponential moving average of group of certain time series values
+        (e.g. in 5 days, 10 days, 1 week, 1 month, 1 year, etc.)
         :return:
         """
         pass

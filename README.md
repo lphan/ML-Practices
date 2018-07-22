@@ -5,18 +5,12 @@
 as a person who is very passionate about Data Science, Machine Learning and Deep Learning so that I want to 'learn by doing' a framework layer in between many popular frameworks (Pandas, Numpy, Matplotlib, statsmodels, Tensorflow, Spark, etc.). 
 In a short description, package 'Starts' is a 'Wrapper' package with the functions which are written with simple algorithms and easy to run and apply as well as exploit the power of many other data analysis frameworks. 
  
-I have two goals with this work:
-- for the person who are like me and want to study Machine Learning 'Learn by Doing' are able to get into Machine Learning's technique lightly with less effort and overcome the raw-theories's barrier.
+- for the person who want to study Machine Learning 'by doing' are able to get into Machine Learning's technique lightly with less effort and overcome the raw-theories's barriers.
 - for the person who want to analyse data and get the result/ information asap, but do not have much time to deal with the complexity of many different frameworks. 
 
-"
-By taking a look on the real examples and see how data are being analysed, 
-install the frameworks you need and do the similar ways like one of the examples,
-improve your result by transforming your ideas into the new functions you like. 
-You can always extend/ change/ update this package 'Starts'. 
-"
+"By taking a look on the real examples and see how data are being analysed, install the frameworks you need and do the similar ways like one of the examples, improve your result by transforming your ideas into the new functions you like."
 
-- Finally, it's Open Source on Open Data. 
+- Finally, it's Open Source on Open Data. You can always extend/ change/ update this package 'Starts'
 
 Loop_of_the_path_to_DataScience_and_MachineLearning:
 
