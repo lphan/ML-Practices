@@ -29,41 +29,48 @@ from sklearn.ensemble import BaggingClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.ensemble import GradientBoostingClassifier
-from xgboost import XGBClassifier
 from sklearn.ensemble import VotingClassifier
-from xgboost import plot_importance
-
 from sklearn.cluster import KMeans
+from sklearn.externals import joblib
+
+from xgboost import XGBClassifier
+from xgboost import plot_importance
 
 
 class StartModSKL(StartMod):
     """
-        Description: StartModSKL - Start Models Scikit-Learn
-        regression, classification
+        # Description: StartModSKL - Start Models Scikit-Learn
+            regression, classification
 
-        References:
+        # References:
             http://scikit-learn.org/stable/modules/classes.html
+            https://www.python.org/dev/peps/pep-3135/
 
-        Start:
-          jupyter notebook
-          -> from startmodskl import *
-          -> info_modskl
+        # Start:
+              jupyter notebook
+              -> from startmodskl import *
+              -> info_modskl
     """
 
+    __random_state = 100
+
     def __init__(self):
-        pass
+        super().__init__()  # StartMod.__init__(self)  or super(StartModSKL, self).__init__()
 
     @classmethod
-    def regression_linear(cls, data, dependent_label, poly=False, vis=True):
+    def regression_linear(cls, data, dependent_label, poly=False, vis=True, save=True, regularization=True):
         """
-        Apply method Linear regression y = ax + b (one independent variable, one dependent_label)
+        # Description: apply method Linear regression y = ax + b (one independent variable, one dependent_label)
 
-        References:
+        # References:
             http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html
 
         :param data: pandas.core.frame.DataFrame
         :param dependent_label: categorical column
         :param poly: initiate polynomial linear regression
+        :param vis: default True to visualize
+        :param save: default True to save the trained model
+        :param regularization:
         :return: LinearRegression-object (or PolynomialFeatures-object if poly=True), true_test_result, predicted_result
         """
 
@@ -73,6 +80,7 @@ class StartModSKL(StartMod):
         sc_x = StandardScaler(copy=True, with_mean=True, with_std=True)
         x_train = sc_x.fit_transform(x_train)
         x_test = sc_x.transform(x_test)
+        filename = StartModSKL.regression_linear.__name__
 
         if poly:
             # setup default degree
@@ -96,6 +104,12 @@ class StartModSKL(StartMod):
             # estimate the model by cross_validation method and training_data
             # StartMod.validation(reg_poly, x_train, y_train)
 
+            if save:
+                joblib.dump(lin_reg_2, filename+'_poly_model.sav')
+
+            if regularization:
+                StartMod.regularization(data, dependent_label)
+
             if vis:
                 # Visual the result
                 StartVis.vis_obj_predict(list(range(len(x_test))), y_test, y_predict,
@@ -107,6 +121,9 @@ class StartModSKL(StartMod):
             lin_reg = LinearRegression()
             lin_reg.fit(x_train, y_train)
 
+            if save:
+                joblib.dump(lin_reg, filename+'_model.sav')
+
             print("Calculating coefficients: ", lin_reg.coef_)
             print("Evaluation using r-square: ", lin_reg.score(x_test, y_test))
 
@@ -116,6 +133,9 @@ class StartModSKL(StartMod):
             # Predicting the Test and return the predicted result
             y_predict = lin_reg.predict(x_test)
 
+            if regularization:
+                StartMod.regularization(data, dependent_label)
+
             if vis:
                 # Visualizing
                 StartVis.vis_obj_predict(list(range(len(x_test))), y_test, y_predict,
@@ -124,14 +144,19 @@ class StartModSKL(StartMod):
             return lin_reg, y_test, y_predict
 
     @classmethod
-    def regression_multi_linear(cls, data, dependent_label, pr=True, vis=True):
+    def regression_multi_linear(cls, data, dependent_label, pr=True, vis=True, save=True):
         """
-        Apply method Multiple Linear regression y = b0 + b1.x1 + b2.x2 + ... + bn.xn
-        choose the optimal feature_columns using algorithm Backward Elimination
+        # Description: apply method Multiple Linear regression y = b0 + b1.x1 + b2.x2 + ... + bn.xn
+            choose the optimal feature_columns using algorithm Backward Elimination
+
+        # Reference:
+
 
         :param data: pandas.core.frame.DataFrame
         :param dependent_label: categorical column
         :param pr: default True to display info
+        :param vis: default True to visualize
+        :param save: default True to save the trained model
         :return: RegressionResultsWrapper object, true_test_result, predicted_result
         """
 
@@ -154,7 +179,7 @@ class StartModSKL(StartMod):
             print("\nAdjusted_R_Squared: ", reg_ols.rsquared_adj)
             print("\nSummary: ", reg_ols.summary())
 
-        x_train, x_test, y_train, y_test = train_test_split(x_opt, y, test_size=0.2, random_state=0)
+        x_train, x_test, y_train, y_test = train_test_split(x_opt, y, test_size=0.2, random_state=cls.__random_state)
 
         # Execute Linear Regression on optimal value, fit model with training-data
         reg = LinearRegression()
@@ -173,9 +198,13 @@ class StartModSKL(StartMod):
         # features = data.columns.drop(dependent_label)
         # print(len(features), len(reg.coef_), data.columns, features)
 
+        if save:
+            filename = StartModSKL.regression_multi_linear.__name__
+            joblib.dump(reg, filename+'_model.sav')
+
         if vis:
             # plot all coefficients to see which features have the most impact on model
-            # reg_coefficient = pd.DataFrame(data=reg.coef_, index=features)
+            # reg_coefficient = pd.DataFrame(data=reg.coef_, index=x_opt)
             # plt.figure(1)
             # reg_coefficient.plot(kind='bar')
             # plt.title("Feature_Important")
@@ -187,16 +216,17 @@ class StartModSKL(StartMod):
         return reg, y_test, y_predict
 
     @classmethod
-    def regression_decision_tree(cls, data, dependent_label, random_state=0, vis=False):
+    def regression_decision_tree(cls, data, dependent_label, vis=False, save=True):
         """
-        Apply method Decision Tree regression
+        # Description: apply method Decision Tree regression
 
-        References:
+        # References:
             http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html
 
         :param data: pandas.core.frame.DataFrame
         :param dependent_label: categorical column
-        :param random_state: default is 0
+        :param vis: default False (set True to visualize)
+        :param save: default True to save the trained model
         :return: DecisionTreeRegressor object, true_test_result, predicted_result
         """
         # # save the dependent value into y
@@ -205,9 +235,10 @@ class StartModSKL(StartMod):
         # x = data.drop(dependent_label, axis=1).values
 
         # split data into feature (independent) values and dependent values in type Numpy.array
-        x_train, x_true, y_train, y_true = StartMod.split_data(data, dependent_label, type_pd=False)
+        x_train, x_true, y_train, y_true = StartMod.split_data(data, dependent_label, random_state=cls.__random_state,
+                                                               type_pd=False)
 
-        reg_dt = DecisionTreeRegressor(random_state=random_state)
+        reg_dt = DecisionTreeRegressor(random_state=cls.__random_state)
         reg_dt.fit(x_train, y_train)
 
         # Estimate the model by cross_validation method and training_data
@@ -220,6 +251,10 @@ class StartModSKL(StartMod):
 
         # Predict
         y_predict = reg_dt.predict(x_true)
+
+        if save:
+            filename = StartModSKL.regression_decision_tree.__name__
+            joblib.dump(reg_dt, filename + '_model.sav')
 
         if vis:
             # plot all coefficients to see which features have the most impact on model
@@ -235,29 +270,35 @@ class StartModSKL(StartMod):
         return reg_dt, y_true, y_predict
 
     @classmethod
-    def regression_random_forest(cls, data, dependent_label, n_est=10, ens=False):
+    def regression_random_forest(cls, data, dependent_label, n_trees=10, ens=False, save=True):
         """
-        Apply method Random forest regression
+        # Description: apply method Random forest regression
 
-        References:
+        # References:
             http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html
 
         :param data: pandas.core.frame.DataFrame
         :param dependent_label:
-        :param n_est: the number of trees in the forest.
+        :param n_trees: the number of trees in the forest.
         :param ens: ensemble learning by decision tree and other regression model
+        :param save: default True to save the trained model
         :return:
         """
         x_train, x_true, y_train, y_true = StartMod.split_data(data, dependent_label, type_pd=False)
 
-        reg_rf = RandomForestRegressor(n_estimators=n_est, random_state=0)
+        reg_rf = RandomForestRegressor(n_estimators=n_trees, random_state=cls.__random_state)
         reg_rf.fit(x_train, y_train)
 
+        # TODO:
         # If ens (ensemble learning), re_implement random forest by applying other regression_model as one decision tree
         # then get the mean result from every decision tree
 
         # Predicting a new result
         y_predict = reg_rf.predict(x_true)
+
+        if save:
+            filename = StartModSKL.regression_random_forest.__name__
+            joblib.dump(reg_rf, filename + '_model.sav')
 
         return reg_rf, y_true, y_predict
 
@@ -271,10 +312,11 @@ class StartModSKL(StartMod):
         pass
 
     @classmethod
-    def regression_logistic(cls, data, dependent_label, random_state=None, solver='liblinear'):
+    def regression_logistic(cls, data, dependent_label, solver='liblinear', save=True, regularization=True):
         """
-        Apply method Regularized logistic regression:
-        Solver:
+        # Description: apply method Regularized logistic regression:
+
+        # Solver:
             For small datasets, ‘liblinear’ is a good choice, whereas ‘sag’ and ‘saga’ are faster for large ones.
 
             For multiclass problems, only ‘newton-cg’, ‘sag’, ‘saga’ and ‘lbfgs’ handle multinomial loss; ‘
@@ -287,8 +329,9 @@ class StartModSKL(StartMod):
 
         :param data: pandas.core.frame.DataFrame
         :param dependent_label: categorical column
-        :param random_state: default None
         :param solver: default 'liblinear', others: {‘newton-cg’, ‘lbfgs’, ‘sag’, ‘saga’}
+        :param save: default True to save the trained model
+        :param regularization: default True to turn on the regularization methods L1, L2
         :return: LogisticRegression object, true_test_result, predicted_result
         """
         # # save the dependent value into y
@@ -300,7 +343,7 @@ class StartModSKL(StartMod):
         # split data into feature (independent) values and dependent values in type Numpy.array
         x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
 
-        reg_log = LogisticRegression(random_state=0)
+        reg_log = LogisticRegression(random_state=cls.__random_state, solver=solver)
         reg_log.fit(x_train, y_train)
 
         # Predicting the Test set results
@@ -310,21 +353,27 @@ class StartModSKL(StartMod):
         StartMod.validation(reg_log, x_train, y_train)
 
         # estimate regularization
-        StartMod.regularization(data, dependent_label)
+        if regularization:
+            StartMod.regularization(data, dependent_label)
+
+        if save:
+            filename = StartModSKL.regression_random_forest.__name__
+            joblib.dump(reg_log, filename + '_model.sav')
 
         return reg_log, y_test, y_predict
 
     @classmethod
-    def classification_knn(cls, data, dependent_label, k_nb=5):
+    def classification_knn(cls, data, dependent_label, k_nb=5, save=True):
         """
-        Apply k-Nearest Neighbours method to classify data
+        # Description: apply k-Nearest Neighbours method to classify data
 
-        References:
+        # References:
             http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html
 
         :param data: pandas.core.frame.DataFrame
         :param dependent_label: categorical column
         :param  k_nb: number of neighbors
+        :param save: default True to save the trained model
         :return: KNeighborsClassifier object, true_test_result, predicted_result
         """
 
@@ -340,19 +389,23 @@ class StartModSKL(StartMod):
         # estimate the model by cross_validation method and training_data
         StartMod.validation(clf_knn, x_train, y_train)
 
+        if save:
+            filename = StartModSKL.classification_knn.__name__
+            joblib.dump(clf_knn, filename + '_model.sav')
+
         return clf_knn, y_test, y_predict
 
     @classmethod
-    def classification_svm(cls, data, dependent_label, kernel='rbf'):
+    def classification_svm(cls, data, dependent_label, kernel='rbf', save=True):
         """
-        Apply Support Vector Machine method to classify data
-        Advice:
-            n = number of features, m = number of training data
-            n > m: use logistic regression or SVM without a kernel (linear kernel)
-            n is small, m intermediate: use SVM with Gaussian kernel ('rbf' radial basis function)
-            n is small, m is large: create/ add more features, then logistic regression or SVM without a kernel
+        # Description: apply Support Vector Machine method to classify data
+            Advice:
+                n = number of features, m = number of training data
+                n > m: use logistic regression or SVM without a kernel (linear kernel)
+                n is small, m intermediate: use SVM with Gaussian kernel ('rbf' radial basis function)
+                n is small, m is large: create/ add more features, then logistic regression or SVM without a kernel
 
-        References:
+        # References:
             http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
             http://mlkernels.readthedocs.io/en/latest/kernels.html
             https://www.youtube.com/watch?v=FCUBwP-JTsA&list=PLLssT5z_DsK-h9vYZkQkYNWcItqhlRJLN&index=75
@@ -360,10 +413,11 @@ class StartModSKL(StartMod):
         :param data: pandas.core.frame.DataFrame
         :param dependent_label: categorical column
         :param kernel: default is 'rbf', kernel_options = ['linear', 'poly', 'sigmoid']
+        :param save: default True to save the trained model
         :return: SVC Object, true_test_result, predicted_result
         """
         def kernel_compute(kn):
-            kc_clf_svc = SVC(kernel=kn, random_state=0)
+            kc_clf_svc = SVC(kernel=kn, random_state=cls.__random_state)
             kc_clf_svc.fit(x_train, y_train)
 
             # Predicting the Test set results
@@ -386,20 +440,25 @@ class StartModSKL(StartMod):
         #         default_y_predict = y_predict
 
         # estimate the model by cross_validation method and training_data
-        StartMod.validation(classifier_svc, x_train, y_train)
+        # StartMod.validation(classifier_svc, x_train, y_train)
+
+        if save:
+            filename = StartModSKL.classification_knn.__name__
+            joblib.dump(classifier_svc, filename + '_model.sav')
 
         return classifier_svc, y_true, y_predict
 
     @classmethod
-    def classification_nb(cls, data, dependent_label):
+    def classification_gnb(cls, data, dependent_label, save=True):
         """
-        Apply Gaussian Naive Bayes method to classify data
+        # Description: apply Gaussian Naive Bayes method to classify data
 
-        References:
+        # References:
             http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html
 
         :param data: pandas.core.frame.DataFrame
         :param dependent_label: categorical column
+        :param save: default True to save the trained model
         :return: GaussianNB, true_test_result, predicted_result
         """
         x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
@@ -411,27 +470,35 @@ class StartModSKL(StartMod):
         y_predict = clf_gnb.predict(x_test)
 
         # estimate the model by cross_validation method and training_data
+        print("Classes: ", clf_gnb.classes_, "Class Count: ", clf_gnb.class_count_,
+              "Class Prior: ", clf_gnb.class_prior_)
         StartMod.validation(clf_gnb, x_train, y_train)
+
+        if save:
+            filename = StartModSKL.classification_gnb.__name__
+            joblib.dump(clf_gnb, filename + '_model.sav')
 
         return clf_gnb, y_test, y_predict
 
     @classmethod
-    def classification_bagged_dt(cls, data, dependent_label, num_trees, seed = 7):
+    def classification_bagged_dt(cls, data, dependent_label, n_trees, save=True):
         """
+        # Description: apply Ensemble meta-estimator BaggingClassifier to classify data
 
-        References:
+        # References:
             https://machinelearningmastery.com/ensemble-machine-learning-algorithms-python-scikit-learn/
             http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.BaggingClassifier.html
+
         :param data: pandas.core.frame.DataFrame
         :param dependent_label:
-        :param num_trees:
-        :param seed:
+        :param n_trees: number of trees
+        :param save: default True to save the trained model
         :return:
         """
         x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
 
         cart = DecisionTreeClassifier()
-        clf_bdt = BaggingClassifier(base_estimator=cart, n_estimators=num_trees, random_state=seed)
+        clf_bdt = BaggingClassifier(base_estimator=cart, n_estimators=n_trees, random_state=cls.__random_state)
         clf_bdt.fit(x_train, y_train)
 
         # predict the test set results
@@ -440,23 +507,27 @@ class StartModSKL(StartMod):
         # estimate the model by cross_validation method and training_data
         StartMod.validation(clf_bdt, x_train, y_train)
 
+        if save:
+            filename = StartModSKL.classification_bagged_dt.__name__
+            joblib.dump(clf_bdt, filename + '_model.sav')
+
         return clf_bdt, y_test, y_predict
 
     @classmethod
-    def classification_rf(cls, data, dependent_label, num_trees, max_features):
+    def classification_rf(cls, data, dependent_label, n_trees, max_features, save=True):
         """
-        Apply Ensemble Random Forest for classification
+        # Description: apply Ensemble Random Forest for classification
 
-        References:
+        # References:
             http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
             http://scikit-learn.org/stable/modules/ensemble.html#random-forests
             https://machinelearningmastery.com/ensemble-machine-learning-algorithms-python-scikit-learn/
 
-
         :param data: pandas.core.frame.DataFrame
         :param dependent_label:
-        :param num_trees: number of decision trees
+        :param n_trees: number of decision trees
         :param max_features: number of maximal features to select randomly
+        :param save: default True to save the trained model
         :return:
         """
         x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
@@ -464,7 +535,7 @@ class StartModSKL(StartMod):
         # In order to reduce the size of the model, you can change these parameters:
         # min_samples_split, min_samples_leaf, max_leaf_nodes and max_depth
         # setup n_jobs=-1 to setup all cores available on the machine are used
-        clf_rf = RandomForestClassifier(n_estimators=num_trees, max_features=max_features, n_jobs=-1)
+        clf_rf = RandomForestClassifier(n_estimators=n_trees, max_features=max_features, n_jobs=-1)
         clf_rf.fit(x_train, y_train)
 
         # predict the test set results
@@ -473,25 +544,29 @@ class StartModSKL(StartMod):
         # estimate the model by cross_validation method and training_data
         StartMod.validation(clf_rf, x_train, y_train)
 
+        if save:
+            filename = StartModSKL.classification_rf.__name__
+            joblib.dump(clf_rf, filename + '_model.sav')
+
         return clf_rf, y_test, y_predict
 
     @classmethod
-    def classification_adab(cls, data, dependent_label, num_trees=30, seed=7):
+    def classification_adab(cls, data, dependent_label, n_trees=30, save=True):
         """
-        Apply Ensemble AdaBoost for classification
+        # Description: apply Ensemble AdaBoost for classification
 
-        References:
+        # References:
             http://scikit-learn.org/stable/modules/ensemble.html#adaboost
 
         :param data: pandas.core.frame.DataFrame
         :param dependent_label:
-        :param num_trees:
-        :param seed:
+        :param n_trees:
+        :param save: default True to save the trained model
         :return:
         """
         x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
 
-        clf_adab = AdaBoostClassifier(n_estimators=num_trees, random_state=seed)
+        clf_adab = AdaBoostClassifier(n_estimators=n_trees, random_state=cls.__random_state)
         clf_adab.fit(x_train, y_train)
 
         # predict the test set results
@@ -500,32 +575,36 @@ class StartModSKL(StartMod):
         # estimate the model by cross_validation method and training_data
         StartMod.validation(clf_adab, x_train, y_train)
 
+        if save:
+            filename = StartModSKL.classification_adab.__name__
+            joblib.dump(clf_adab, filename + '_model.sav')
+
         return clf_adab, y_test, y_predict
 
     @classmethod
-    def classification_sgb(cls, data, dependent_label, num_trees=30, seed=7, regression=False):
+    def classification_sgb(cls, data, dependent_label, n_trees=30, regression=False, save=True):
         """
-        Apply Ensemble Stochastic Gradient Boosting for classification
+        # Description: apply Ensemble Stochastic Gradient Boosting for classification
 
-        References:
+        # References:
             http://scikit-learn.org/stable/modules/ensemble.html#gradient-tree-boosting
             http://scikit-learn.org/stable/modules/ensemble.html#loss-functions
 
         :param data: pandas.core.frame.DataFrame
         :param dependent_label:
-        :param num_trees:
-        :param seed:
+        :param n_trees: number of trees
         :param regression:
+        :param save: default True to save the trained model
         :return:
         """
         x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
 
         if regression:
-            clf_sgb = GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=1, random_state=0,
-                                            loss='ls')
+            clf_sgb = GradientBoostingRegressor(n_estimators=100, learning_rate=0.1, max_depth=1,
+                                                random_state=cls.__random_state, loss='ls')
         else:
-            clf_sgb = GradientBoostingClassifier(n_estimators=num_trees, learning_rate=1.0, max_depth=1, random_state=seed,
-                                             loss='deviance')
+            clf_sgb = GradientBoostingClassifier(n_estimators=n_trees, learning_rate=1.0, max_depth=1,
+                                                 random_state=cls.__random_state, loss='deviance')
         clf_sgb.fit(x_train, y_train)
 
         # predict the test set results
@@ -534,20 +613,25 @@ class StartModSKL(StartMod):
         # estimate the model by cross_validation method and training_data
         StartMod.validation(clf_sgb, x_train, y_train)
 
+        if save:
+            filename = StartModSKL.classification_sgb.__name__
+            joblib.dump(clf_sgb, filename + '_model.sav')
+
         return clf_sgb, y_test, y_predict
 
     @classmethod
-    def classification_xgb(cls, data, dependent_label):
+    def classification_xgb(cls, data, dependent_label, save=True):
         """
-        Apply Extreme Gradient Boosting (XGBoost) method to classify data
+        # Description: apply Extreme Gradient Boosting (XGBoost) method to classify data
 
-        References:
+        # References:
             http://xgboost.readthedocs.io/en/latest/model.html
             https://machinelearningmastery.com/xgboost-python-mini-course/
             http://scikit-learn.org/stable/modules/ensemble.html
 
         :param data: pandas.core.frame.DataFrame
         :param dependent_label:
+        :param save: default True to save the trained model
         :return:
         """
         # split data into feature (independent) values and dependent values in type Numpy.array
@@ -565,24 +649,28 @@ class StartModSKL(StartMod):
 
         plot_importance(clf_xgb)
 
+        if save:
+            filename = StartModSKL.classification_xgb.__name__
+            joblib.dump(clf_xgb, filename + '_model.sav')
+
         return clf_xgb, y_test, y_predict
-        # return x_train, x_test, y_train, y_test
 
     @classmethod
     def classification_voting(cls, models, data, dependent_label):
         """
-        voting ensemble model for classification by combining the predictions from multiple machine learning algorithms.
-        parameter:
-            voting='hard': mode label
-            voting='soft': weighted average value
+        # Description: voting ensemble model for classification by combining the predictions from multiple machine learning algorithms.
+            parameter:
+                voting='hard': mode label
+                voting='soft': weighted average value
 
-        References:
+        # References:
             http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.VotingClassifier.html
             http://scikit-learn.org/stable/modules/ensemble.html#voting-classifier
 
         :param models:
         :param data: pandas.core.frame.DataFrame
         :param dependent_label:
+        :param save: default True to save the trained model
         :return:
         """
         # split data into feature (independent) values and dependent values in type Numpy.array
@@ -596,15 +684,16 @@ class StartModSKL(StartMod):
         return ensemble
 
     @classmethod
-    def clustering_k_mean_noc(cls, data, plot=False):
+    def clustering_k_mean_noc(cls, data, plot=False, save=True):
         """
-        Find the number of clusters using the elbow method.
+        # Description: find the number of clusters using the elbow method.
 
-        References:
+        # References:
             http://www.awesomestats.in/python-cluster-validation/
 
         :param data: pandas.core.frame.DataFrame
         :param plot: show plot (default is False)
+        :param save: default True to save the trained model
         :return: plot of data to identify number of clusters (still manually)
         """
         cluster_errors = []
@@ -613,9 +702,13 @@ class StartModSKL(StartMod):
         cluster_range = range(1, 11)
 
         for i in cluster_range:
-            kmeans = KMeans(n_clusters=i, init='k-means++', random_state=42)
-            kmeans.fit(data.values)
-            cluster_errors.append(kmeans.inertia_)
+            k_means = KMeans(n_clusters=i, init='k-means++', random_state=cls.__random_state)
+            k_means.fit(data.values)
+            cluster_errors.append(k_means.inertia_)
+
+        if save:
+            filename = StartModSKL.clustering_k_mean_noc.__name__
+            joblib.dump(k_means, filename + '_model.sav')
 
         # plot to see result
         if plot:
@@ -632,20 +725,26 @@ class StartModSKL(StartMod):
         return clusters_df
 
     @classmethod
-    def clustering_k_mean(cls, data, noc):
+    def clustering_k_mean(cls, data, n_clusters, save=True):
         """
-        Requirement: run clustering_k_mean_noc first to find 'noc' (number of possible clusters)
-        Apply method clustering k_means++ to cluster data with the given 'noc'
+        # Description:
+            Requirement: run clustering_k_mean_noc first to find 'noc' (number of possible clusters)
+            Apply method clustering k_means++ to cluster data with the given 'noc'
 
-        References:
+        # References:
             http://scikit-learn.org/stable/modules/generated/sklearn.cluster.KMeans.html
 
         :param data: pandas.core.frame.DataFrame
-        :param noc: number of clusters
+        :param n_clusters: number of clusters
+        :param save: default True to save the trained model
         :return: KMeans object, predicted y_values
         """
-        k_means = KMeans(n_clusters=noc, init='k-means++', random_state=0)
+        k_means = KMeans(n_clusters=n_clusters, init='k-means++', random_state=cls.__random_state)
         y_clusters = k_means.fit_predict(data.values)
+
+        if save:
+            filename = StartModSKL.clustering_k_mean.__name__
+            joblib.dump(k_means, filename + '_model.sav')
 
         return k_means, y_clusters
 

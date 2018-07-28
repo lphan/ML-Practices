@@ -31,6 +31,7 @@ from pyspark.ml import Pipeline
 from pyspark.ml.clustering import KMeans
 # from graphframes import GraphFrame
 
+
 class StartSPK(object):
     """
     Description: StartSPK - Start Apache Spark
@@ -51,7 +52,7 @@ class StartSPK(object):
     kwargs = {}
 
     # TODO: pass multiple path through path_files
-    def __init__(self, app_name, path_files, config_opt="", config_val=""):
+    def __init__(self, app_name, path_files, config_opt="", config_val="", rdd=True):
 
         # create SparkContext for RDD object and import data from source
         # self.spark_conf = (SparkConf().setAppName(appname))
@@ -63,23 +64,12 @@ class StartSPK(object):
                            .config(config_opt, config_val).getOrCreate())
         self.path_files = path_files
 
-    def import_data(self, path_file, rdd=True):
         if rdd:
-            self.data = self.spark_cont.textFile(path_file)
+            self.data = [self.spark_cont.textFile(path_file) for path_file in path_files]
         else:
-            self.data = self.spark_sess.sparkContext.textFile(path_file)
+            self.data = self.spark_sess.sparkContext.textFile(path_files)
 
-        return self.data
-
-    # TODO: import multiple files to create multiple dataframes in Spark
-    # def get_df_from_csv_paths(paths):
-    #
-    #     df = pyspark.read.format("csv").option("header", "false"). \
-    #         schema(custom_schema). \
-    #         option('delimiter', '\t'). \
-    #         option('mode', 'DROPMALFORMED'). \
-    #         load(paths.split(','))
-    #     return df
+        # TODO: stop/ exit sparkContext/ session
 
     def get_dat(self):
         return self.data, self.spark_cont, self.spark_sess

@@ -96,7 +96,6 @@ class StartMongo(StartDB):
         data_json = json.loads(data.to_json(orient='records'))
 
         # insert json-data into database
-        # print(data_json)
         self.db_coll.insert(data_json)
 
     def read_data(self, key_value=None):

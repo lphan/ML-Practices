@@ -34,14 +34,14 @@ class StartModREC(StartMod):
         pass
 
     @classmethod
-    def find_nearest_neighbors_by_distance(cls, data, user_idx, k=5, manhattan=True):
+    def find_nearest_neighbors_by_distance(cls, data, user_idx, k_nb=5, manhattan=True):
         """
         return the most nearest neighbors based on computing Distance 'Manhattan Distance' or 'Euclidean Distance'
         to the given username
 
         :param data: pandas.core.frame.DataFrame (two feature columns representing x and y values)
         :param user_idx:
-        :param k: number of nearest neighbors (default k=5)
+        :param k_nb: number of nearest neighbors (default k=5)
         :param manhattan: (default True). Otherwise, apply Euclidean distance
         :return:
         """
@@ -69,7 +69,7 @@ class StartModREC(StartMod):
             nnb = pd.DataFrame(data=neighbors, columns=['idx', 'distance'])
             nnb.set_index('idx', inplace=True)
             nnb.sort_values(by='distance', ascending=True, inplace=True)
-            return nnb[1:k+1]
+            return nnb[1:k_nb + 1]
 
     @classmethod
     def find_nearest_neighbors_by_correlation(cls, data, user_id, rating_id, user_key):
@@ -88,7 +88,7 @@ class StartModREC(StartMod):
         data = StartML.groupby_rows(data, user_id)
 
         # show the first 3 key_values
-        StartML.head_dict(data, h=3)
+        StartML.head_dict(data, h_elems=3)
 
         print(user_key, data[user_key][rating_id])
 

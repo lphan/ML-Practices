@@ -17,6 +17,7 @@ __author__ = 'Long Phan'
 # import plotnine
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
+from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.pylab import rcParams
 from Starts.startml import *
 rcParams['figure.figsize'] = 20, 6
@@ -44,6 +45,8 @@ class StartVis(StartML):
         :param x_label:
         :param y_label:
         :param title:
+        :param rot: rotation
+        :param bar: display bar char (default True)
         :return:
         """
         if bar:
@@ -142,7 +145,7 @@ class StartVis(StartML):
             data_col = data[col].values
             data_to_plot.append(data_col)
 
-        bp = ax.boxplot(data_to_plot)
+        ax.boxplot(data_to_plot)
         plt.title("Visual Boxplot")
         plt.show()
 
@@ -163,8 +166,14 @@ class StartVis(StartML):
         plt.show()
 
     @classmethod
-    def vis_scatter(cls, data):
-        pass
+    def vis_scatter(cls, data, features):
+        plt.figure()
+        x_data = data[features[0]]
+        y_data = data[features[1]]
+        label_data = data[features[2]]
+        plt.xlabel(features[0])
+        plt.ylabel(features[1])
+        plt.scatter(x_data, y_data, c=label_data)
 
     @classmethod
     def vis_obj_predict(cls, x_index, y_true, y_pred, title):
@@ -266,6 +275,38 @@ class StartVis(StartML):
         plt.show()
 
     @classmethod
+    def vis_3d_scatter(cls, data, features):
+        """
+
+        :param data:
+        :param features:
+        :return:
+        """
+        fig = plt.figure()
+
+        ax = fig.add_subplot(111, projection='3d')
+        data_x = data[features[0]]  # x_data
+        data_y = data[features[1]]  # y_data
+        data_z = data[features[2]]  # z_data
+        ax.scatter(data_x, data_y, data_z, c=data[features[2]])
+
+        ax.set_xlabel(features[0])
+        ax.set_ylabel(features[1])
+        ax.set_zlabel(features[2])
+
+        plt.show()
+
+    @classmethod
+    def vis_nd_scatter(cls, data):
+        """
+        Idea to visualize data in n_dimension (n > 3)
+
+        :param data:
+        :return:
+        """
+        pass
+
+    @classmethod
     def vis_contourf(cls, data):
         """
         References:
@@ -284,6 +325,21 @@ class StartVis(StartML):
         in directed graph (set: alpha parameter to display the transparency)
 
         Used in Graph Analytics
+        """
+        pass
+
+    @classmethod
+    def vis_features_acc(cls):
+        """
+        # Description:
+            plot which shows the correlation between number of features and accuracy performance.
+            Adding more features over the threshold's performance contributes very little and sometimes even leads to
+            overfitting and degrades performance.
+
+        # Reference:
+            https://developers.google.com/machine-learning/guides/text-classification/step-3
+
+        :return:
         """
         pass
 

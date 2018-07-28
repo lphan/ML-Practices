@@ -51,14 +51,38 @@ class StartMod(StartML):
           -> info_mod
     """
 
+    def __init__(self, n_classes, dependent_label):
+        """
+        setup parameters for model
+        :param n_classes: number of classes as the value of dependent_label (e.g n_classes=2 as binary classification)
+        :param dependent_label: target_feature
+        """
+
+        if dependent_label:
+            self.n_classes = n_classes
+            self.dependent_label = dependent_label
+
+        else:
+            self.n_classes = n_classes
+            self.dependent_label = None  # there is no dependent_label (e.g. unsupervised learning)
+
+    def _get_attributes(self):
+        return {'dependent_label': self.dependent_label, 'n_classes': self.n_classes}
+
+    def _set_attributes(self, dict_params):
+        self.n_classes = dict_params['n_classes']
+        self.dependent_label = dict_params['dependent_label']
+
+    update_parameters = property(_get_attributes, _set_attributes)
+
     @classmethod
     def encode_label_column(cls, data, label_columns, one_hot=False):
         """
-        Encode object-columns
-        This encoding is needed for feeding categorical data to many scikit-learn estimators,
-        notably linear models and SVMs with the standard kernels.
+        # Description: encode object-columns
+            This encoding is needed for feeding categorical data to many scikit-learn estimators,
+            notably linear models and SVMs with the standard kernels.
 
-        References:
+        # References:
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html
 
@@ -130,7 +154,8 @@ class StartMod(StartML):
     @classmethod
     def split_columns(cls, data, cols):
         """
-        Split data by feature_columns into 2 different datasets
+        # Description: split data by feature_columns into 2 different datasets
+
         :param data: pandas.core.frame.DataFrame
         :param cols: list of columns feature e.g. cols = [['a', 'b'], 'c']
         :return: list of pandas data frames splitted by columns
@@ -141,10 +166,11 @@ class StartMod(StartML):
     @classmethod
     def split_data(cls, data, dependent_label=None, test_size=0.2, random_state=0, type_pd=True, split=True, cv=False):
         """
-        Split data by rows into training_data and test_data used for (regression, classification) methods
+        # Description:
+            split data by rows into training_data and test_data used for (regression, classification) methods
         TODO: split data into 3 parts (training, validation, test)
 
-        References:
+        # References:
             http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html
 
         :param data: pandas.core.frame.DataFrame
@@ -169,9 +195,8 @@ class StartMod(StartML):
 
         if type_pd:
             # keep type Pandas DataFrame
-            # y = data.pop(dependent_label)  # should use data[dependent_label], instead of using pop
             y = data[dependent_label]
-            x = data
+            x = data.drop([dependent_label], axis=1)
         else:
             # convert to type Numpy
             y = data[dependent_label].values
@@ -202,10 +227,11 @@ class StartMod(StartML):
     @classmethod
     def backward_eliminate(cls, data, x_data, y_data):
         """
-        Support the evaluation on (regression) models by finding maximal p_value (< pre-defined SL)
-        and applying method Backward Elimination for feature selection
+        # Description:
+            support the evaluation on (regression) models by finding maximal p_value (< pre-defined SL)
+            and applying method Backward Elimination for feature selection
 
-        References:
+        # References:
             http://www.stephacking.com/multivariate-linear-regression-python-step-6-backward-elimination/
 
         :param data: pandas.core.frame.DataFrame
@@ -240,7 +266,7 @@ class StartMod(StartML):
     @classmethod
     def feature_columns(cls, data, label=None):
         """
-        Find and return object and non-object columns
+        # Description: find and return object and non-object columns
         
         :param data: pandas.core.frame.DataFrame
         :param label: default is None
@@ -261,15 +287,16 @@ class StartMod(StartML):
     @classmethod
     def feature_scaling(cls, data, feature_range=None, type_pd=True, std=True):
         """
-        Standardization involves rescaling the features such that they have the properties
+        # Description: standardization involves rescaling the features such that they have the properties
         of a standard normal distribution with a mean of zero and a standard deviation of one
 
-        References:
+        # References:
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html
             http://scikit-learn.org/stable/auto_examples/preprocessing/plot_scaling_importance.html
 
         :param data: pandas.core.frame.DataFrame or numpy.array
+        :param feature_range:
         :param type_pd: default True to convert data in Pandas Data-Frame
         :return: data in scaled format
         """
@@ -290,10 +317,11 @@ class StartMod(StartML):
     @classmethod
     def feature_selection(cls, data, rm_columns, dependent_label=None, rm=False, pr=True):
         """
-        Function to simplify feature selection and dimensionality reduction respectively
-        apply Backward Elimination, Forward Selection, Bidirectional Elimination, Score comparision
+        # Description:
+            function to simplify feature selection and dimensionality reduction respectively
+            apply Backward Elimination, Forward Selection, Bidirectional Elimination, Score comparision
 
-        References:
+        # References:
             http://scikit-learn.org/stable/modules/feature_selection.html
 
         :param data: pandas.core.frame.DataFrame
@@ -343,9 +371,9 @@ class StartMod(StartML):
     @classmethod
     def feature_hashing(cls, data):
         """
-        Benefit on low-memory and speed up the performance
+        # Description: benefit on low-memory and speed up the performance
 
-        References:
+        # References:
             http://scikit-learn.org/stable/modules/feature_extraction.html
             http://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.FeatureHasher.html
 
@@ -356,21 +384,21 @@ class StartMod(StartML):
         pass
 
     @classmethod
-    def feature_extraction(cls, data, dependent_variable):
+    def feature_extraction(cls, data, dependent_label):
         """
-        Using Principal component analysis (PCA) to extract the most important independent variables (features)
+        # Description: apply Principal component analysis (PCA) to extract the most important independent variables (features)
         (Dimensionality Reduction)
 
-        References:
+        # References:
             http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html
 
         :param data: pandas.core.frame.DataFrame
-        :param dependent_variable:
+        :param dependent_label:
         :return: array of explained_variance_ratio, x_train, x_test, y_train, y_test
         """
-        # tbd: choose the most best variance to get max possible total percentages
+        # TODO: choose the most best variance to get max possible total percentages
 
-        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_variable)
+        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label)
         pca = PCA(n_components=None)
         x_train = pca.fit_transform(x_train)
         x_test = pca.transform(x_test)
@@ -379,9 +407,9 @@ class StartMod(StartML):
     @classmethod
     def feature_engineering(cls, data, old_feature, new_feature, new_attributes, rm=False):
         """
-        Renew data with new_feature using the new attributes_new_feature
+        # Description: renew data with new_feature using the new attributes_new_feature
 
-        References:
+        # References:
             https://triangleinequality.wordpress.com/2013/09/08/basic-feature-engineering-with-the-titanic-data/
 
         :param data: pandas.core.frame.DataFrame
@@ -406,7 +434,7 @@ class StartMod(StartML):
     @classmethod
     def feature_engineering_merge_cols(cls, data, features, new_feature, datetime=False):
         """
-        Merge many features into one new_feature (column)
+        # Description: merge many features into one new_feature (column)
 
         :param data: pandas.core.frame.DataFrame
         :param features: list of the merging features
@@ -430,8 +458,10 @@ class StartMod(StartML):
     @classmethod
     def regularization(cls, data, dependent_label):
         """
-        Apply technique of Ridge regression L2 and Lasso (Least Absolute Shrinkage and Selection Operator) regression L1
-        to avoid overfitting (when p>n, many more features than observations "wide matrix"):
+        # Description:
+            apply technique of Ridge regression L2
+            and Lasso (Least Absolute Shrinkage and Selection Operator) regression L1
+            to avoid overfitting (when p>n, many more features than observations "wide matrix"):
             by (Lasso regression) shrinking some of the parameters to zero (therefore getting rid of some features) and
             by (Ridge regression) making some of the parameters very small without setting them to zero.
             by (Elastic net regression) which is basically a hybrid of ridge and lasso regression for big dataset
@@ -448,7 +478,7 @@ class StartMod(StartML):
 
         3. Elastic Net Regression
 
-        References:
+        # References:
             https://www.analyticsvidhya.com/blog/2017/06/a-comprehensive-guide-for-linear-ridge-and-lasso-regression/
             https://www.analyticsvidhya.com/blog/2016/01/complete-tutorial-ridge-lasso-regression-python/
             https://codingstartups.com/practical-machine-learning-ridge-regression-vs-lasso/
@@ -467,7 +497,7 @@ class StartMod(StartML):
         ridgeReg = Ridge(alpha=0.05, normalize=True)
         ridgeReg.fit(x_train, y_train)
         y_pred_rr = ridgeReg.predict(x_test)
-        print("Ridge coef_attribute", ridgeReg.coef_)
+        print("\nRidge coef_attribute", ridgeReg.coef_)
         print("Ridge independent term", ridgeReg.intercept_)
         print("Ridge evaluation using r-square: ", ridgeReg.score(x_test, y_test))
 
@@ -475,7 +505,7 @@ class StartMod(StartML):
         lassoReg = Lasso(alpha=0.3, normalize=True)
         lassoReg.fit(x_train, y_train)
         y_pred_lr = lassoReg.predict(x_test)
-        print("Lasso coef_attribute", lassoReg.coef_)
+        print("\nLasso coef_attribute", lassoReg.coef_)
         print("Lasso independent term", lassoReg.intercept_)
         print("Lasso evaluation using r-square: ", lassoReg.score(x_test, y_test))
         
@@ -483,7 +513,7 @@ class StartMod(StartML):
         enReg = ElasticNet(alpha=1, l1_ratio=0.5, normalize=False)
         enReg.fit(x_train, y_train)
         y_pred_er = enReg.predict(x_test)
-        print("Elastic net coef_attribute", enReg.coef_)
+        print("\nElastic net coef_attribute", enReg.coef_)
         print("Elastic net independent term", enReg.intercept_)
         print("Elastic net evaluation using r-square: ", enReg.score(x_test, y_test))
 
@@ -499,15 +529,15 @@ class StartMod(StartML):
     @classmethod
     def metrics_report(cls, y_true, y_pred, target_names=None):
         """
-        Measure the quality of the models (comparing results before and after running prediction)
+        # Description: measure the quality of the models (comparing results before and after running prediction)
 
-        Binary Classification:
-            Accuracy = (TP + TN) / (TP + TN + FP + FN)
-            Precision = TP / (TP + FP)
-            Recall = TP / (TP + FN)
-            F1 Score = (2 * Precision * Recall) / (Precision + Recall)
+            Binary Classification:
+                Accuracy = (TP + TN) / (TP + TN + FP + FN)
+                Precision = TP / (TP + FP)
+                Recall = TP / (TP + FN)
+                F1 Score = (2 * Precision * Recall) / (Precision + Recall)
 
-        References:
+        # References:
             http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics
             http://scikit-learn.org/stable/modules/model_evaluation.html#model-evaluation
             http://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html
@@ -549,8 +579,7 @@ class StartMod(StartML):
     @classmethod
     def validation(cls, model, x_val, y_val, parameters=[], cv=None, tune=False):
         """
-        Apply K-Fold Cross_Validation to estimate the model (classification)
-        Bias vs Variance
+        # Description: apply K-Fold Cross_Validation to estimate the model (classification) Bias vs Variance
 
         Debugging a learning algorithm:
             - Get more training data
@@ -560,7 +589,7 @@ class StartMod(StartML):
             - Try decreasing regularization parameter
             - Try increasing regularization parameter
 
-        References:
+        # References:
             http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.KFold.html
             http://scikit-learn.org/stable/modules/cross_validation.html
             http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_val_score.html
@@ -578,26 +607,23 @@ class StartMod(StartML):
         :param tune (turn on grid search method to find the best parameters for model) default is False
         :return:
         """
-        # estimate the contribution of the matching feature to the prediction function
-        # TODO: visualize plot_bar feature_importances corresponding to its features_label
-        print(sorted(model.feature_importances_))
-        # print("Features: ", features, "\nFeatures_Important: ", features_important)
 
         if not cv:
             scores = cross_val_score(estimator=model, X=x_val, y=y_val, cv=10)
         else:
             scores = cross_val_score(estimator=model, X=x_val, y=y_val, cv=cv)
+
         print("\nCross_validated scores: ", scores)
         print("\nMean of cross_validated scores: ", scores.mean())
         print("\nStandard Deviation of cross_validated scores: ", scores.std())
 
         # Plot cross_validated predictions
         predictions = cross_val_predict(model, x_val, y_val, cv=6)
-        plt.scatter(y_val, predictions)
+        plt.scatter(x_val, y_val, 'r--', x_val, predictions, 'bs')
 
         # calculate R_Squared to measure the cross_predicted accuracy of the model
         accuracy = r2_score(y_val, predictions)
-        print("Cross_predicted accuracy:", accuracy)
+        print("\nCross_predicted accuracy:", accuracy)
 
         if tune:
             # setup grid search input parameters to tune the hyper parameter e.g. n_jobs=-1 for large data set
@@ -624,3 +650,7 @@ class StartMod(StartML):
 
 
 info_mod = StartMod.info_help()
+
+# update parameters
+# new_param={'dependent_label': self.dependent_label}
+# StartMod.update_parameters=new_param

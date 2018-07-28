@@ -12,12 +12,14 @@
 __author__ = 'Long Phan'
 
 import tensorflow as tf
+# from tensorflow.contrib.keras import models, layers, optimizers, initializers
+# from tensorflow.contrib.layers import fully_connected
+from math import sqrt
+from Starts.startmod import *
 from keras.models import Sequential
 from keras.layers import Dense, Flatten, Conv1D, Dropout, LSTM
 from keras.optimizers import SGD
 from keras.initializers import random_uniform
-from math import sqrt
-from Starts.startmod import *
 
 
 class StartModTF(StartMod):
@@ -36,40 +38,27 @@ class StartModTF(StartMod):
           -> info_modtf
     """
 
-    def __init__(self, data, label=None):
+    def __init__(self, n_classes, dependent_label):
         """
         setup parameters for neuron network
-        :param data: pandas.core.frame.DataFrame
-        :param label: target_feature
+        :param dependent_label: target_feature
 
         References:
             https://keras.io/losses/
             https://keras.io/optimizers/
 
         """
-        self.data = data
+        super().__init__(n_classes, dependent_label)   # StartMod.__init__(self, n_classes, dependent_label)
+        self.input_units = 1
+        self.hidden_units = [10, 10]        # default setup 10 neuron in 2 hidden layers
+        self.output_units = 1
 
-        if len(label) == 0:
-            # print("NO LABEL")
-            self.n_classes = 2  # default setup 2 classes for binary classification (2 values e.g. 0 and 1)
-            self.label = None
-
-        elif len(label) == 1:
-            # print("LABEL = 1")
-            self.n_classes = len(data[label[0]].unique())
-            self.label = label
-
-        else:
-            # print("LABEL REST")
-            self.label = label  # regression
-
-        self.hidden_units = [10, 10]        # default setup 10 neuron in 2 layers
         self.optimizer = "Adagrad"          # default Adagrad optimizer
         self.activation_fn = "relu"         # default 'relu' function
         self.learning_rate = 0.001          # default 0.001 -> 0.01 -> 0.1
         self.steps = 1000                   # default training_steps 1000
         self.loss = 'mean_squared_error'    # option: binary_crossentropy, categorical_crossentropy, mean_absolute_error
-        self.drop_out = 0.2
+        self.drop_out_rate = 0.2
         self.rec_drop_out = 0.2
 
         # (correspond with available system memory capacity to avoid out_of_memory_error,
@@ -79,7 +68,13 @@ class StartModTF(StartMod):
         self.nr_epochs = 1                  # default number of epochs 1 (for large dataset) and 10 (for small dataset)
         self.feature_scl = False            # default turn off feature scaling
 
-        # others hyper parameters: momentum, mini batchsize,
+        self.bias_initializer = 'random_uniform'
+        self.depth_wise_initializer = 'random_uniform'
+        self.seed = 10
+
+        # others hyper parameters:
+        #   mini batchsize,
+        #
         # Reducing Overfitting:
         #   regularization for neural network: L1, L2
         #   dropout regularization: shrink weights
@@ -87,10 +82,20 @@ class StartModTF(StartMod):
 
         # choose NN architectures: RNN, CNN, others
 
-    # get and set methods for attributes
     def _get_attributes(self):
-        return self.hidden_units, self.optimizer, self.activation_fn, self.learning_rate, self.steps, self.loss, \
-               self.drop_out, self.rec_drop_out, self.batch_size, self.nr_epochs, self.feature_scl
+        """
+        # get and set methods for attributes
+        :return:
+        """
+        nn_attributes = {{'input_units': self.input_units, 'hidden_units': self.hidden_units,
+                          'output_units': self.output_units, 'optimizer': self.optimizer,
+                          'activation_fn':self.activation_fn, 'learning_rate': self.learning_rate,
+                          'steps': self.steps, 'batch_size': self.batch_size, 'num_epochs': self.nr_epochs,
+                          'feature_scl': self.feature_scl, 'loss_fn': self.loss,
+                          'drop_out': self.drop_out_rate, 'rec_drop_out': self.rec_drop_out,
+                          'bias_initializer': self.bias_initializer,
+                          'depth_wise_initializer': self.depth_wise_initializer, 'seed': self.seed}}
+        return nn_attributes
 
     # reset all attributes in neural network
     def _set_attributes(self, dict_params):
@@ -101,7 +106,9 @@ class StartModTF(StartMod):
         :param dict_params:
         :return:
         """
+        self.input_units = dict_params['input_units']
         self.hidden_units = dict_params['hidden_units']
+        self.output_units = dict_params['output_units']
         self.optimizer = dict_params['optimizer']
         self.activation_fn = dict_params['activation_fn']
         self.learning_rate = dict_params['learning_rate']
@@ -110,11 +117,16 @@ class StartModTF(StartMod):
         self.nr_epochs = dict_params['num_epochs']
         self.feature_scl = dict_params['feature_scl']
         self.loss = dict_params['loss_fn']
-        self.drop_out = dict_params['drop_out']
+        self.drop_out_rate = dict_params['drop_out']
         self.rec_drop_out = dict_params['rec_drop_out']
+        self.bias_initializer = dict_params['bias_initializer']
+        self.depth_wise_initializer = dict_params['depth_wise_initializer']
+        self.seed = dict_params['seed']
 
     def info_parameters(self):
-        print("\nHidden_units: {}".format(self.hidden_units), "\n")
+        print("\nInput_units: {}".format(self.input_units), "\n")
+        print("Hidden_units: {}".format(self.hidden_units), "\n")
+        print("Output_units: {}".format(self.output_units), "\n")
         print("Optimizer: {}".format(self.optimizer), "\n")
         print("Activation_function: {}".format(self.activation_fn), "\n")
         print("Learning_Rate: {}".format(self.learning_rate), "\n")
@@ -123,13 +135,16 @@ class StartModTF(StartMod):
         print("Number_of_epochs: {}".format(self.nr_epochs), "\n")
         print("Feature_Scaling: {}".format(self.feature_scl), "\n")
         print("Loss_function: {}".format(self.loss), "\n")
-        print("Drop_out: {}".format(self.drop_out), "\n")
+        print("Drop_out: {}".format(self.drop_out_rate), "\n")
         print("Recurrent_drop_out: {}".format(self.rec_drop_out), "\n")
+        print("Bias_Initializer: {}".format(self.bias_initializer), "\n")
+        print("Depth_wise_Initializer: {}".format(self.depth_wise_initializer), "\n")
+        print("Seed: {}".format(self.seed), "\n")
 
     update_parameters = property(_get_attributes, _set_attributes)
 
     @classmethod
-    def train_input_func(cls, features, labels, batch_size, nr_epochs):
+    def train_input_func(cls, features, dependent_label, batch_size, nr_epochs):
         """
         An input function for training
 
@@ -137,7 +152,7 @@ class StartModTF(StartMod):
             https://github.com/tensorflow/models/blob/master/samples/core/get_started/iris_data.py
 
         :param features:
-        :param labels:
+        :param dependent_label:
         :param batch_size:
         :param nr_epochs:
         :return:
@@ -149,7 +164,7 @@ class StartModTF(StartMod):
         #
         # # Shuffle, repeat, and batch the examples.
         # return dataset.shuffle(1000).repeat().batch(batch_size)
-        return tf.estimator.inputs.pandas_input_fn(x=features, y=labels, batch_size=batch_size,
+        return tf.estimator.inputs.pandas_input_fn(x=features, y=dependent_label, batch_size=batch_size,
                                                    num_epochs=nr_epochs, shuffle=True)
 
     @classmethod
@@ -207,8 +222,8 @@ class StartModTF(StartMod):
 
         # setup categorical features (categorical_column_with_vocabulary_list) or (categorical_column_with_hash_bucket)
         if obj_feature:
-            len_unique = len(x_train[self.label].unique())
-            cat_column = tf.feature_column.categorical_column_with_hash_bucket(self.label,
+            len_unique = len(x_train[self.dependent_label].unique())
+            cat_column = tf.feature_column.categorical_column_with_hash_bucket(self.dependent_label,
                                                                                hash_bucket_size=len_unique)
             feature_columns.append(cat_column)
 
@@ -286,7 +301,7 @@ class StartModTF(StartMod):
 
         pass
 
-    def classifier_estimator(self, model_lin=True):
+    def classifier_estimator(self, data, dependent_label, model_lin=True):
         """
         Apply pre-made Estimator to classify data
 
@@ -295,17 +310,18 @@ class StartModTF(StartMod):
             https://www.tensorflow.org/api_docs/python/tf/contrib/learn/DNNClassifier
 
         :param data: pandas.core.frame.DataFrame
+        :param dependent_label:
         :param model_lin: default is LinearClassifier
         :return: LinearClassifier object (DNNClassifier object), y_true, y_predict
         """
-        if self.label is None:
+        if dependent_label is None:
             print("Please choose other method as Clustering to process data\n")
             return
 
         # print(self.data.columns)
         # fea_cols = [tf.feature_column.numeric_column(key=fea) for fea in self.data.columns]
 
-        x_train, x_true, y_train, y_true = StartMod.split_data(self.data, self.label)
+        x_train, x_true, y_train, y_true = self.split_data(data, dependent_label)
         if self.feature_scl:
             x_train = StartMod.feature_scaling(x_train, type_pd=True)
             x_true = StartMod.feature_scaling(x_true, type_pd=True)
@@ -324,7 +340,7 @@ class StartModTF(StartMod):
                                                     activation_fn=self.activation_fn)
 
         # Train the Model
-        train_input_func = StartModTF.train_input_func(features=x_train, labels=y_train,
+        train_input_func = StartModTF.train_input_func(features=x_train, dependent_label=y_train,
                                                        batch_size=self.batch_size, nr_epochs=self.nr_epochs)
         classifier.train(input_fn=train_input_func, steps=self.steps)
 
@@ -356,6 +372,17 @@ class StartModTF(StartMod):
         """
         pass
 
+    @classmethod
+    def auto_encoder(cls):
+        """
+        The number of input neurons = the number of output neurons (symmetric network)
+        Input size = output size
+        Encoder <-> Decoder
+        The weight at the input layer = The weight at the output layer
+        :return:
+        """
+        pass
+
     @staticmethod
     def info_help():
         info = {
@@ -367,48 +394,57 @@ class StartModTF(StartMod):
 
 
 class StartModTFANN(StartModTF):
-    def __init__(self, data, label):
-        StartModTF.__init__(self, data, label)
 
-    def keras_sequential(self, output_signals=1):
+    def __init__(self, n_classes, dependent_label):
+        super().__init__(n_classes, dependent_label)  # StartModTF.__init__(self, dependent_label)
+
+    def keras_sequential(self, data, output_signals=1):
         """
         Setup Keras and run the Sequential method to predict value
 
         References:
             https://keras.io/getting-started/sequential-model-guide/
+            https://stackoverflow.com/questions/44747343/keras-input-explanation-input-shape-units-batch-size-dim-etc#
 
+        :param data: pandas.core.frame.DataFrame
         :param output_signals: default 1 (when there's only 1 categorical column)
         :return: Keras-Sequential object, the actual (true) value, the predicted value
         """
         # split data
-        x_train, x_eval, y_train, y_eval = StartMod.split_data(self.data, self.label)
+        x_train, x_eval, y_train, y_eval = StartMod.split_data(data, dependent_label=self.dependent_label)
 
         # Initialising the ANN
-        model = Sequential()
+        model = Sequential() # model = models.Sequential()
 
         # tbd: use parameter tuning to find the exact number of nodes in the hidden-layer
         # Number of layers and neurons in every layers (in numpy array e.g. [1000, 500, 250, 3])
         hidden_units = self.hidden_units
 
         # Init hyper parameter
-        np.random.seed(10)
-        hidden_initializer = random_uniform(seed=10)
-        input_dimension = len(x_train.columns)  # or input_dimension = len(x_train.shape[1])
+        # np.random.seed(10)
+        hidden_initializer = random_uniform(seed=self.seed)  # initializers.RandomUniform(seed=self.seed)
+        input_dimension = self.input_units
 
         # default = number of features, input_signals = x_train.shape[1] = hidden_units[0]
         # Adding the input layer and the first hidden layer, activation function as rectifier function
-        model.add(Dense(units=hidden_units[0], input_dim=input_dimension, kernel_initializer=hidden_initializer,
-                        activation=self.activation_fn))
+        model.add(Dense(units=self.input_units, input_dim=input_dimension, kernel_initializer=hidden_initializer,
+                        activation=self.activation_fn, bias_initializer=self.bias_initializer))
 
         # Adding the second hidden layer, activation function as rectifier function
         # print(hidden_units)
-        for i in range(len(hidden_units)-2):
-            # print(i+1, hidden_units[i+1])
-            model.add(Dense(activation="relu", units=hidden_units[i+1], kernel_initializer="uniform"))
+        for i in range(len(hidden_units)):
+            # print(i, hidden_units[i])
+            model.add(Dense(activation=self.activation_fn, units=hidden_units[i], kernel_initializer=hidden_initializer))
 
-        # Adding the output layer (in case of there's only one dependent_label), activation function as sigmoid function
-        output_signals = hidden_units[-1:][0]
-        model.add(Dense(activation="sigmoid", units=output_signals, kernel_initializer="uniform"))
+        # Adding the output layer (in case of there's only one dependent_label),
+        # n_classes = 2 (binary), then activation function is chosen as sigmoid function
+        # n_classes > 2 (not binary), then activation function is chosen as softmax function
+        if self.n_classes == 2:
+            output_activation = "sigmoid"
+        else:
+            output_activation = "softmax"
+
+        model.add(Dense(units=self.output_units, kernel_initializer=hidden_initializer, activation=output_activation))
 
         # Compiling the ANN with optimizer='adam'
         model.compile(optimizer='adam', loss=self.loss, metrics=['accuracy'])
@@ -429,12 +465,14 @@ class StartModTFANN(StartModTF):
 
 
 class StartModTFCNN(StartModTF):
-    def __init__(self, data, label):
-        StartModTF.__init__(self, data, label)
+    def __init__(self):
+        super().__init__()  # StartModTF.__init__(self)
+
         self.filter_size = [3, 3]
         self.n_filters = 1
         self.n_padding = 1
         self.n_strides = 1
+        self.momentum = 0.2  # SGD's parameters
 
         # Types of layer:
         # Convolution (conv), Pooling (pool), Fully connected (fc)
@@ -444,9 +482,21 @@ class StartModTFCNN(StartModTF):
         #   ResNet (Residual Network)
         #   Inception Network
 
-    # reset all attributes in neural network
+    def _get_attributes(self):
+        """
+        # get and set methods for attributes
+        :return:
+        """
+        cnn_attributes = {
+                          'filter_size':self.n_filters, 'n_filters': self.n_filters, 'n_padding': self.n_padding,
+                          'n_strides': self.n_strides, 'momentum': self.momentum
+                         }
+        return cnn_attributes
+
     def _set_attributes(self, dict_params):
         """
+        # reset all attributes in neural network
+
         Reference:
             https://machinelearningmastery.com/5-step-life-cycle-neural-network-models-keras/
 
@@ -457,20 +507,22 @@ class StartModTFCNN(StartModTF):
         self.n_filters = dict_params['n_filters']
         self.n_padding = dict_params['n_padding']
         self.n_strides = dict_params['n_strides']
+        self.momentum = dict_params['momentum']
+
+    update_parameters = property(_get_attributes, _set_attributes)
 
     def info_parameters(self):
         print("\nfilter_size: {}".format(self.filter_size), "\n")
         print("n_filters: {}".format(self.n_filters), "\n")
         print("n_padding: {}".format(self.n_padding), "\n")
         print("n_strides: {}".format(self.n_strides), "\n")
+        print("momentum: {}".format(self.momentum), "\n")
 
-    def keras_cnn_1d(self, momentum=0.2, seed=10, n_filters=32, kernel_size=1, padding="same"):
+    def keras_cnn_1d(self, data, dependent_label, kernel_size=1, padding="same"):
         """
         Setup Keras hyper_parameters, Kernel_initializer 's parameter and find regression_value for (multiple) label(s)
 
-        :param momentum: SGD's parameters
-        :param seed: Setup hyperparameters (default is 10)
-        :param n_filters: number of filters (default is 32)
+        :param data: pandas.core.frame.DataFrame
         :param kernel_size:
         :param padding: Output dim has the same size as Input dim (default is 'same')
         :return:
@@ -483,8 +535,8 @@ class StartModTFCNN(StartModTF):
         :return:
         """
         # Convert to the right dimension row, column, 1-channel in Numpy array
-        X_data = self.data.drop(self.label, axis=1)
-        Y_data = self.data[self.label]
+        X_data = data.drop(dependent_label, axis=1)
+        Y_data = data[dependent_label]
 
         # Normalizing data
         scaler = MinMaxScaler()
@@ -500,8 +552,9 @@ class StartModTFCNN(StartModTF):
         y_train = y_train.as_matrix()
 
         # Init hyper parameter
-        np.random.seed(seed)
-        hidden_initializer = random_uniform(seed=seed)
+        np.random.seed(self.seed)
+        hidden_initializer = random_uniform(seed=self.seed)
+        self.n_filters = 32  # reset number of filters (default is 32)
 
         # Number of layers and neurons in every layers (in numpy array e.g. [1000, 500, 250, 3])
         hidden_units = self.hidden_units
@@ -510,15 +563,15 @@ class StartModTFCNN(StartModTF):
         model = Sequential()
 
         # Conv1D needs 2 dimension -> input_shape=(1000,1), similarly Conv2D needs 3 dim, Conv3D needs 4 dim
-        model.add(Conv1D(input_shape=(input_dimension, 1), activation=self.activation_fn, filters=n_filters,
+        model.add(Conv1D(input_shape=(input_dimension, 1), activation=self.activation_fn, filters=self.n_filters,
                          kernel_size=kernel_size, padding=padding))
-        model.add(Conv1D(activation=self.activation_fn, filters=n_filters, kernel_size=kernel_size))
+        model.add(Conv1D(activation=self.activation_fn, filters=self.n_filters, kernel_size=kernel_size))
 
         # Flattens the input
         model.add(Flatten())
 
         # Regularization technique to prevent Neural Networks from Overfitting
-        model.add(Dropout(self.drop_out))
+        model.add(Dropout(rate=self.drop_out_rate))
 
         # Use output of CNN as input of ANN, e.g. units = np.array([1000, 500, 250, 3])
         model.add(Dense(units=hidden_units[0], input_dim=input_dimension, kernel_initializer=hidden_initializer,
@@ -534,7 +587,7 @@ class StartModTFCNN(StartModTF):
         model.add(Dense(units=hidden_units[-1:][0], kernel_initializer=hidden_initializer))
 
         # reset optimizer
-        sgd = SGD(lr=self.learning_rate, momentum=momentum)
+        sgd = SGD(lr=self.learning_rate, momentum=self.momentum)
         self.optimizer = sgd
 
         # compile and train model with training_data
@@ -546,17 +599,17 @@ class StartModTFCNN(StartModTF):
         print("\nModel %s: Scores: %.2f%%, Accuracy: %.2f%%" % (model.metrics_names[1], scores[1]*100, accuracy*100))
 
         # Predict value
-        y_pred = model.predict(x_eval.values.reshape(x_eval.shape[0], x_eval.shape[1], 1))
-        y_pred = pd.DataFrame(data=y_pred, columns=y_eval.columns)
+        y_pred = pd.DataFrame(data=model.predict(x_eval.values.reshape(x_eval.shape[0], x_eval.shape[1], 1)),
+                              columns=y_eval.columns)
 
         return model, y_eval, y_pred
 
 
 class StartModTFRNN(StartModTF):
-    def __init__(self, data, label):
-        StartModTF.__init__(self, data, label)
+    def __init__(self):
+        StartModTF.__init__(self)
 
-    def keras_rnn_lstm_onestep_univ(self, repeats=10):
+    def keras_rnn_lstm_onestep_univ(self, data, dependent_label, repeats=10):
         """
         Build recurrent neural network RNN using Long-Short Term Memory LSTM for a one-step univariate time series
         forecasting problem
@@ -613,7 +666,7 @@ class StartModTFRNN(StartModTF):
             # the number of time steps, and the number of features.
             model = Sequential()
             model.add(LSTM(self.hidden_units[0], batch_input_shape=(self.batch_size, X.shape[1], X.shape[2]),
-                           stateful=True, dropout=self.drop_out, recurrent_dropout=self.rec_drop_out))
+                           stateful=True, dropout=self.drop_out_rate, recurrent_dropout=self.rec_drop_out))
             model.add(Dense(self.hidden_units[1]))  # 1 for 1 output
 
             # set loss='mean_squared_error', optimizer='adam'
@@ -630,7 +683,7 @@ class StartModTFRNN(StartModTF):
             return yhat[0, 0]
 
         # transform data to be stationary
-        raw_values = self.data[self.label].values
+        raw_values = data[dependent_label].values
         diff_values = difference(raw_values)
 
         # transform data to be supervised learning
@@ -697,7 +750,7 @@ class StartModTFRNN(StartModTF):
 
         return lstm_model, raw_values[-len(test_scaled):], y_pred
 
-    def keras_rnn_lstm_onestep_multiv(self):
+    def keras_rnn_lstm_onestep_multiv(self, data, dependent_label):
         """
         Build recurrent neural network RNN using Long-Short Term Memory LSTM for a one-step multivariate time series
         forecasting problem
@@ -709,7 +762,7 @@ class StartModTFRNN(StartModTF):
         """
         pass
 
-    def keras_rnn_lstm_multisteps(self):
+    def keras_rnn_lstm_multisteps(self, data, dependent_label):
         """
         Build recurrent neural network RNN using Long-Short Term Memory LSTM for a multi-step time series
         forecasting problem
@@ -721,7 +774,7 @@ class StartModTFRNN(StartModTF):
         """
         pass
 
-    def exp_weighted_avg(self):
+    def exp_weighted_avg(self, data, dependent_label):
         """
         compute exponential moving average of group of certain time series values
         (e.g. in 5 days, 10 days, 1 week, 1 month, 1 year, etc.)
@@ -730,7 +783,10 @@ class StartModTFRNN(StartModTF):
         pass
 
 # update parameters
-# new_param={'hidden_units':[input_dim,2,1], 'optimizer':'Adam', 'activation_fn':'sigmoid', 'learning_rate': 0.0001,
-#            'steps':2000, 'batch_size':10, 'num_epochs':2, 'feature_scl':True, 'loss_fn':'binary_crossentropy',
-#            'drop_out':0.2, 'rec_drop_out':0.5}
+# new_param={'input_units': 8, 'hidden_units':[8, 8], 'output_units':1,
+#            'optimizer':'Adam', 'activation_fn':'sigmoid', 'learning_rate': 0.0001,
+#            'steps': 2000, 'batch_size': 10, 'num_epochs': 10, 'feature_scl': True,
+#            'loss_fn':'binary_crossentropy', 'drop_out': 0.5, 'rec_drop_out': 0.6,
+#            'bias_initializer': 'random_uniform', 'depth_wise_initializer': 'random_uniform', 'seed': 10}
+# StartModtf smtf
 # smtf.update_parameters=new_param
