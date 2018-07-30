@@ -542,7 +542,7 @@ class StartModSKL(StartMod):
         y_predict = clf_rf.predict(x_test)
 
         # estimate the model by cross_validation method and training_data
-        StartMod.validation(clf_rf, x_train, y_train)
+        StartMod.validation(clf_rf, x_train, y_train, vis=False)
 
         if save:
             filename = StartModSKL.classification_rf.__name__
@@ -573,7 +573,7 @@ class StartModSKL(StartMod):
         y_predict = clf_adab.predict(x_test)
 
         # estimate the model by cross_validation method and training_data
-        StartMod.validation(clf_adab, x_train, y_train)
+        StartMod.validation(clf_adab, x_train, y_train, vis=False)
 
         if save:
             filename = StartModSKL.classification_adab.__name__
@@ -611,7 +611,7 @@ class StartModSKL(StartMod):
         y_predict = clf_sgb.predict(x_test)
 
         # estimate the model by cross_validation method and training_data
-        StartMod.validation(clf_sgb, x_train, y_train)
+        StartMod.validation(clf_sgb, x_train, y_train, vis=False)
 
         if save:
             filename = StartModSKL.classification_sgb.__name__

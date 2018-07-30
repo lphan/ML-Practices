@@ -51,7 +51,7 @@ class StartSPK(object):
     # init keywords arguments
     kwargs = {}
 
-    # TODO: pass multiple path through path_files
+    # TODO: Py4JJavaError
     def __init__(self, app_name, path_files, config_opt="", config_val="", rdd=True):
 
         # create SparkContext for RDD object and import data from source
@@ -67,9 +67,9 @@ class StartSPK(object):
         if rdd:
             self.data = [self.spark_cont.textFile(path_file) for path_file in path_files]
         else:
-            self.data = self.spark_sess.sparkContext.textFile(path_files)
+            self.data = [self.spark_sess.sparkContext.textFile(path_files)]
 
-        # TODO: stop/ exit sparkContext/ session
+        # TODO: exception stop/ exit sparkContext/ session
 
     def get_dat(self):
         return self.data, self.spark_cont, self.spark_sess

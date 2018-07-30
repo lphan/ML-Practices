@@ -74,7 +74,11 @@ class StartMongo(StartDB):
         self.coll_name = coll_name
 
         # initiate Mongo Client for MongoDB e.g.'localhost:27017'
-        self.client = pymongo.MongoClient(self.db_path, self.db_port)
+        try:
+            self.client = pymongo.MongoClient(self.db_path, self.db_port)
+        except pymongo.errors.ConnectionFailure:
+            print("Could not connect to Server")
+            return
 
         # create database name
         self.db = self.client[self.db_name]

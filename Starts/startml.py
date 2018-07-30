@@ -79,7 +79,8 @@ class StartML(object):
         :return: new_data
         """
         if not format:
-            data.index = pd.to_datetime(data.pop(time_column))
+            # TODO: wrong convert time day
+            data.index = pd.to_datetime(data.pop(time_column), unit='ms')
         else:
             data.index = pd.to_datetime(data.pop(time_column), unit='ms', format=format)
 
@@ -908,7 +909,7 @@ class StartML(object):
                         data_exl = pd.read_excel(path)
                         df.append(data_exl)
                     elif path.endswith('.json'):
-                        data_json = pd.read_json(path, low_memory=False)
+                        data_json = pd.read_json(path)
                         df.append(data_json)
                     elif path.endswith('.csv'):
                         data_csv = pd.read_csv(path, low_memory=False)

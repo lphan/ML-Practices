@@ -577,7 +577,7 @@ class StartMod(StartML):
         print("\nF-Score: \n", 2*prec*rec/ (prec+rec))
 
     @classmethod
-    def validation(cls, model, x_val, y_val, parameters=[], cv=None, tune=False):
+    def validation(cls, model, x_val, y_val, parameters=[], cv=None, tune=False, vis=True):
         """
         # Description: apply K-Fold Cross_Validation to estimate the model (classification) Bias vs Variance
 
@@ -619,7 +619,10 @@ class StartMod(StartML):
 
         # Plot cross_validated predictions
         predictions = cross_val_predict(model, x_val, y_val, cv=6)
-        plt.scatter(x_val, y_val, 'r--', x_val, predictions, 'bs')
+
+        if vis:
+            # print(len(x_val), len(y_val), len(predictions))
+            plt.scatter(x_val, y_val, 'r--', x_val, predictions, 'bs')
 
         # calculate R_Squared to measure the cross_predicted accuracy of the model
         accuracy = r2_score(y_val, predictions)
