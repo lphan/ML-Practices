@@ -49,7 +49,7 @@ class StartModTF(StartMod):
             https://keras.io/optimizers/
 
         """
-        super().__init__(n_classes, dependent_label)   # StartMod.__init__(self, n_classes, dependent_label)
+        super(StartModTF, self).__init__(n_classes, dependent_label)   # StartMod.__init__(self, n_classes, dependent_label)
         self.input_units = 1
         self.hidden_units = [10, 10]        # default setup 10 neuron in 2 hidden layers
         self.output_units = 1
@@ -427,7 +427,7 @@ class StartModTF(StartMod):
 class StartModTFANN(StartModTF):
 
     def __init__(self, n_classes, dependent_label):
-        super().__init__(n_classes, dependent_label)  # StartModTF.__init__(self, n_classes, dependent_label)
+        super(StartModTFANN, self).__init__(n_classes, dependent_label)  # StartModTF.__init__(self, n_classes, dependent_label)
 
     def keras_sequential(self, data, output_signals=1):
         """
@@ -497,7 +497,8 @@ class StartModTFANN(StartModTF):
 
 class StartModTFCNN(StartModTF):
     def __init__(self, n_classes, dependent_label):
-        super().__init__(n_classes, dependent_label)  # StartModTF.__init__(self, n_classes, dependent_label)
+        # StartModTF.__init__(self, n_classes, dependent_label)
+        super(StartModTFCNN, self).__init__(n_classes, dependent_label)
 
         # Types of layer:
         # Convolution (conv), Pooling (pool), Fully connected (fc)

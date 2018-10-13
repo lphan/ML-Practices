@@ -69,23 +69,25 @@ class StartML(object):
         print("local_kwargs", StartML.kwargs)
 
     @classmethod
-    def convert_time_series(cls, data, time_column, format=None, add_day=False):
+    def convert_time_series(cls, data, time_column, form=None, add_day=False):
         """
-        Description: convert dataset into time_series dataset
+        Description: convert dataset into time_series_dataset
 
         :param data: pandas.core.frame.DataFrame
+        :param form: default True if time_column is in date_time format, False if in millisecond
         :param time_column:
-        :param format: default True if time_column is in date_time format, False if in millisecond
+        :param add_day:
         :return: new_data
         """
-        if not format:
+        if not form:
             # TODO: wrong convert time day
             data.index = pd.to_datetime(data.pop(time_column), unit='ms')
         else:
-            data.index = pd.to_datetime(data.pop(time_column), unit='ms', format=format)
+            data.index = pd.to_datetime(data.pop(time_column), format=form)
 
         if add_day:
             data['day'] = [t.weekday() for t in data.index]
+
         data = data.sort_index()
         return data
 

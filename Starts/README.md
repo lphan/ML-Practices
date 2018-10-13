@@ -34,6 +34,8 @@ __author__ = 'Long Phan'
 
 > Database: MongoDB
 
+> Computer Vision: PyTorch, OpenCV
+
 > cont.
 
 ### Install dependencies
@@ -61,3 +63,7 @@ Source:
 > https://github.com/apache/spark
 
 > https://github.com/mongodb/mongo
+
+> https://github.com/pytorch
+
+> https://github.com/opencv/opencv
