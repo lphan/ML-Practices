@@ -30,7 +30,7 @@ __author__ = 'Long Phan'
 
 > Visualization: Matplotlib 
 
-> Big Data tools: Spark
+> Big Data tools: Spark (use: Java 1.8)
 
 > Database: MongoDB
 
@@ -47,6 +47,8 @@ __author__ = 'Long Phan'
 
 Source: 
 	https://matplotlib.org/basemap/users/installing.html
+	
+	sudo pip install -U git+https://github.com/matplotlib/basemap.git
 
 
 ### References

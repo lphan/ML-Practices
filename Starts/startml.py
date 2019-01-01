@@ -69,21 +69,22 @@ class StartML(object):
         print("local_kwargs", StartML.kwargs)
 
     @classmethod
-    def convert_time_series(cls, data, time_column, form=None, add_day=False):
+    def convert_time_series(cls, data, time_column, form=None, add_day=False, units=None):
         """
-        Description: convert dataset into time_series_dataset
+        Description: convert data set into time_series_data_set
 
         :param data: pandas.core.frame.DataFrame
         :param form: default True if time_column is in date_time format, False if in millisecond
         :param time_column:
         :param add_day:
+        :param units: 
         :return: new_data
         """
         if not form:
             # TODO: wrong convert time day
-            data.index = pd.to_datetime(data.pop(time_column), unit='ms')
+            data.index = pd.to_datetime(data.pop(time_column))
         else:
-            data.index = pd.to_datetime(data.pop(time_column), format=form)
+            data.index = pd.to_datetime(data.pop(time_column), format=form, unit=units)
 
         if add_day:
             data['day'] = [t.weekday() for t in data.index]
@@ -246,8 +247,8 @@ class StartML(object):
     def groupby_columns(cls, data, columns, groupby_label, func=None):
         """
         Description: execute operation group_by on columns by label_groupby
-            e.g. compute mean value by column 'day'
-                StartML.groupby_columns(data, columns=['values'], groupby_label=['day'], func=np.mean)
+                    e.g. compute mean value by column 'day'
+                        StartML.groupby_columns(data, columns=['values'], groupby_label=['day'], func=np.mean)
 
         References:
             https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.groupby.html
