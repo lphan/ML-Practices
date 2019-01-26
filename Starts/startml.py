@@ -77,7 +77,7 @@ class StartML(object):
         :param form: default True if time_column is in date_time format, False if in millisecond
         :param time_column:
         :param add_day:
-        :param units: 
+        :param units:
         :return: new_data
         """
         if not form:

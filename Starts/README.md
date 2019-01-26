@@ -26,7 +26,9 @@ __author__ = 'Long Phan'
 
 > Data Analysis: Pandas, Numpy, Scipy
 
-> Machine Learning models: scikit-learn, Tensorflow, Keras
+> Machine Learning frameworks: scikit-learn, Tensorflow, Keras, Theano
+
+> Natural Language Processing: nltk, spacy, gensim
 
 > Visualization: Matplotlib 
 
