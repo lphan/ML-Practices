@@ -3,7 +3,7 @@
 ## INTRO: 
 
 as a person who is very passionate about Data Science, Machine Learning and Deep Learning so that I want to 'learn by doing' a framework layer in between many popular frameworks (Pandas, Numpy, Matplotlib, statsmodels, Tensorflow, Spark, etc.). 
-In a short description, package 'Starts' is a 'Wrapper' package with the functions which are written with simple algorithms and easy to run and apply as well as exploit the power of many other data analysis frameworks. 
+In a short description, package 'Starts' is a 'Wrapper' package with the functions which are written with simple code by re-applying of many other data analysis frameworks. 
  
 - for the person who want to study Machine Learning 'by doing' are able to get into Machine Learning's technique lightly with less effort and overcome the raw-theories's barriers.
 - for the person who want to analyse data and get the result/ information asap, but do not have much time to deal with the complexity of many different frameworks. 

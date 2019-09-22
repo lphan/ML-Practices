@@ -88,7 +88,7 @@ class StartModREC(StartMod):
         data = StartML.groupby_rows(data, user_id)
 
         # show the first 3 key_values
-        StartML.head_dict(data, h_elems=3)
+        StartML.head_dict(data, headElems=3)
 
         print(user_key, data[user_key][rating_id])
 
@@ -110,7 +110,7 @@ class StartModREC(StartMod):
                 for k2 in inter:
                     rating_list = [data[k1][cr][k2[0]] for cr in column_rating]
 
-                    place_key = StartML.getkeyby_value(data[user_key][rating_id], k2[1])
+                    place_key = StartML.getKeyByValue(data[user_key][rating_id], k2[1])
                     for k in place_key:
                         rating_user = [data[user_key][cr].get(k) for cr in column_rating]
 

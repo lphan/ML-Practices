@@ -40,21 +40,19 @@ class StartModTF(StartMod):
 
     def __init__(self, n_classes, dependent_label):
         """
-        # Description: init parameters for neuron network
-
+        Description: init parameters for neuron network
         :param dependent_label: target_feature
 
         References:
             https://keras.io/losses/
             https://keras.io/optimizers/
-
         """
-        super(StartModTF, self).__init__(n_classes, dependent_label)   # StartMod.__init__(self, n_classes, dependent_label)
+        super().__init__(n_classes, dependent_label)   # StartMod.__init__(self, n_classes, dependent_label)
         self.input_units = 1
-        self.hidden_units = [10, 10]        # default setup 10 neuron in 2 hidden layers
+        self.hidden_units = [10, 10]        # default setup 10 neurons in 2 hidden layers
         self.output_units = 1
 
-        self.optimizer = "Adagrad"          # default Adagrad optimizer
+        self.optimizer = "Adagrad"          # default Adaptive Gradients Optimizer. Optional: AdaDelta, Adam
         self.activation_fn = "relu"         # default 'relu' function
         self.learning_rate = 0.001          # default 0.001 -> 0.01 -> 0.1
         self.steps = 1000                   # default training_steps 1000
@@ -62,8 +60,9 @@ class StartModTF(StartMod):
         self.drop_out_rate = 0.2
         self.rec_drop_out = 0.2
 
-        # (correspond with available system memory capacity to avoid out_of_memory_error,
-        # small for many features, big for performance)
+        # Batch_size is used for mini-batch GD, corresponds with available system memory capacity
+        # to avoid out_of_memory_error,
+        # batch_size: small for many features, big for performance and whole data set as once = stochastic GD
         self.batch_size = 10                # default batch_size 10
 
         self.nr_epochs = 1                  # default number of epochs 1 (for large dataset) and 10 (for small dataset)
@@ -79,23 +78,20 @@ class StartModTF(StartMod):
         self.n_filters = 1
         self.n_padding = 1
         self.n_strides = 1
-        self.momentum = 0.2  # SGD's parameters
+        self.momentum = 0.2  # Optimizer parameter
 
-        # others hyper parameters:
-        #   mini batchsize,
-        #
         # Reducing Overfitting:
         #   regularization for neural network: L1, L2
         #   dropout regularization: shrink weights
         #   other regularization: data augmentation, early stopping
-
-        # choose NN architectures: RNN, CNN, others
+        #
+        # Choose NN architectures: RNN, CNN, others
 
     def _get_attributes(self):
         """
-        # Description: get method to retrieve dict_parameters of attributes
+        Description: get method to retrieve dict_parameters of attributes
 
-        :return:
+        :return: neural network parameters
         """
         nn_attributes = {'input_units': self.input_units, 'hidden_units': self.hidden_units,
                          'output_units': self.output_units, 'optimizer': self.optimizer,
@@ -176,7 +172,7 @@ class StartModTF(StartMod):
     @classmethod
     def train_input_func(cls, features, dependent_label, batch_size, nr_epochs):
         """
-        # Description: input function for training
+        Description: input function for training
 
         # References:
             https://github.com/tensorflow/models/blob/master/samples/core/get_started/iris_data.py
@@ -188,9 +184,9 @@ class StartModTF(StartMod):
         :return:
         """
         # Alternatives:
-        # tensors = (dict(features), labels)
+        #   tensors = (dict(features), labels)
         #
-        # dataset = tf.data.Dataset.from_tensor_slices(tensors)
+        #   dataset = tf.data.Dataset.from_tensor_slices(tensors)
         #
         # # Shuffle, repeat, and batch the examples.
         # return dataset.shuffle(1000).repeat().batch(batch_size)
@@ -200,7 +196,7 @@ class StartModTF(StartMod):
     @classmethod
     def eval_input_fn(cls, features, label, batch_size, epochs):
         """
-        # Description: input function for evaluation
+        Description: input function for evaluation
 
         # References:
             https://www.tensorflow.org/api_docs/python/tf/estimator/inputs/pandas_input_fn
@@ -223,18 +219,14 @@ class StartModTF(StartMod):
             https://www.tensorflow.org/api_docs/python/tf/estimator/inputs/pandas_input_fn
 
         :param test_features: from test_data (x_true)
-        :param batch_size:
+        :param batch_size: size of one batch data interated for Gradient Descent
         :return:
-        """
-        """
-        
-        :return:
-        """
+        """        
         return tf.estimator.inputs.pandas_input_fn(x=test_features, batch_size=batch_size, shuffle=False)
 
     def setup_feature_columns(self, x_train):
         """
-        # Description: setup feature columns into TensorFlow format (numeric, bucketized, hash_bucket)
+        Description: setup feature columns into TensorFlow format (numeric, bucketized, hash_bucket)
 
         # References:
             https://www.tensorflow.org/get_started/feature_columns
@@ -297,7 +289,7 @@ class StartModTF(StartMod):
     @classmethod
     def regressor_estimator(cls, data):
         """
-        # Description: apply Estimator API
+        Description: apply Estimator API
 
         :param data: pandas.core.frame.DataFrame
         :return:
@@ -334,7 +326,7 @@ class StartModTF(StartMod):
 
     def classifier_estimator(self, data, dependent_label, model_lin=True):
         """
-        # Description: apply pre-made Estimator to classify data
+        Description: apply pre-made Estimator to classify data
 
         # References:
             https://www.tensorflow.org/api_docs/python/tf/contrib/learn/LinearClassifier
@@ -413,6 +405,24 @@ class StartModTF(StartMod):
         :return:
         """
         pass
+    
+    @classmethod
+    def reduce_dim_linautoencoder(cls, data):
+        """
+        Description:
+            reduce the dimension using linear autoencoder from m dimension to n dimension (m>n)
+            apply to data with number of neurons at input layer equal to number of neurons at output layer
+        """
+        pass
+
+    @classmethod
+    def stacked_autoencoder(cls, data):
+        """
+        Description:
+            the same as above
+            except the scale itself of hidden layers are halbed each time.
+        """
+        pass
 
     @staticmethod
     def info_help():
@@ -427,11 +437,11 @@ class StartModTF(StartMod):
 class StartModTFANN(StartModTF):
 
     def __init__(self, n_classes, dependent_label):
-        super(StartModTFANN, self).__init__(n_classes, dependent_label)  # StartModTF.__init__(self, n_classes, dependent_label)
+        super().__init__(n_classes, dependent_label)  # StartModTF.__init__(self, n_classes, dependent_label)
 
     def keras_sequential(self, data, output_signals=1):
         """
-        # Description: setup Keras and run the Sequential method to predict value
+        Description: setup Keras and run the Sequential method to predict value
 
         # References:
             https://keras.io/getting-started/sequential-model-guide/
@@ -497,8 +507,7 @@ class StartModTFANN(StartModTF):
 
 class StartModTFCNN(StartModTF):
     def __init__(self, n_classes, dependent_label):
-        # StartModTF.__init__(self, n_classes, dependent_label)
-        super(StartModTFCNN, self).__init__(n_classes, dependent_label)
+        super().__init__(n_classes, dependent_label)  # StartModTF.__init__(self, n_classes, dependent_label)
 
         # Types of layer:
         # Convolution (conv), Pooling (pool), Fully connected (fc)
@@ -510,7 +519,7 @@ class StartModTFCNN(StartModTF):
 
     def keras_cnn_1d(self, data):
         """
-        # Description:
+        Description:
             setup Keras hyper_parameters, Kernel_initializer 's parameter and find regression_value
             for (multiple) label(s)
 
@@ -603,7 +612,7 @@ class StartModTFRNN(StartModTF):
 
     def keras_rnn_lstm_onestep_univ(self, data, repeats=10):
         """
-        # Description:
+        Description:
             build recurrent neural network RNN using Long-Short Term Memory LSTM for a one-step univariate time series
             forecasting problem
 
@@ -747,7 +756,7 @@ class StartModTFRNN(StartModTF):
 
     def keras_rnn_lstm_onestep_multiv(self, data, dependent_label):
         """
-        # Description:
+        Description:
             build recurrent neural network RNN using Long-Short Term Memory LSTM for a one-step multivariate time series
             forecasting problem
 
@@ -760,7 +769,7 @@ class StartModTFRNN(StartModTF):
 
     def keras_rnn_lstm_multisteps(self, data, dependent_label):
         """
-        # Description:
+        Description:
             build recurrent neural network RNN using Long-Short Term Memory LSTM for a multi-step time series
             forecasting problem
 
@@ -773,7 +782,7 @@ class StartModTFRNN(StartModTF):
 
     def exp_weighted_avg(self, data, dependent_label):
         """
-        # Description:
+        Description:
             compute exponential moving average of group of certain time series values
             (e.g. in 5 days, 10 days, 1 week, 1 month, 1 year, etc.)
 
@@ -781,7 +790,7 @@ class StartModTFRNN(StartModTF):
         """
         pass
 
-# update parameters
+# Example: How to update parameters
 # new_param={'input_units': 1000, 'hidden_units': [500, 250], 'output_units': 3, 'optimizer':'Adam',
 #            'activation_fn': 'relu', 'learning_rate': 0.0025,
 #            'steps': 5000, 'batch_size': 10, 'num_epochs': 100, 'feature_scl': True,

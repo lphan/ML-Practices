@@ -312,11 +312,14 @@ class StartModSKL(StartMod):
         pass
 
     @classmethod
-    def regression_logistic(cls, data, dependent_label, solver='liblinear', save=True, regularization=True):
+    def regression_logistic(cls, data, dependent_label, solver='liblinear', max_iter=100, multi_class='warn', save=True, regularization=True):
         """
-        # Description: apply method Regularized logistic regression:
+        Description: apply method Regularized logistic regression
+        apply multi_class = ('multinomial', 'ovr')
+            with 'Multinomial Logistic Regression' classifier or 'ovr' one vs rest classifier
+            to solve the classification problem with more than 2 labels.
 
-        # Solver:
+        Solver:
             For small datasets, ‘liblinear’ is a good choice, whereas ‘sag’ and ‘saga’ are faster for large ones.
 
             For multiclass problems, only ‘newton-cg’, ‘sag’, ‘saga’ and ‘lbfgs’ handle multinomial loss; ‘
@@ -326,6 +329,7 @@ class StartModSKL(StartMod):
 
         References:
             http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html
+            https://scikit-learn.org/stable/auto_examples/linear_model/plot_logistic_multinomial.html
 
         :param data: pandas.core.frame.DataFrame
         :param dependent_label: categorical column

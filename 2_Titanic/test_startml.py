@@ -27,12 +27,12 @@ class StartMLTestCase(unittest.TestCase):
 
     @staticmethod
     def testGet_value_column_index_Name():
-        assert StartML.find_value(train_data, [1, 2, 3], 'Age') == \
+        assert StartML.findValue(train_data, [1, 2, 3], 'Age') == \
                [(1, 'Age', 38.0), (2, 'Age', 26.0), (3, 'Age', 35.0)], 'incorrect Name'
 
     @staticmethod
     def testGet_value_column_index_Fare():
-        assert (float(StartML.find_value(train_data, [10], 'Fare')[0][2])) == 16.7, 'incorrect Fare price'
+        assert (float(StartML.findValue(train_data, [10], 'Fare')[0][2])) == 16.7, 'incorrect Fare price'
 
     @staticmethod
     def testNan_columns():
@@ -61,7 +61,7 @@ class StartMLTestCase(unittest.TestCase):
                                  ['PassengerId', 'Survived', 'Pclass', 'Name', 'Sex', 'Age', 'SibSp',
                                   'Parch', 'Ticket', 'Fare', 'Cabin', 'Embarked']
                                  ), 'the dropping columns are incorrect'
-            assert StartML.find_value(processed_train_data, 5, 'Age') == 0, \
+            assert StartML.findValue(processed_train_data, 5, 'Age') == 0, \
                 'Incorrect replaced, value should be 0.0'
 
     @staticmethod

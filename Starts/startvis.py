@@ -196,6 +196,24 @@ class StartVis(StartML):
         plt.show()
 
     @classmethod
+    def vis_crossEntropy(predicted_prob, log_loss):
+        """
+        Description:
+            visualize the cross-entropy (log loss)
+
+        References: 
+            https://ml-cheatsheet.readthedocs.io/en/latest/loss_functions.html
+
+        :param predicted_prob: list of all the predicted probabilities values (must be in range 0 and 1)
+        :param log_loss: list of all the actual logarithmic loss values
+        """        
+        plt.xlabel('Predicted probability')
+        plt.ylabel('Log loss')
+        plt.scatter(predicted_prob, log_loss)
+        plt.legend()
+        plt.show()
+
+    @classmethod
     def vis_clustering(cls, data, y_clusters, x_label='', y_label='', ts=False):
         """
         plot clustering out with limited to data in 2 columns 0, 1)

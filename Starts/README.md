@@ -3,6 +3,8 @@
 __author__ = 'Long Phan'
 
 ### File structures 
+> start.py Start_module
+
 > startml.py Start_module Machine Learning
 
 > startmod.py Start_module Models
@@ -26,17 +28,13 @@ __author__ = 'Long Phan'
 
 > Data Analysis: Pandas, Numpy, Scipy
 
-> Machine Learning frameworks: scikit-learn, Tensorflow, Keras, Theano
-
-> Natural Language Processing: nltk, spacy, gensim
+> Machine Learning models: scikit-learn, Tensorflow, Keras
 
 > Visualization: Matplotlib 
 
-> Big Data tools: Spark (use: Java 1.8)
+> Big Data tools: Spark
 
 > Database: MongoDB
-
-> Computer Vision: PyTorch, OpenCV
 
 > cont.
 
@@ -49,8 +47,6 @@ __author__ = 'Long Phan'
 
 Source: 
 	https://matplotlib.org/basemap/users/installing.html
-	
-	sudo pip install -U git+https://github.com/matplotlib/basemap.git
 
 
 ### References
@@ -67,7 +63,3 @@ Source:
 > https://github.com/apache/spark
 
 > https://github.com/mongodb/mongo
-
-> https://github.com/pytorch
-
-> https://github.com/opencv/opencv

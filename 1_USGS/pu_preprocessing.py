@@ -17,12 +17,12 @@ Description: Import parameters from config.ini and execute data pre_processing
 import configparser
 import pandas as pd
 import numpy as np
-from sklearn.preprocessing import Imputer
 import matplotlib.pyplot as plt
+import timeit
+
 from datetime import datetime
 from matplotlib.pylab import rcParams
-
-import timeit
+from sklearn.preprocessing import Imputer
 
 
 def get_arguments():

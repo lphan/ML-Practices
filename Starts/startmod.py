@@ -23,6 +23,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
+from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import r2_score
 from sklearn.model_selection import train_test_split
@@ -527,6 +528,28 @@ class StartMod(StartML):
         print("\nElastic net: ", StartMod.validation(enReg, x_train, y_train))
 
     @classmethod
+    def crossEntropy(yHat, y):
+        """
+        Description:
+            Cross-entropy loss, or log loss, measures the performance of a classification model whose output is a probability value 
+            between 0 and 1. Cross-entropy loss increases as the predicted probability diverges from the actual label. 
+            A perfect model would have a log loss of 0.
+
+        References: 
+            https://ml-cheatsheet.readthedocs.io/en/latest/loss_functions.html
+
+        :param yHat: the predicted value (must be in range 0 and 1)
+        :param y: the actual value (must be in range 0 and 1)
+        """
+        if yHat > 1 or y > 1 or yHat < 0 or y < 0:
+            return np.nan
+
+        if y == 1:
+            return -np.log(yHat)
+        else:
+            return -np.log(1 - yHat)
+
+    @classmethod
     def metrics_report(cls, y_true, y_pred, target_names=None):
         """
         # Description: measure the quality of the models (comparing results before and after running prediction)
@@ -536,8 +559,13 @@ class StartMod(StartML):
                 Precision = TP / (TP + FP)
                 Recall = TP / (TP + FN)
                 F1 Score = (2 * Precision * Recall) / (Precision + Recall)
+            
+            Regression models: 
+                Mean absolute error, Mean Squared error and R2 score
+
 
         # References:
+            https://medium.com/acing-ai/how-to-evaluate-regression-models-d183b4f5853d
             http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics
             http://scikit-learn.org/stable/modules/model_evaluation.html#model-evaluation
             http://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html
@@ -547,35 +575,35 @@ class StartMod(StartML):
 
         :param y_true: the truth values
         :param y_pred: the predicted values
-        :param target_names: label (categorical) name
+        :param target_names: label (categorical) name for classification 
         :return:
         """
 
         if target_names is not None:
+            # Classification Model Evaluation
             print("Classification Report: \n", classification_report(y_true, y_pred, target_names=target_names))
             print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred, labels=np.unique(y_true)))
+            acc = accuracy_score(y_true, y_pred)
+            print("\nAccuracy Score: \n", acc)
+
+            if len(np.unique(y_true))==2:
+                print("binary")
+                prec = precision_score(y_true, y_pred)
+                rec = recall_score(y_true, y_pred)
+            else:
+                print("set average")
+                prec = precision_score(y_true, y_pred, average='micro')
+                rec = recall_score(y_true, y_pred, average='micro')
+
+            print("\nPrecision Score: \n", prec)
+            print("\nRecall Score: \n", rec)
+            print("\nF-Score: \n", 2*prec*rec/ (prec+rec))
         else:
-            print("Classification Report: \n", classification_report(y_true, y_pred))
-            print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred, labels=np.unique(y_true)))
-
-        print("\nMean_Squared_Error: \n", mean_squared_error(y_true, y_pred))
-
-        acc = accuracy_score(y_true, y_pred)
-        print("\nAccuracy Score: \n", acc)
-
-        if len(np.unique(y_true))==2:
-            print("binary")
-            prec = precision_score(y_true, y_pred)
-            rec = recall_score(y_true, y_pred)
-        else:
-            print("set average")
-            prec = precision_score(y_true, y_pred, average='micro')
-            rec = recall_score(y_true, y_pred, average='micro')
-
-        print("\nPrecision Score: \n", prec)
-        print("\nRecall Score: \n", rec)
-        print("\nF-Score: \n", 2*prec*rec/ (prec+rec))
-
+            # Regression Model Evaluation            
+            print("Mean Absolute Error: \n", mean_absolute_error(y_true, y_pred))
+            print("Mean Squared Error: \n", mean_squared_error(y_true, y_pred))
+            print("R2 Score: \n", r2_score(y_true, y_pred))            
+        
     @classmethod
     def validation(cls, model, x_val, y_val, parameters=[], cv=None, tune=False, vis=True):
         """

@@ -16,6 +16,7 @@ import configparser
 import pandas as pd
 import numpy as np
 from sklearn.preprocessing import Imputer
+from sklearn.decomposition import TruncatedSVD
 
 
 class StartML(object):
@@ -69,26 +70,23 @@ class StartML(object):
         print("local_kwargs", StartML.kwargs)
 
     @classmethod
-    def convert_time_series(cls, data, time_column, form=None, add_day=False, units=None):
+    def convert_time_series(cls, data, time_column, format=None, add_day=False):
         """
-        Description: convert data set into time_series_data_set
+        Description: convert dataset into time_series dataset
 
         :param data: pandas.core.frame.DataFrame
-        :param form: default True if time_column is in date_time format, False if in millisecond
-        :param time_column:
-        :param add_day:
-        :param units:
+        :param time_column: contains time-series data
+        :param format: default True if time_column is in date_time format, False if in millisecond
         :return: new_data
         """
-        if not form:
+        if not format:
             # TODO: wrong convert time day
-            data.index = pd.to_datetime(data.pop(time_column))
+            data.index = pd.to_datetime(data.pop(time_column), unit='ms')
         else:
-            data.index = pd.to_datetime(data.pop(time_column), format=form, unit=units)
+            data.index = pd.to_datetime(data.pop(time_column), unit='ms', format=format)
 
         if add_day:
             data['day'] = [t.weekday() for t in data.index]
-
         data = data.sort_index()
         return data
 
@@ -112,15 +110,15 @@ class StartML(object):
         pass
 
     @classmethod
-    def head_dict(cls, data, h_elems=5):
+    def head_dict(cls, data, headElems=5):
         """
         get the first elements in dict
 
         :param data:
-        :param h_elems: the first elements to get out (default: 5)
+        :param headElems: the first elements to get out (default: 5)
         :return:
         """
-        return list(data.items())[0:h_elems]
+        return list(data.items())[0:headElems]
 
     @classmethod
     def intersect_dict(cls, dict1, dict2):
@@ -134,21 +132,21 @@ class StartML(object):
         return [item for item in list(dict1.items()) if item[1] in dict2.values()]
 
     @classmethod
-    def findMaxMinValueDict(cls, data, ma=True):
+    def findMaxMinValueDict(cls, data, maxVal=True):
         """
         Description: return the data (key, value) with max/ min value (tbd for improvement of performance)
 
         :param data: dict-type
-        :param ma: default max if True (min if False)
+        :param maxVal: default max if True (min if False)
         :return: data: dict-type
         """
-        if ma:
+        if maxVal:
             return dict([(k, v) for k, v in data.items() if v == max(data.values())])
         else:
             return dict([(k, v) for k, v in data.items() if v == min(data.values())])
 
     @classmethod
-    def getkeyby_value(cls, data, value):
+    def getKeyByValue(cls, data, value):
         """
         return a list of pair key_value which contain the certain value
 
@@ -160,7 +158,7 @@ class StartML(object):
         return [k for k in data if data.get(k) == value]
 
     @classmethod
-    def find_value(cls, data, rows_id, column_name=''):
+    def findValue(cls, data, rows_id, column_name=''):
         """
         Description: given data, column_name and row_id and return value at row_id of column
 
@@ -247,8 +245,8 @@ class StartML(object):
     def groupby_columns(cls, data, columns, groupby_label, func=None):
         """
         Description: execute operation group_by on columns by label_groupby
-                    e.g. compute mean value by column 'day'
-                        StartML.groupby_columns(data, columns=['values'], groupby_label=['day'], func=np.mean)
+            e.g. compute mean value by column 'day'
+                StartML.groupby_columns(data, columns=['values'], groupby_label=['day'], func=np.mean)
 
         References:
             https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.groupby.html
@@ -322,24 +320,25 @@ class StartML(object):
     @classmethod
     def generate_correlation_matrix(cls, data):
         """
-        Description: reduce the Dimension using truncated SVD
+        Description: reduce the Dimension using Truncated SVD Singular Value Decomposition
 
         References:
             https://en.wikipedia.org/wiki/Singular-value_decomposition
             http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.TruncatedSVD.html
             https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.corrcoef.html
 
-        :param data:
-        :return:
+        :param data: Pandas object
+        :return: Truncated SVD object
         """
-        pass
+        print(data.corr())
+        svd = TruncatedSVD(n_components=2, n_iter=5, random_state=None)
+        return svd.fit(data.values)
 
     @classmethod
     def detect_outliers(cls, data):
         """
-        Description: algorithm to detect outlier
-            setup a threshold for error (maximal error).
-            if the computed error exceeds the threshold, then the data point will be listed as outlier (as anomaly).
+        Description: 
+            Algorithm to detect outlier            
             Choose to remove (clean) or neutralize using Minkowski-method
 
             Algorithm functions in combination with plot-visual and observation.
@@ -350,7 +349,7 @@ class StartML(object):
             http://www.itl.nist.gov/div898/handbook/prc/section1/prc16.htm
 
         :param data: pandas.core.series.Series
-        :return:
+        :return: list of all outliers 
         """
         total_outliers = {}
 
@@ -390,10 +389,13 @@ class StartML(object):
         return total_outliers
 
     @classmethod
-    def anomaly_detection(cls, data):
+    def density_anomaly_detection(cls, data, feature_column, eps):
         """
-        Description: detect anomaly features
-            Application like: Fraud detection, monitoring machines in data center
+        Description: detect anomaly features using K-NN and relative density of data
+            setup a threshold epsilon for error (maximal error).
+            if all data points exceeds this threshold, then we list them all as outlier/ anomaly.
+            Application like: Fraud detection, detecting abnormal or unusual observations
+            Method: using simple moving average (SMA) or low-pass filter
 
             Transform non_Gaussian features into Gaussian features using e.g. function log(..)
             Using:
@@ -402,18 +404,39 @@ class StartML(object):
                 2. Multivariate Gaussian Distribution,
                     calculate population mean, variance matrix Sigma
                     automatically capture correlations between features
+                3. Manually create additional features to help capturing the unusual anomaly combination of values
+                    (Requirement: m_training set > n_number_of_features, e.g. m = 10.n)                
 
         References:
+            Hui Xiong, Gaurav Pandey, Michael Steinbach, Vipin Kumar (Fellow, IEEE): Enhancing Data Analysis with Noise Removal
             https://en.wikipedia.org/wiki/Anomaly_detection
+            https://www.datascience.com/blog/python-anomaly-detection
             https://www.youtube.com/watch?v=g2YBWQnqOpw&index=90&list=PLLssT5z_DsK-h9vYZkQkYNWcItqhlRJLN
-            https://www.youtube.com/watch?v=JjB58InuTqM&list=PLLssT5z_DsK-h9vYZkQkYNWcItqhlRJLN&index=94
-            https://www.youtube.com/watch?v=YRS-IB3vCow&list=PLLssT5z_DsK-h9vYZkQkYNWcItqhlRJLN&index=95
-
-        :param data:
+            
+        :param data: pandas.core.series.Series
+        :param feature_column: column value where need to be converted to log-values
+        :param eps: epsilon as threshold where abnormal data are being detected
         :return:
+        """
+        data['log_val'] = np.log(data[feature_column].values)
+        pass
+
+    @classmethod
+    def clustering_anomaly_detection(cls, data, feature_column, eps):
+        """
+        References:
+            https://www.datascience.com/blog/python-anomaly-detection
         """
         pass
 
+    @classmethod
+    def svm_anomaly_detection(cls, data, feature_column, eps):
+        """
+        References:
+            https://www.datascience.com/blog/python-anomaly-detection
+        """
+        pass
+        
     @classmethod
     def applyby_func(cls, data, columns, ops):
         """
@@ -464,18 +487,18 @@ class StartML(object):
         pass
 
     @classmethod
-    def mergeby_data(cls, data1, data2):
+    def mergeby_dataset(cls, data1, data2):
         """
         Description: union data1 and data2 and filter out all duplicates (using DataFrame_merge)
 
-        :param data1:
-        :param data2:
+        :param data1: first data package
+        :param data2: second data package
         :return:
         """
         pass
 
     @classmethod
-    def joinby_data(cls, data1, data2):
+    def joinby_dataset(cls, data1, data2):
         """
         Description: proceed different join_operations (left, right, inner, outer) on dataset (using DataFrame_merge)
             (similar as mergeby_data)
@@ -487,7 +510,7 @@ class StartML(object):
         pass
 
     @classmethod
-    def intersectionby_data(cls, data1, data2):
+    def intersectionby_dataset(cls, data1, data2):
         """
         Description: proceed operation intersect to get the common part between data1 and data2 (using DataFrame_merge)
 
@@ -527,7 +550,8 @@ class StartML(object):
     @classmethod
     def orderby_kv(cls, data, keyvalue):
         """
-        Description: sort (ascending, descending) of rows, columns (using DataFrame.sort_values)
+        Description: 
+            sort (ascending, descending) of rows, columns (using DataFrame.sort_values)
 
         :param data:
         :param keyvalue:
@@ -538,11 +562,12 @@ class StartML(object):
     @classmethod
     def lookup_value(cls, data, value, tup=True):
         """
-        Description: find all values in data frame
+        Description: 
+            find all values in data frame
 
         :param data: pandas.core.frame.DataFrame
-        :param value (can be either int, float or object)
-        :param tup (True will return as tuple with column, False will return a list of row_id)
+        :param value: type either int, float or object
+        :param tup: if True, it returns as tuple with column. Otherwise, it will return a list of row_id
         :return: list of tuple (row_id, 'column_name')
         """
         # tbd: value in regex*
@@ -627,7 +652,8 @@ class StartML(object):
     @classmethod
     def nan_columns(cls, data):
         """
-        Description: return name of all columns which have NaN_value
+        Description: 
+            return name of all columns which have NaN_value
 
         :param data: pandas.core.frame.DataFrame
         :return: list of all possible NaN_column(s)
@@ -642,7 +668,8 @@ class StartML(object):
     @classmethod
     def nan_rows(cls, data, nan=True):
         """
-        Description: return all rows containing NaN values in type DataFrame
+        Description: 
+            return all rows containing NaN values in type DataFrame
 
         :param data: pandas.core.frame.DataFrame
         :param nan: Boolean-input True to search for NaN values, False for not_NaN
@@ -660,7 +687,8 @@ class StartML(object):
     @classmethod
     def pop_rows(cls, data, idx, inplace=True):
         """
-        Description: get all rows with idx out of data
+        Description: 
+            get all rows with idx out of data
 
         :param data: pandas.core.frame.DataFrame
         :param idx:
@@ -683,7 +711,8 @@ class StartML(object):
     @classmethod
     def process_nan_columns(cls, data):
         """
-        Description: pre_processing columns based on information given in the config.ini
+        Description: 
+            pre_processing columns based on information given in the config.ini
 
         :param data: pandas.core.frame.DataFrame
         :return: data after pre-processing
@@ -725,7 +754,8 @@ class StartML(object):
     @classmethod
     def process_nan_rows(cls, data):
         """
-        Description: pre_processing rows based on information given in the config.ini
+        Description: 
+            pre_processing rows based on information given in the config.ini
 
         :param data: pandas.core.frame.DataFrame
         :return: data after pre-processing
@@ -783,7 +813,8 @@ class StartML(object):
     @classmethod
     def process_nan_simply(cls, data, nan_column=None):
         """
-        Description: simply process all nan-value by replacing with 'Unknown'
+        Description: 
+            simply process all nan-value by replacing with 'Unknown'
 
         :param data: pandas.core.frame.DataFrame
         :param nan_column: single NaN_column
@@ -801,7 +832,9 @@ class StartML(object):
     @classmethod
     def merge_df(cls, data, feature):
         """
-        Description: merge dataframes by applying the common features in between data frames
+        Description: 
+            merge dataframes by applying the common features in between data frames
+
         :param data: list of data frames
         :param feature: the common feature
         :return:
@@ -819,11 +852,12 @@ class StartML(object):
             dat = tmp
 
         return dat
-
+    
     @staticmethod
     def obj_num_convert(data):
         """
-        Description: convert data from object-type into numeric type
+        Description: 
+            convert data from object-type into numeric type
 
         :param data: pandas.core.frame.DataFrame
         :return: the converted data in numeric_type
@@ -836,7 +870,7 @@ class StartML(object):
                 # set as NaN
                 data[col] = pd.to_numeric(data[col], errors='coerce')
         return data
-
+    
     @staticmethod
     def resampling_interpolate(data, option):
         """
@@ -860,7 +894,8 @@ class StartML(object):
     @staticmethod
     def nan_summary(data):
         """
-        Description: display summary about all NaN values in data
+        Description:    
+            display summary about all NaN values in data
 
         :param data: pandas.core.frame.DataFrame
         :return:
@@ -871,7 +906,10 @@ class StartML(object):
     @staticmethod
     def summary(data):
         """
-        Description: Show all basic information about data set
+        Description: 
+            Show all basic information about data set
+        
+        :param data: pandas.core.frame.DataFrame
         """
         print("\nData Columns: {}".format(data.columns), "\n")
         print("Missing values in Data: \n{}".format(data.isnull().sum()), "\n")
@@ -883,14 +921,16 @@ class StartML(object):
     @staticmethod
     def run():
         """
-        Description: run data processing pipeline
+        Description: 
+            run data processing pipeline
         """
         pass
 
     @staticmethod
     def import_data():
         """
-        Description: read data from data_set .csv and convert them into Pandas Data Frame and append them into a list
+        Description: 
+            read data from data_set .csv and convert them into Pandas Data Frame and append them into a list
 
         References:
             https://docs.python.org/3/library/codecs.html#standard-encodings
