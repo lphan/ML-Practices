@@ -25,7 +25,7 @@ Loop_of_the_path_to_DataScience_and_MachineLearning:
 ## Example of a analysis workflow: 
 	cont.
 
-## Status of the analysed data packages: On-going updated
+## Status of the data analysis packages: On-going 
 
 > 1_USGS: analyse Pesticide Use in Agriculture. Which compounds are used most frequently in the United States?
 
@@ -55,7 +55,6 @@ Loop_of_the_path_to_DataScience_and_MachineLearning:
 
 > 14_NSIDC: analyse data daily-sea-ice-extent NSIDC National Snow & Ice Data Center
 
-
 ### How-To: run the script .ipynb with jupyter notebook
 data need to be downloaded from the reference link in x_foldername 
 
@@ -65,10 +64,51 @@ jupyter notebook x_foldername/x_filename.ipynb
 
 More information: please check out package Starts
 
-
 ### Data Sources:
-> https://www.kaggle.com/
+> Open Data Science Community: https://www.kaggle.com/
 
-> https://archive.ics.uci.edu/ml/index.php
+> Data Set Repository for study and research UCI: https://bit.ly/2uZ9Zfp
 
-> http://scikit-learn.org/stable/datasets/index.html
+> Some small datasets hosted by library scikit-learn: https://bit.ly/2OortfC
+
+### Free E-Books (Data Science, Machine Learning, Deep Learning) Sources 
+(legal shared by author on homepage, education and university page for study, research and development)
+> Data Science
+- Probability and Statistics (Temple Education): https://bit.ly/2njM3Pc
+- Probabilistic and Statistics for Python (Thinkstat): https://bit.ly/16mWasx
+- Python_Data_Science_Handbook (Academia Education): https://bit.ly/2Omihbw
+- Computer Age Statistical Inference (Stanford Education): https://stanford.io/2KnQbIH
+- Foundations of Data Science (Cornell Education): https://bit.ly/2Jqz2x8
+
+> Machine Learning:
+- Element of statistical Learning (Stanford Education): https://stanford.io/2voWjra
+- Understand Machine Learning from Theory to Algorithm: https://bit.ly/2IqLZsn
+- Machine Learning yearning (Andrew Ng): https://bit.ly/2xXLXTl
+
+> Deep Learning book (Ian Goodfellow): https://bit.ly/2ol3T8P
+
+> Neural Network Design (Okstate Education): https://bit.ly/31Rjsnp
+
+> Natural Language Processing: 
+- Analyzing text with the natural language toolkit (with Python): http://www.nltk.org/book/
+
+> Reinforcement Learning Stanford Education (draft): https://stanford.io/2ojBKPE
+
+> Computer Vision: 
+- Models, Learning and Inference: http://www.computervisionmodels.com/
+- Algorithms and Applications: https://bit.ly/2dnAjKb
+- Digital Image Processing Caltech Education: https://bit.ly/2QCBBmx
+
+> Youtube channel Mathematics (Calculus, Linear Algebra) for Machine Learning: https://bit.ly/2LQhBcL
+
+
+### Online updated Information Technologies Sources 
+> Machine Learning, Data Science, Big Data Analytics includes news, tutorials: https://www.kdnuggets.com/
+
+> Sharing concepts, ideas, coding technical tutorials: https://towardsdatascience.com/
+
+> Learn data science, data engineer, blog articles: https://blog.datasciencedojo.com/
+
+> All Techs forum from Open Source Software Engineer to AI, IoT, Agile: https://dzone.com/
+
+> Research blog, great ideas: https://deepmind.com/

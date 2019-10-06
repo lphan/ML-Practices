@@ -9,34 +9,36 @@ __author__ = 'Long Phan'
 
 > startmod.py Start_module Models
 
-> startmodskl.py Start_module Models Scikit-Learn
+> startmodskl.py Start_module Models with Scikit-Learn
 
 > startmodrec.py Start_module Recommendation System
 
-> startmodtf.py Start_module Models Tensorflow
+> startmodtf.py Start_module Models with Tensorflow and Keras
 
-> startvis.py Start_module Visualization Matplotlib
+> startvis.py Start_module Visualization with Matplotlib
 
-> startspk.py Start_module Spark
+> startspk.py Start_module with Apache Spark
 
 > startdb.py Start_module Operations API with Database
 
 ### Tech stack (Frameworks)
-> OS platform: Fedora
+> OS platform: Fedora, Ubuntu, Windows
+
+> Development platform: Jupyter Notebook, Anaconda, Pypi
 
 > Programming language: Python3
 
-> Data Analysis: Pandas, Numpy, Scipy
+> Data Analysis: Pandas, Numpy, Scipy, StatsModels
 
 > Machine Learning models: scikit-learn, Tensorflow, Keras
+
+> NLP: NLTK, spaCy
 
 > Visualization: Matplotlib 
 
 > Big Data tools: Spark
 
 > Database: MongoDB
-
-> cont.
 
 ### Install dependencies
 > sudo pip3 install -r requirements.txt

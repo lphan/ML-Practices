@@ -791,11 +791,11 @@ class StartModTFRNN(StartModTF):
         pass
 
 # Example: How to update parameters
-# new_param={'input_units': 1000, 'hidden_units': [500, 250], 'output_units': 3, 'optimizer':'Adam',
-#            'activation_fn': 'relu', 'learning_rate': 0.0025,
-#            'steps': 5000, 'batch_size': 10, 'num_epochs': 100, 'feature_scl': True,
-#            'loss_fn': 'binary_crossentropy', 'drop_out': 0.5, 'rec_drop_out': 0.6,
-#            'bias_initializer': 'random_uniform', 'depth_wise_initializer': 'random_uniform', 'seed': 10,
-#            'kernel_size': 1, 'filter_size': 1, 'momentum': 0.2, 'n_filters': 32, 'n_padding': 1, 'n_strides': 1}
+# new_param = {'input_units': 1000, 'hidden_units': [500, 250], 'output_units': 3, 'optimizer':'Adam',
+#             'activation_fn': 'relu', 'learning_rate': 0.0025,
+#             'steps': 5000, 'batch_size': 10, 'num_epochs': 100, 'feature_scl': True,
+#             'loss_fn': 'binary_crossentropy', 'drop_out': 0.5, 'rec_drop_out': 0.6,
+#             'bias_initializer': 'random_uniform', 'depth_wise_initializer': 'random_uniform', 'seed': 10,
+#             'kernel_size': 1, 'filter_size': 1, 'momentum': 0.2, 'n_filters': 32, 'n_padding': 1, 'n_strides': 1}
 # StartModtf smtf
-# smtf.update_parameters=new_param
+# smtf.update_parameters = new_param

@@ -361,6 +361,29 @@ class StartVis(StartML):
         """
         pass
 
+    @classmethod
+    def vis_learning_curve(cls):
+        """
+        Description:
+            plot the learning curve to see the changes and improvement of models when the training set is being changes.
+            visulize the effect of the number of training data and performance of models
+        
+        Reference:
+            https://www.dataquest.io/blog/learning-curves-machine-learning/
+            https://scikit-learn.org/stable/auto_examples/model_selection/plot_learning_curve.html
+            https://chrisalbon.com/machine_learning/model_evaluation/plot_the_learning_curve/
+        """
+        pass
+
+    @classmethod
+    def vis_more_dim(cls):
+        """
+        Description:
+            use dimensional reduction to reduce the number of features (>3) into 2 or 3 dimension
+            and plot
+        """
+        pass
+    
     @staticmethod
     def info_help():
         info = {

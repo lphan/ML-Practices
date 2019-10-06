@@ -18,6 +18,7 @@ from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.decomposition import PCA
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
@@ -43,8 +44,9 @@ import statsmodels.formula.api as sm
 class StartMod(StartML):
     """
       Description: StartMod - Start Models
-      Apply different Models in Machine Learning Regression and Classification
-        k-NN, Decision Tree, SVM, Neural Network, etc.
+      Apply Machine Learning Models in: 
+        Regression: Linear, Multivariants, Logistics
+        Classification k-NN, Decision Tree, Naiv Bayes, SVM, Neural Network.
 
       Start:
           jupyter notebook
@@ -165,22 +167,21 @@ class StartMod(StartML):
         return dat
 
     @classmethod
-    def split_data(cls, data, dependent_label=None, test_size=0.2, random_state=0, type_pd=True, split=True, cv=False):
+    def split_data(cls, data, dependent_label=None, test_size=0.2, random_state=0, type_pd=True, split=True):
         """
         # Description:
             split data by rows into training_data and test_data used for (regression, classification) methods
-        TODO: split data into 3 parts (training, validation, test)
 
         # References:
+            https://machinelearningmastery.com/difference-test-validation-datasets/
             http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html
-
+            
         :param data: pandas.core.frame.DataFrame
         :param dependent_label: categorical label
         :param test_size: (default is 0.2)
         :param random_state: (default is 0)
         :param type_pd: (default is Pandas Dataframe)
         :param split: (default is True)
-        :param cv: cross_validation to split data into 3 parts (default is False)
         :return: x_train, x_test, y_train, y_test (default type Pandas DataFrame)
         """
 
@@ -211,19 +212,49 @@ class StartMod(StartML):
             # split data into training set and test set
             x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size,
                                                                 random_state=random_state, shuffle=True)
-
-            if cv:
-                # split data into training set, validation set and test set
-                x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=test_size,
-                                                                  random_state=random_state, shuffle=True)
-                return x_train, x_val, x_test, y_train, y_val, y_test
-
+            
         except ValueError:
             print("Data set is not valid yet, need to be preprocessed first")
             print("No splitting happen")
             return data
 
         return x_train, x_test, y_train, y_test
+
+    # @classmethod
+    # def split_data_validate(data, parameters, cv=False, k_fold=10):
+    #     '''
+    #     TODO: split data into 3 parts (training, validation, test)
+    #     Description:
+    #         split data by rows into training_data, validation_data and test_data
+
+    #     References:
+    #         https://machinelearningmastery.com/difference-test-validation-datasets/
+
+    #     :param data: pandas.core.frame.DataFrame
+    #     :param cv: cross_validation to split data into 3 training, validation and test sets (default is False)
+    #     '''
+        
+    #     # split data into training set, validation set and test set
+    #     # x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=test_size,
+    #     #                                                   random_state=random_state, shuffle=True)
+    #     # return x_train, x_val, x_test, y_train, y_val, y_test
+    #     train, test = train_test_split(data)
+        
+    #     # tune model hyperparameters        
+    #     for params in parameters:
+    #         skills = list()
+    #         for i in k_fold:
+    #             fold_train, fold_validation = train_test_split(i, k_fold, train)
+    #             model = fit(fold_train, params)
+    #             skill_estimate = evaluate(model, fold_validation)
+    #             skills.append(skill_estimate)
+    #         skill = summarize(skills)
+
+    #     # evaluate final model for comparison with other models
+    #     model = fit(train)
+    #     skill = evaluate(model, test)
+        
+    #     return train, validation, test
 
     @classmethod
     def backward_eliminate(cls, data, x_data, y_data):
@@ -385,25 +416,38 @@ class StartMod(StartML):
         pass
 
     @classmethod
-    def feature_extraction(cls, data, dependent_label):
+    def feature_extraction(cls, data, dependent_label, tech='PCA', k=2):
         """
-        # Description: apply Principal component analysis (PCA) to extract the most important independent variables (features)
-        (Dimensionality Reduction)
-
-        # References:
+        Description: Dimensionality Reduction
+            - Principal Component Analysis (PCA) to extract the most important independent variables (n_features)
+                and reduce data from (n_features)-dimensions to k-dimensions (choose k-components)
+            - Linear Discriminant Analysis (LDA)
+        
+        References:
+            http://setosa.io/ev/principal-component-analysis/
+            https://sebastianraschka.com/Articles/2014_python_lda.html
             http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.PCA.html
+            https://scikit-learn.org/stable/modules/generated/sklearn.discriminant_analysis.LinearDiscriminantAnalysis.html
 
         :param data: pandas.core.frame.DataFrame
         :param dependent_label:
+        :param tech: choose the technique to redude dimension (default is PCA)
+        :param k: number of principal components (for PCA, default is 2)
         :return: array of explained_variance_ratio, x_train, x_test, y_train, y_test
         """
         # TODO: choose the most best variance to get max possible total percentages
-
         x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label)
-        pca = PCA(n_components=None)
-        x_train = pca.fit_transform(x_train)
-        x_test = pca.transform(x_test)
-        return pca.explained_variance_ratio_, x_train, x_test, y_train, y_test
+        
+        if tech: 
+            pca = PCA(n_components = None)
+            x_train = pca.fit_transform(x_train)
+            x_test = pca.transform(x_test)
+            return pca.explained_variance_ratio_, x_train, x_test, y_train, y_test
+        else:
+            lda = LDA(n_components = k)
+            x_train = lda.fit_transform(x_train, y_train)
+            x_test = lda.transform(x_test)
+            return lda, x_train, x_test, y_train, y_test
 
     @classmethod
     def feature_engineering(cls, data, old_feature, new_feature, new_attributes, rm=False):
@@ -455,6 +499,14 @@ class StartMod(StartML):
                 data[new_feature] = data[new_feature]+data[feature]
 
         return data.drop(features, axis=1)
+    
+    @classmethod
+    def features_dim_reduction(cls):
+        """
+        Description: 
+            use dimensionality reduction to reduce the dimension of data (features of data) into 2 or 3 dimension/ features
+        """
+        pass
 
     @classmethod
     def regularization(cls, data, dependent_label):
