@@ -98,12 +98,12 @@ class StartML(object):
         apply for TimeSeries data
 
         Useful operations:
-        1. find mean value by day (7 days per week) in a period time
-        2. find mean value by week in a period time
-        3. find mean value by month in a period time
+            1. find mean value by day (7 days per week) in a period time
+            2. find mean value by week in a period time
+            3. find mean value by month in a period time
 
-        :param data:
-        :param time_range:
+        :param data: Time series data (Pandas format)
+        :param time_range: from .. to
         :param func: functions from Numpy e.g. np.mean, np.std, etc.
         :return:
         """
@@ -114,7 +114,7 @@ class StartML(object):
         """
         get the first elements in dict
 
-        :param data:
+        :param data: pandas.core.frame.DataFrame
         :param headElems: the first elements to get out (default: 5)
         :return:
         """
@@ -125,8 +125,8 @@ class StartML(object):
         """
         Description: return the common key_value pairs
 
-        :param dict1:
-        :param dict2:
+        :param dict1: data in dict-format
+        :param dict2: data in dict-format
         :return:
         """
         return [item for item in list(dict1.items()) if item[1] in dict2.values()]
@@ -335,6 +335,14 @@ class StartML(object):
         return svd.fit(data.values)
 
     @classmethod
+    def compute_covariance_matrix(cls, data):
+        """
+        Description: compute covariance matrix for computing the PCA
+        Sigma = 1/m*data_transposed*data with m is number of training data
+        """        
+        pass
+
+    @classmethod
     def detect_outliers(cls, data):
         """
         Description: 
@@ -410,8 +418,7 @@ class StartML(object):
         References:
             Hui Xiong, Gaurav Pandey, Michael Steinbach, Vipin Kumar (Fellow, IEEE): Enhancing Data Analysis with Noise Removal
             https://en.wikipedia.org/wiki/Anomaly_detection
-            https://www.datascience.com/blog/python-anomaly-detection
-            https://www.youtube.com/watch?v=g2YBWQnqOpw&index=90&list=PLLssT5z_DsK-h9vYZkQkYNWcItqhlRJLN
+            https://www.datascience.com/blog/python-anomaly-detection            
             
         :param data: pandas.core.series.Series
         :param feature_column: column value where need to be converted to log-values
@@ -919,7 +926,7 @@ class StartML(object):
         print(StartML.nan_summary(data))
 
     @staticmethod
-    def run():
+    def pipeline_run():
         """
         Description: 
             run data processing pipeline

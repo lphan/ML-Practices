@@ -65,16 +65,16 @@ jupyter notebook x_foldername/x_filename.ipynb
 More information: please check out package Starts
 
 ### Data Sources:
-> Open Data Science Community: https://www.kaggle.com/
+> Open Data Science Community Kaggle: https://bit.ly/1l9yjm9
 
 > Data Set Repository for study and research UCI: https://bit.ly/2uZ9Zfp
 
 > Some small datasets hosted by library scikit-learn: https://bit.ly/2OortfC
 
-### Free E-Books (Data Science, Machine Learning, Deep Learning) Sources 
-(legal shared by author on homepage, education and university page for study, research and development)
+### E-Books (Data Science, Machine Learning, Deep Learning) Sources 
+(Shared by author on homepage, education and university page for study, research and development)
 > Data Science
-- Probability and Statistics (Temple Education): https://bit.ly/2njM3Pc
+- A Modern Introduction to Probability and Statistics (Temple Education): https://bit.ly/2njM3Pc
 - Probabilistic and Statistics for Python (Thinkstat): https://bit.ly/16mWasx
 - Python_Data_Science_Handbook (Academia Education): https://bit.ly/2Omihbw
 - Computer Age Statistical Inference (Stanford Education): https://stanford.io/2KnQbIH
@@ -90,16 +90,19 @@ More information: please check out package Starts
 > Neural Network Design (Okstate Education): https://bit.ly/31Rjsnp
 
 > Natural Language Processing: 
-- Analyzing text with the natural language toolkit (with Python): http://www.nltk.org/book/
+- Analyzing text with the natural language toolkit (with Python): https://bit.ly/2aJzlnO
 
-> Reinforcement Learning Stanford Education (draft): https://stanford.io/2ojBKPE
+> Reinforcement Learning (Stanford Education) (draft): https://stanford.io/2ojBKPE
 
 > Computer Vision: 
 - Models, Learning and Inference: http://www.computervisionmodels.com/
 - Algorithms and Applications: https://bit.ly/2dnAjKb
-- Digital Image Processing Caltech Education: https://bit.ly/2QCBBmx
+- Digital Image Processing (Caltech Education): https://bit.ly/2QCBBmx
 
-> Youtube channel Mathematics (Calculus, Linear Algebra) for Machine Learning: https://bit.ly/2LQhBcL
+> Mathematics (Linear Algebra, Calculus, Probability, Optimization) for Machine Learning: 
+- University of California, Berkeley, Garrett Thomas: https://bit.ly/2oV33Qk
+- Youtube Channel: https://bit.ly/2LQhBcL
+- Khan Academy: https://bit.ly/1JpFTUd
 
 
 ### Online updated Information Technologies Sources 
@@ -112,3 +115,5 @@ More information: please check out package Starts
 > All Techs forum from Open Source Software Engineer to AI, IoT, Agile: https://dzone.com/
 
 > Research blog, great ideas: https://deepmind.com/
+
+> Many great tutorials: https://machinelearningmastery.com

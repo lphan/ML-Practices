@@ -43,15 +43,15 @@ import statsmodels.formula.api as sm
 
 class StartMod(StartML):
     """
-      Description: StartMod - Start Models
-      Apply Machine Learning Models in: 
-        Regression: Linear, Multivariants, Logistics
-        Classification k-NN, Decision Tree, Naiv Bayes, SVM, Neural Network.
+        Description: StartMod - Start Models
+        Apply Machine Learning Models in: 
+            Regression: Linear, Multivariants, Logistics
+            Classification k-NN, Decision Tree, Naiv Bayes, SVM, Neural Network.
 
-      Start:
-          jupyter notebook
-          -> from startmod import *
-          -> info_mod
+        Start:
+            jupyter notebook
+            -> from startmod import *
+            -> info_mod
     """
 
     def __init__(self, n_classes, dependent_label):
@@ -95,18 +95,18 @@ class StartMod(StartML):
         :return: data and x_values (the encoded data in type numpy.array)
         """
 
-        for label_column in label_columns:
+        for label_col in label_columns:
             try:
                 # Encode label only applies to Column in type Object
-                if data[label_column].dtype == np.float64 or data[label_column].dtype == np.int64:
-                    print("Type of label_column " + label_column + " is " + str(data[label_column].dtypes))
+                if data[label_col].dtype == np.float64 or data[label_col].dtype == np.int64:
+                    print("Type of label_column " + label_col + " is " + str(data[label_col].dtypes))
             except ValueError:
                 return []
 
         x_values = data.values
         try:
-            for label_column in label_columns:
-                label_idx = data.columns.get_loc(label_column)
+            for label_col in label_columns:
+                label_idx = data.columns.get_loc(label_col)
 
                 # label_encoder to turn object-column into number-column
                 label_encoder = LabelEncoder()
@@ -118,9 +118,9 @@ class StartMod(StartML):
         if one_hot:
             try:
                 labels_idx = []
-                for label_column in label_columns:
+                for label_col in label_columns:
                     # get column index
-                    label_idx = data.columns.get_loc(label_column)
+                    label_idx = data.columns.get_loc(label_col)
                     # data.values[:, label_idx] = label_encoder.fit_transform(data.values[:, label_idx])
                     labels_idx.append(label_idx)
 
@@ -220,41 +220,58 @@ class StartMod(StartML):
 
         return x_train, x_test, y_train, y_test
 
-    # @classmethod
-    # def split_data_validate(data, parameters, cv=False, k_fold=10):
-    #     '''
-    #     TODO: split data into 3 parts (training, validation, test)
-    #     Description:
-    #         split data by rows into training_data, validation_data and test_data
+    @classmethod
+    def split_data_validate(data, dependent_label=None, test_size=0.2, random_state=0, type_pd=True, split=True, cv=False):
+        '''
+        Description:
+            split data by rows into training_data, validation_data and test_data
+            Default folding for cross validation: k_fold = 10
 
-    #     References:
-    #         https://machinelearningmastery.com/difference-test-validation-datasets/
+        References:
+            https://machinelearningmastery.com/difference-test-validation-datasets/
 
-    #     :param data: pandas.core.frame.DataFrame
-    #     :param cv: cross_validation to split data into 3 training, validation and test sets (default is False)
-    #     '''
-        
-    #     # split data into training set, validation set and test set
-    #     # x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=test_size,
-    #     #                                                   random_state=random_state, shuffle=True)
-    #     # return x_train, x_val, x_test, y_train, y_val, y_test
-    #     train, test = train_test_split(data)
-        
-    #     # tune model hyperparameters        
-    #     for params in parameters:
-    #         skills = list()
-    #         for i in k_fold:
-    #             fold_train, fold_validation = train_test_split(i, k_fold, train)
-    #             model = fit(fold_train, params)
-    #             skill_estimate = evaluate(model, fold_validation)
-    #             skills.append(skill_estimate)
-    #         skill = summarize(skills)
+        :param data: pandas.core.frame.DataFrame
+        :param cv: cross_validation to split data into 3 training, validation and test sets (default is False)
+        :param dependent_label: categorical label
+        :param test_size: (default is 0.2)
+        :param random_state: (default is 0)
+        :param type_pd: (default is Pandas Dataframe)
+        :param split: (default is True)
+        '''
+        if not dependent_label and not type_pd and isinstance(data, np.ndarray):
+            # split data into train and test in ratio 8:2
+            train, test = train_test_split(data, test_size=test_size)
+            return train, test
 
-    #     # evaluate final model for comparison with other models
-    #     model = fit(train)
-    #     skill = evaluate(model, test)
+        if type_pd:
+            # keep type Pandas DataFrame
+            y = data[dependent_label]
+            x = data.drop([dependent_label], axis=1)
+        else:
+            # convert to type Numpy
+            y = data[dependent_label].values
+            # drop dependent value from data and save the independent values into x
+            x = data.drop(dependent_label, axis=1).values
+
+        # split data into training set, validation set and test set
+        x_data, x_test, y_data, y_test = train_test_split(x, y, test_size=test_size,
+                                                          random_state=random_state, shuffle=True)
+
+        x_train, x_val, y_train, y_val = train_test_split(x_data, y_data, test_size=test_size,
+                                                          random_state=random_state, shuffle=True)    
+
+        # tune model hyperparameters        
+        # if parameters:
+        #     for params in parameters:
+        #         skills = list()
+        #         for i in k_fold:
+        #             fold_train, fold_validation = train_test_split(i, k_fold, train)
+        #             model = fit(fold_train, params)
+        #             skill_estimate = evaluate(model, fold_validation)
+        #             skills.append(skill_estimate)
+        #         skill = summarize(skills)
         
-    #     return train, validation, test
+        return x_train, x_val, x_test, y_train, y_val, y_test
 
     @classmethod
     def backward_eliminate(cls, data, x_data, y_data):
