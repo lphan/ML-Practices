@@ -16,6 +16,7 @@ import tensorflow as tf
 # from tensorflow.contrib.layers import fully_connected
 from math import sqrt
 from Starts.startmod import *
+from Starts.startmod import StartMod
 from keras.models import Sequential
 from keras.layers import Dense, Flatten, Conv1D, Dropout, LSTM
 from keras.optimizers import SGD
@@ -72,7 +73,7 @@ class StartModTF(StartMod):
         self.depth_wise_initializer = 'random_uniform'
         self.seed = 10
 
-        # CNN parameters
+        # CNN hyperparameters        
         self.kernel_size = 1
         self.filter_size = [3, 3]
         self.n_filters = 1
@@ -506,16 +507,22 @@ class StartModTFANN(StartModTF):
 
 
 class StartModTFCNN(StartModTF):
+    """
+    Types of layer:
+        Convolution (conv), Pooling (pool), Fully connected (fc), Max Pooling, Average Pooling
+        E.g.:
+            LeNet-5, AlexNet, VGG
+            ResNet (Residual Network)
+            Inception Network
+
+    CNN Hyperparameters:
+        kernel size, 
+        filter count - how many filters do we want to use, 
+        stride - how big are the steps of the filter,
+        padding 
+    """
     def __init__(self, n_classes, dependent_label):
         super().__init__(n_classes, dependent_label)  # StartModTF.__init__(self, n_classes, dependent_label)
-
-        # Types of layer:
-        # Convolution (conv), Pooling (pool), Fully connected (fc)
-        # Max Pooling, Average Pooling
-        # E.g.:
-        #   LeNet-5, AlexNet, VGG
-        #   ResNet (Residual Network)
-        #   Inception Network
 
     def keras_cnn_1d(self, data):
         """

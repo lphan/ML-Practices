@@ -5,7 +5,7 @@
 as a person who is passionate about Data Science, Machine Learning and Deep Learning so that I want to 'learn by doing' a framework layer in between many popular frameworks (Pandas, Numpy, Matplotlib, statsmodels, Tensorflow, Spark, etc.). 
 Shortly, 'Starts' is a Wrapper package with the functions which are written with simple code by re-applying of many other data analysis frameworks. 
  
-- Person who want to study Machine Learning 'by doing' will be able to get into Machine Learning's technique lightly with less effort and overcome the raw-theories's barriers.
+- Person who want to learn by doing is able to have a first look into the data science picture the lightly with small effort and overcome the raw-theories's barriers without having to go into technical detail.
 - Person who want to analyse data and get the result/ information asap, but do not have much time to deal with the complexity of many different frameworks. 
 
 "By taking a look on the real examples and see how data are being analysed, install the frameworks you need and do the similar ways like one of the examples, improve your result by transforming your ideas into the new functions you like."
@@ -68,6 +68,8 @@ More information: please check out package Starts
 > Open Data Science Community Kaggle: https://bit.ly/1l9yjm9
 
 > Data Set Repository for study and research UCI: https://bit.ly/2uZ9Zfp
+
+> Microsoft Research Open Data: https://bit.ly/2C6jIn6
 
 > Some small datasets hosted by library scikit-learn: https://bit.ly/2OortfC
 

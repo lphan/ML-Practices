@@ -619,7 +619,7 @@ class StartMod(StartML):
             return -np.log(1 - yHat)
 
     @classmethod
-    def metrics_report(cls, y_true, y_pred, target_names=None):
+    def metrics_report(cls, y_true, y_pred, cat_lab=None):
         """
         # Description: measure the quality of the models (comparing results before and after running prediction)
 
@@ -644,13 +644,13 @@ class StartMod(StartML):
 
         :param y_true: the truth values
         :param y_pred: the predicted values
-        :param target_names: label (categorical) name for classification 
+        :param cat_lab: categorical label name for classification 
         :return:
         """
 
-        if target_names is not None:
+        if cat_lab is not None:
             # Classification Model Evaluation
-            print("Classification Report: \n", classification_report(y_true, y_pred, target_names=target_names))
+            print("Classification Report: \n", classification_report(y_true, y_pred, cat_lab=cat_lab))
             print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred, labels=np.unique(y_true)))
             acc = accuracy_score(y_true, y_pred)
             print("\nAccuracy Score: \n", acc)
@@ -667,6 +667,10 @@ class StartMod(StartML):
             print("\nPrecision Score: \n", prec)
             print("\nRecall Score: \n", rec)
             print("\nF-Score: \n", 2*prec*rec/ (prec+rec))
+
+            # TODO: 
+            # ROC receiver operating characteristic curve, 
+            # AUC area under the curve
         else:
             # Regression Model Evaluation            
             print("Mean Absolute Error: \n", mean_absolute_error(y_true, y_pred))
