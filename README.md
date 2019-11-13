@@ -107,14 +107,14 @@ More information: please check out package Starts
 - Khan Academy: https://bit.ly/1JpFTUd
 
 ### Online updated Information Technologies Sources 
-> Machine Learning, Data Science, Big Data Analytics includes news, tutorials: https://www.kdnuggets.com/
+> KDnuggets: Machine Learning, Data Science, Big Data Analytics includes news, tutorials
 
-> Sharing concepts, ideas, coding technical tutorials: https://towardsdatascience.com/
+> TowardDataScience: Sharing concepts, ideas, coding technical tutorials
 
-> Learn data science, data engineer, blog articles: https://blog.datasciencedojo.com/
+> DataScienceDojo: Learn data science, data engineer, blog articles
 
-> All Techs forum from Open Source Software Engineer to AI, IoT, Agile: https://dzone.com/
+> DZone: All Techs forum from Open Source Software Engineer to AI, IoT, Agile
 
-> Research blog, great ideas: https://deepmind.com/
+> DeepMind: Research blog, great ideas
 
-> Many great tutorials: https://machinelearningmastery.com
+> MachineLearningMastery: Many great tutorials
