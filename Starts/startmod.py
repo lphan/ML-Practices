@@ -26,6 +26,7 @@ from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
+# from sklearn.metrics import huber
 from sklearn.metrics import r2_score
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
@@ -597,15 +598,16 @@ class StartMod(StartML):
         print("\nElastic net: ", StartMod.validation(enReg, x_train, y_train))
 
     @classmethod
-    def crossEntropy(yHat, y):
+    def lossClassification(yHat, y):
         """
-        Description:
-            Cross-entropy loss, or log loss, measures the performance of a classification model whose output is a probability value 
+        Description: Classification Loss
+            1. Cross-entropy loss, or log loss, measures the performance of a classification model whose output is a probability value 
             between 0 and 1. Cross-entropy loss increases as the predicted probability diverges from the actual label. 
             A perfect model would have a log loss of 0.
-
+            
         References: 
-            https://ml-cheatsheet.readthedocs.io/en/latest/loss_functions.html
+            https://ml-cheatsheet.readthedocs.io/en/latest/loss_functions.html´
+            https://heartbeat.fritz.ai/5-regression-loss-functions-all-machine-learners-should-know-4fb140e9d4b0
 
         :param yHat: the predicted value (must be in range 0 and 1)
         :param y: the actual value (must be in range 0 and 1)
@@ -613,13 +615,44 @@ class StartMod(StartML):
         if yHat > 1 or y > 1 or yHat < 0 or y < 0:
             return np.nan
 
+        # ----- 1. crossEntropy - Log Loss  -----
         if y == 1:
             return -np.log(yHat)
         else:
             return -np.log(1 - yHat)
 
     @classmethod
-    def metrics_report(cls, y_true, y_pred, cat_lab=None):
+    def lossRegression(cls, y_pred, y_true, delta):
+        """
+        Description: Regression Loss
+            L1-Loss MAE, L2-Loss MSE, Huber Loss (Smooth Mean), Log cosh Loss, Quantile Loss
+            
+            L1 loss MAE is more robust to outliers, but its derivatives are not continuous, making it inefficient to find the solution
+            L2 loss MSE is sensitive to outliers, but gives a more stable and closed form solution
+            
+            Huber Loss (smooth Mean for MAE and MSE) is less sensitive to outliers in data than the squared error loss, better choice than L1 loss and L2 loss.
+
+            Log-cosh Loss is the logarithm of the hyperbolic cosine of the prediction error, smoother than L2.
+
+            Quantile loss functions turn out to be useful when predicting an interval instead of only point predictions.
+
+        Reference:
+            https://heartbeat.fritz.ai/5-regression-loss-functions-all-machine-learners-should-know-4fb140e9d4b0            
+        """
+        # Regression Model Evaluation            
+        print("L1-Loss Mean Absolute Error: \n", mean_absolute_error(y_true, y_pred))
+        print("L2-Loss Mean Squared Error: \n", mean_squared_error(y_true, y_pred))
+
+        huber_loss = np.sum(np.where(np.abs(y_true-y_pred) < delta , 1/2*((y_true-y_pred)**2), delta*np.abs(y_true - y_pred) - 1/2*(delta**2)))
+        log_cosh_loss = np.sum(np.log(np.cosh(y_pred - y_true)))
+
+        print("Huber Loss: \n ", huber_loss)
+        print("Cosh Loss: \n ", log_cosh_loss)
+        
+        print("R2 Score: \n", r2_score(y_true, y_pred)) 
+
+    @classmethod
+    def metrics_report(cls, y_true, y_pred, cat_lab):
         """
         # Description: measure the quality of the models (comparing results before and after running prediction)
 
@@ -632,7 +665,6 @@ class StartMod(StartML):
             Regression models: 
                 Mean absolute error, Mean Squared error and R2 score
 
-
         # References:
             https://medium.com/acing-ai/how-to-evaluate-regression-models-d183b4f5853d
             http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics
@@ -644,38 +676,32 @@ class StartMod(StartML):
 
         :param y_true: the truth values
         :param y_pred: the predicted values
-        :param cat_lab: categorical label name for classification 
+        :param cat_lab: categorical label name used for classification 
         :return:
         """
+        
+        # Classification Model Evaluation
+        print("Classification Report: \n", classification_report(y_true, y_pred, cat_lab=cat_lab))
+        print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred, labels=np.unique(y_true)))
+        acc = accuracy_score(y_true, y_pred)
+        print("\nAccuracy Score: \n", acc)
 
-        if cat_lab is not None:
-            # Classification Model Evaluation
-            print("Classification Report: \n", classification_report(y_true, y_pred, cat_lab=cat_lab))
-            print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred, labels=np.unique(y_true)))
-            acc = accuracy_score(y_true, y_pred)
-            print("\nAccuracy Score: \n", acc)
-
-            if len(np.unique(y_true))==2:
-                print("binary")
-                prec = precision_score(y_true, y_pred)
-                rec = recall_score(y_true, y_pred)
-            else:
-                print("set average")
-                prec = precision_score(y_true, y_pred, average='micro')
-                rec = recall_score(y_true, y_pred, average='micro')
-
-            print("\nPrecision Score: \n", prec)
-            print("\nRecall Score: \n", rec)
-            print("\nF-Score: \n", 2*prec*rec/ (prec+rec))
-
-            # TODO: 
-            # ROC receiver operating characteristic curve, 
-            # AUC area under the curve
+        if len(np.unique(y_true))==2:
+            print("binary")
+            prec = precision_score(y_true, y_pred)
+            rec = recall_score(y_true, y_pred)
         else:
-            # Regression Model Evaluation            
-            print("Mean Absolute Error: \n", mean_absolute_error(y_true, y_pred))
-            print("Mean Squared Error: \n", mean_squared_error(y_true, y_pred))
-            print("R2 Score: \n", r2_score(y_true, y_pred))            
+            print("set average")
+            prec = precision_score(y_true, y_pred, average='micro')
+            rec = recall_score(y_true, y_pred, average='micro')
+
+        print("\nPrecision Score: \n", prec)
+        print("\nRecall Score: \n", rec)
+        print("\nF-Score: \n", 2*prec*rec/ (prec+rec))
+
+        # TODO: 
+        # ROC receiver operating characteristic curve, 
+        # AUC area under the curve
         
     @classmethod
     def validation(cls, model, x_val, y_val, parameters=[], cv=None, tune=False, vis=True):

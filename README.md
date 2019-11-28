@@ -74,7 +74,7 @@ More information: please check out package Starts
 > Some small datasets hosted by library scikit-learn: https://bit.ly/2OortfC
 
 ### E-Books (Data Science, Machine Learning, Deep Learning) Sources 
-(Shared by author on homepage, education and university page for study, research and development)
+(Shared by author on homepage, education and university page for personal uses, study, research and development)
 > Data Science
 - A Modern Introduction to Probability and Statistics (Temple Education): https://bit.ly/2njM3Pc
 - Probabilistic and Statistics for Python (Thinkstat): https://bit.ly/16mWasx
@@ -109,7 +109,7 @@ More information: please check out package Starts
 ### Online updated Information Technologies Sources 
 > KDnuggets: Machine Learning, Data Science, Big Data Analytics includes news, tutorials
 
-> TowardDataScience: Sharing concepts, ideas, coding technical tutorials
+> TowardDataScience (membership): Sharing concepts, ideas, coding technical tutorials
 
 > DataScienceDojo: Learn data science, data engineer, blog articles
 

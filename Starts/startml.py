@@ -324,6 +324,7 @@ class StartML(object):
 
         References:
             https://en.wikipedia.org/wiki/Singular-value_decomposition
+            https://medium.com/@jonathan_hui/machine-learning-singular-value-decomposition-svd-principal-component-analysis-pca-1d45e885e491
             http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.TruncatedSVD.html
             https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.corrcoef.html
 

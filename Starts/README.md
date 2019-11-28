@@ -32,9 +32,11 @@ __author__ = 'Long Phan'
 
 > Machine Learning models: scikit-learn, Tensorflow, Keras
 
-> NLP: NLTK, spaCy
+> Natural Language Processing: NLTK, spaCy, CoreNLP
 
-> Visualization: Matplotlib 
+> Reinforcement Learning: gym
+
+> Visualization: Matplotlib, Seaborn
 
 > Big Data tools: Spark
 
