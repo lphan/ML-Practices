@@ -110,7 +110,7 @@ class StartModTF(StartMod):
     # reset all attributes in neural network
     def _set_attributes(self, dict_params):
         """
-        # Reference:
+        Reference:
             https://machinelearningmastery.com/5-step-life-cycle-neural-network-models-keras/
 
         :param dict_params:
@@ -533,7 +533,7 @@ class StartModTFCNN(StartModTF):
         :param data: pandas.core.frame.DataFrame
         :return:
 
-        # Reference:
+        Reference:
             https://keras.io/optimizers/
             https://keras.io/initializers/
             https://keras.io/layers/core/#dropout
@@ -623,7 +623,7 @@ class StartModTFRNN(StartModTF):
             build recurrent neural network RNN using Long-Short Term Memory LSTM for a one-step univariate time series
             forecasting problem
 
-        # Reference:
+        Reference:
             https://keras.io/layers/recurrent/#lstm
             https://machinelearningmastery.com/time-series-forecasting-long-short-term-memory-network-python/
 
@@ -767,7 +767,7 @@ class StartModTFRNN(StartModTF):
             build recurrent neural network RNN using Long-Short Term Memory LSTM for a one-step multivariate time series
             forecasting problem
 
-        # Reference:
+        Reference:
             https://keras.io/layers/recurrent/#lstm
             https://machinelearningmastery.com/multivariate-time-series-forecasting-lstms-keras/
         :return:
@@ -780,7 +780,7 @@ class StartModTFRNN(StartModTF):
             build recurrent neural network RNN using Long-Short Term Memory LSTM for a multi-step time series
             forecasting problem
 
-        # Reference:
+        Reference:
             https://keras.io/layers/recurrent/#lstm
             https://machinelearningmastery.com/multi-step-time-series-forecasting-long-short-term-memory-networks-python/
         :return:

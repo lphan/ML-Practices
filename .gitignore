@@ -1,0 +1,10 @@
+node_modules/
+out/
+screens/
+testresults/
+reports/
+.env
+.vscode/
+.idea/
+Starts/__pycache__/
+.ipynb_checkpoints/

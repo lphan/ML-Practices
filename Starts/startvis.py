@@ -18,6 +18,7 @@ __author__ = 'Long Phan'
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 from mpl_toolkits.mplot3d import Axes3D
+from pd.plotting import scatter_matrix
 from matplotlib.pylab import rcParams
 from Starts.startml import *
 rcParams['figure.figsize'] = 20, 6
@@ -99,25 +100,31 @@ class StartVis(StartML):
     @classmethod
     def vis_hist(cls, data, columns, x_label='', y_label='', title='', func_filter=None, rot=0):
         """
-        Display Histogram of data and labels, with filter-function
+        Description: Display Histogram of data and labels, with filter-function
 
         :param data: pandas.core.frame.DataFrame
-        :param columns:
+        :param columns: all column name
         :param func_filter: object type Pandas-Series
-        :param x_label:
-        :param y_label:
-        :param title:
+        :param x_label: label x_axis
+        :param y_label: label y_axis
+        :param title: chart title
         :param rot: rotation (default = 0)
 
         :return: Histogram
         """
 
         try:
-            for column in columns:
+            if func_filter:
+                for column in columns:
+                    data[func_filter][column].plot.hist()
+            else: 
+                data.hist()
+
+            """ for column in columns:
                 if func_filter is None:
                     data[column].plot.hist()
                 else:
-                    data[func_filter][column].plot.hist()
+                    data[func_filter][column].plot.hist() """
 
             plt.title("Histogram " + str(column) + " " + title)
             plt.xlabel(x_label)
@@ -130,6 +137,15 @@ class StartVis(StartML):
             return
 
     @classmethod
+    def vis_density(cls, data):
+        """
+        Description: getting a idea of the distribution for each attribute/ column
+        :param data: pandas.core.frame.DataFrame
+        """
+        data.plot(kind='density', subplots=True, layout=(3,3), sharex=False)
+        plt.show()
+
+    @classmethod
     def vis_boxplot(cls, data):
         """
         visual boxplot all data features to detect the possible outliers in every features
@@ -140,10 +156,7 @@ class StartVis(StartML):
         fig = plt.figure(1, figsize=(9, 6))
         ax = fig.add_subplot(111)
 
-        data_to_plot = []
-        for col in data.columns:
-            data_col = data[col].values
-            data_to_plot.append(data_col)
+        data_to_plot = [data[col].values for col in data.columns]
 
         ax.boxplot(data_to_plot)
         plt.title("Visual Boxplot")
@@ -196,7 +209,7 @@ class StartVis(StartML):
         plt.show()
 
     @classmethod
-    def vis_crossEntropy(predicted_prob, log_loss):
+    def vis_crossEntropy(cls, predicted_prob, log_loss):
         """
         Description:
             visualize the cross-entropy (log loss)
@@ -295,8 +308,9 @@ class StartVis(StartML):
     @classmethod
     def vis_3d_scatter(cls, data, features):
         """
+        Description: tbd
 
-        :param data:
+        :param data: pandas.core.frame.DataFrame
         :param features:
         :return:
         """
@@ -319,7 +333,7 @@ class StartVis(StartML):
         """
         Idea to visualize data in n_dimension (n > 3)
 
-        :param data:
+        :param data: pandas.core.frame.DataFrame
         :return:
         """
         pass
@@ -338,23 +352,41 @@ class StartVis(StartML):
     @classmethod
     def vis_square_matrix_plot(cls, data):
         """
-        plot data to show the strengthen connection between data points
-        Input data is a square matrix and value of every item show the relationship between pairwise data points
-        in directed graph (set: alpha parameter to display the transparency)
+        Description: plot Correlation Matrix to show the strengthen connection between data points
+            Input data is a square matrix and value of every item show the relationship between pairwise data points
+            in directed graph (set: alpha parameter to display the transparency), respectively idea of which variables
+            have a high correlation with each other.
 
         Used in Graph Analytics
+        :param data: pandas.core.frame.DataFrame
         """
-        pass
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        cax = ax.matshow(data.corr(), vmin=-1, vmax=1)
+        fig.colorbar(cax)        
+        ax.set_xticks(np.arange(0, 9, 1))
+        ax.set_yticks(np.arange(0, 9, 1))
+        ax.set_xticklabels(data.columns)
+        ax.set_yticklabels(data.columns)
+        plt.show()
+
+    @classmethod
+    def vis_scatter_matrix(cls, data):
+        """
+        Description: scatter plot for each pair of columns attributes for spotting structured relationships 
+        """
+        scatter_matrix(data)
+        plt.show()
 
     @classmethod
     def vis_features_acc(cls):
         """
-        # Description:
+        Description:
             plot which shows the correlation between number of features and accuracy performance.
             Adding more features over the threshold's performance contributes very little and sometimes even leads to
             overfitting and degrades performance.
 
-        # Reference:
+        Reference:
             https://developers.google.com/machine-learning/guides/text-classification/step-3
 
         :return:
@@ -379,7 +411,7 @@ class StartVis(StartML):
     def vis_more_dim(cls):
         """
         Description:
-            use dimensional reduction to reduce the number of features (>3) into 2 or 3 dimension
+            use dimensional reduction (SVD, PCA, LDA) to reduce the number of features (>3) into 2 or 3 dimension
             and plot
         """
         pass

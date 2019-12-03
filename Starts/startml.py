@@ -242,7 +242,7 @@ class StartML(object):
         pass
 
     @classmethod
-    def groupby_columns(cls, data, columns, groupby_label, func=None):
+    def groupby_columns(cls, data, columns, groupby_label, func=None, classification=False):
         """
         Description: execute operation group_by on columns by label_groupby
             e.g. compute mean value by column 'day'
@@ -258,6 +258,9 @@ class StartML(object):
         :return: dict-object (which can be used to compute further)
         """
         grouped = data.groupby(groupby_label)
+        if classification:
+            print(data.groupby('groupby_label').size())
+
         if func is None:
             return grouped.groups
         else:
@@ -301,7 +304,9 @@ class StartML(object):
     @classmethod
     def compute_correlation_dataframe(cls, df1, df2=None):
         """
-        Description: Compute pairwise-Correlation based on Pearson Correlation between 2 data frames or data frame itself
+        Description: 
+            Compute pairwise-Correlation based on Pearson Correlation between 2 data frames or data frame itself, describe the relationship between two variables 
+            and whether they might change together.
 
         References:
             https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.corr.html
@@ -312,8 +317,10 @@ class StartML(object):
         :param df2: pandas.core.frame.DataFrame
         :return: pandas.core.frame.DataFrame or pandas.core.frame.DataFrame
         """
+        pd.set_option('display.width', 100)
+        pd.set_option('precision', 3)
         if not df2:
-            return df1.corr()
+            return df1.corr(method='pearson')
         else:
             return df1.corrwith(df2)
 
@@ -921,9 +928,12 @@ class StartML(object):
         """
         print("\nData Columns: {}".format(data.columns), "\n")
         print("Missing values in Data: \n{}".format(data.isnull().sum()), "\n")
-        print("data.head(10): \n{}".format(data.head(10)), "\n")
-        print("data.info(): \n{}".format(data.info()), "\n")
-        print("data.describe(): \n{}".format(data.describe()), "\n")
+        print("Raw Data first look at data: \n{}".format(data.head(10)), "\n")
+        print("Dimension of Data: \n{}".format(data.shape), "\n")
+        print("Data Type for Attribute: \n{}".format(data.dtypes), "\n")
+        print("Data Information: \n{}".format(data.info()), "\n")
+        print("Descriptive Statistics (Count, Mean, Standard Deviation, Minimum-, (25, 50, 75) Percentile, -Maximum): \n{}".format(data.describe()), "\n")
+        print("Skew of Univariante Distributions: \n{}".format(data.skew()), "\n")
         print(StartML.nan_summary(data))
 
     @staticmethod
@@ -956,6 +966,7 @@ class StartML(object):
                     # remove space before and after string
                     path = path.strip()
 
+                    # Delimiter processing
                     if path.endswith('.xlsx') or path.endswith('.xls'):
                         data_exl = pd.read_excel(path)
                         df.append(data_exl)

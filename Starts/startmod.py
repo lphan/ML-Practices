@@ -17,8 +17,12 @@ from Starts.startvis import *
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import Binarizer
+from sklearn.preprocessing import Normalizer
 from sklearn.decomposition import PCA
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
 from sklearn.metrics import classification_report
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import accuracy_score
@@ -82,7 +86,7 @@ class StartMod(StartML):
     @classmethod
     def encode_label_column(cls, data, label_columns, one_hot=False):
         """
-        # Description: encode object-columns
+        Description: encode object-columns
             This encoding is needed for feeding categorical data to many scikit-learn estimators,
             notably linear models and SVMs with the standard kernels.
 
@@ -158,7 +162,7 @@ class StartMod(StartML):
     @classmethod
     def split_columns(cls, data, cols):
         """
-        # Description: split data by feature_columns into 2 different datasets
+        Description: split data by feature_columns into 2 different datasets
 
         :param data: pandas.core.frame.DataFrame
         :param cols: list of columns feature e.g. cols = [['a', 'b'], 'c']
@@ -168,9 +172,9 @@ class StartMod(StartML):
         return dat
 
     @classmethod
-    def split_data(cls, data, dependent_label=None, test_size=0.2, random_state=0, type_pd=True, split=True):
+    def split_data(cls, data, dependent_label=None, t_size=0.2, seed=0, type_pd=True, split=True):
         """
-        # Description:
+        Description:
             split data by rows into training_data and test_data used for (regression, classification) methods
 
         # References:
@@ -179,8 +183,8 @@ class StartMod(StartML):
             
         :param data: pandas.core.frame.DataFrame
         :param dependent_label: categorical label
-        :param test_size: (default is 0.2)
-        :param random_state: (default is 0)
+        :param t_size: test_size (default is 0.2)
+        :param seed: random state seed (default is 0)
         :param type_pd: (default is Pandas Dataframe)
         :param split: (default is True)
         :return: x_train, x_test, y_train, y_test (default type Pandas DataFrame)
@@ -191,9 +195,9 @@ class StartMod(StartML):
         # y = data.iloc[:, 1].values
         # save the dependent value into y
 
-        if not dependent_label and not type_pd and isinstance(data, np.ndarray):
+        if not dependent_label and not type_pd and isinstance(data.values, np.ndarray):
             # split data into train and test in ratio 8:2
-            train, test = train_test_split(data, test_size=test_size)
+            train, test = train_test_split(data, test_size=t_size)
             return train, test
 
         if type_pd:
@@ -211,18 +215,17 @@ class StartMod(StartML):
 
         try:
             # split data into training set and test set
-            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=test_size,
-                                                                random_state=random_state, shuffle=True)
-            
+            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=t_size,
+                                                                random_state=seed, shuffle=True)
+
         except ValueError:
-            print("Data set is not valid yet, need to be preprocessed first")
-            print("No splitting happen")
+            print("Data set is not valid yet, need to be preprocessed first, No splitting happen")
             return data
 
         return x_train, x_test, y_train, y_test
 
     @classmethod
-    def split_data_validate(data, dependent_label=None, test_size=0.2, random_state=0, type_pd=True, split=True, cv=False):
+    def split_data_validate(cls, data, dependent_label=None, test_size=0.2, random_state=0, type_pd=True, split=True, cv=False):
         '''
         Description:
             split data by rows into training_data, validation_data and test_data
@@ -277,7 +280,7 @@ class StartMod(StartML):
     @classmethod
     def backward_eliminate(cls, data, x_data, y_data):
         """
-        # Description:
+        Description:
             support the evaluation on (regression) models by finding maximal p_value (< pre-defined SL)
             and applying method Backward Elimination for feature selection
 
@@ -316,7 +319,7 @@ class StartMod(StartML):
     @classmethod
     def feature_columns(cls, data, label=None):
         """
-        # Description: find and return object and non-object columns
+        Description: find and return object and non-object columns
         
         :param data: pandas.core.frame.DataFrame
         :param label: default is None
@@ -335,10 +338,13 @@ class StartMod(StartML):
             return non_obj_feature, obj_feature
 
     @classmethod
-    def feature_scaling(cls, data, feature_range=None, type_pd=True, std=True):
+    def feature_scaling(cls, data, scale, feature_range=None, type_pd=True):
         """
-        # Description: standardization involves rescaling the features such that they have the properties
-        of a standard normal distribution with a mean of zero and a standard deviation of one
+        Description: 
+            - Minmax Rescaling is to normalize data value into the feature range between Min 0 and Max 1
+            - Standardization involves rescaling the features such that they have the properties
+            of a standard normal distribution with a mean of 0 and a standard deviation of 1
+
 
         # References:
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html
@@ -346,7 +352,7 @@ class StartMod(StartML):
             http://scikit-learn.org/stable/auto_examples/preprocessing/plot_scaling_importance.html
 
         :param data: pandas.core.frame.DataFrame or numpy.array
-        :param feature_range:
+        :param feature_range: default (0,1)
         :param type_pd: default True to convert data in Pandas Data-Frame
         :return: data in scaled format
         """
@@ -354,20 +360,57 @@ class StartMod(StartML):
             # convert data in Pandas DataFrame, apply Min_Max method manually
             data[data.columns] = data[data.columns].apply(lambda x: (x - x.min()) / (x.max() - x.min()))
             return data
+          
         else:
-            if std:
+            if scale is 'standard':
                 scaler = StandardScaler(copy=True, with_mean=True, with_std=True)
-            else:
-                scaler = MinMaxScaler(feature_range=feature_range)
+                
+                array = data.values
+                X = array[:, 0:len(array)]
+                Y = array[:, len(array)]     
+                rescaled_X = scaler.fit_transform(X)                
+                    
+                np.set_printoptions(precision=3)
+                return rescaled_X, Y  
 
-            # Compute the mean and std to be used for later scaling
-            scaler.fit(data)
-            return scaler, scaler.transform(data)
+            elif scale is 'minmax':
+                if not feature_range:
+                    scaler = MinMaxScaler(feature_range=(0, 1))
+                else:
+                    scaler = MinMaxScaler(feature_range=feature_range)
+            
+                array = data.values
+                X = array[:, 0:len(array)]
+                Y = array[:, len(array)]     
+                rescaled_X = scaler.fit_transform(X)                
+                    
+                np.set_printoptions(precision=3)
+                return rescaled_X, Y 
+
+            elif scale is 'binary':
+                array = data.values
+                X = array[:, 0:len(array)]
+                Y = array[:, len(array)]     
+                binarized = Binarizer(threshold=0.0).fit(X)
+                binary_X = binarized.transform(X)
+                np.set_printoptions(precision=3)
+                return binary_X, Y
+
+            else:    
+                array = data.values
+                X = array[:, 0:len(array)]
+                Y = array[:, len(array)]
+
+                scaler = Normalizer().fit(X)                    
+                normalized_X = scaler.transform(X)
+
+                np.set_printoptions(precision=3)
+                return normalized_X, Y
 
     @classmethod
     def feature_selection(cls, data, rm_columns, dependent_label=None, rm=False, pr=True):
         """
-        # Description:
+        Description:
             function to simplify feature selection and dimensionality reduction respectively
             apply Backward Elimination, Forward Selection, Bidirectional Elimination, Score comparision
 
@@ -419,9 +462,26 @@ class StartMod(StartML):
             return orig_data
 
     @classmethod
+    def feature_selection_chisquared(cls, data, k_features=4):
+        array = data.values
+        X = array[:, 0:len(array)]
+        Y = array[:, len(array)]
+
+        # feature extraction
+        chosen = SelectKBest(score_func=chi2, k=k_features)
+        fit = chosen.fit(X, Y)
+
+        # print summarized scores
+        np.set_printoptions(precision=3)
+        print(fit.scores_)
+        features = fit.transform(X)
+        print(features[0:k_features+1, :])
+        return features
+
+    @classmethod
     def feature_hashing(cls, data):
         """
-        # Description: benefit on low-memory and speed up the performance
+        Description: benefit on low-memory and speed up the performance
 
         # References:
             http://scikit-learn.org/stable/modules/feature_extraction.html
@@ -434,7 +494,7 @@ class StartMod(StartML):
         pass
 
     @classmethod
-    def feature_extraction(cls, data, dependent_label, tech='PCA', k=2):
+    def feature_extraction(cls, data, dependent_label, tech='PCA', k_components=3):
         """
         Description: Dimensionality Reduction
             - Principal Component Analysis (PCA) to extract the most important independent variables (n_features)
@@ -450,27 +510,29 @@ class StartMod(StartML):
         :param data: pandas.core.frame.DataFrame
         :param dependent_label:
         :param tech: choose the technique to redude dimension (default is PCA)
-        :param k: number of principal components (for PCA, default is 2)
+        :param k_components: number of principal components (for PCA, default is 3)
         :return: array of explained_variance_ratio, x_train, x_test, y_train, y_test
         """
         # TODO: choose the most best variance to get max possible total percentages
         x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label)
         
         if tech: 
-            pca = PCA(n_components = None)
+            pca = PCA(n_components = k_components)
             x_train = pca.fit_transform(x_train)
             x_test = pca.transform(x_test)
-            return pca.explained_variance_ratio_, x_train, x_test, y_train, y_test
+            print("Explained Variance: %s" % pca.explained_variance_ratio_)
+            return pca, x_train, x_test, y_train, y_test
         else:
-            lda = LDA(n_components = k)
+            lda = LDA(n_components = k_components)
             x_train = lda.fit_transform(x_train, y_train)
             x_test = lda.transform(x_test)
+            print("Explained Variance: %s" % lda.explained_variance_ratio_)
             return lda, x_train, x_test, y_train, y_test
 
     @classmethod
     def feature_engineering(cls, data, old_feature, new_feature, new_attributes, rm=False):
         """
-        # Description: renew data with new_feature using the new attributes_new_feature
+        Description: renew data with new_feature using the new attributes_new_feature
 
         # References:
             https://triangleinequality.wordpress.com/2013/09/08/basic-feature-engineering-with-the-titanic-data/
@@ -497,7 +559,7 @@ class StartMod(StartML):
     @classmethod
     def feature_engineering_merge_cols(cls, data, features, new_feature, datetime=False):
         """
-        # Description: merge many features into one new_feature (column)
+        Description: merge many features into one new_feature (column)
 
         :param data: pandas.core.frame.DataFrame
         :param features: list of the merging features
@@ -529,7 +591,7 @@ class StartMod(StartML):
     @classmethod
     def regularization(cls, data, dependent_label):
         """
-        # Description:
+        Description:
             apply technique of Ridge regression L2
             and Lasso (Least Absolute Shrinkage and Selection Operator) regression L1
             to avoid overfitting (when p>n, many more features than observations "wide matrix"):
@@ -598,7 +660,7 @@ class StartMod(StartML):
         print("\nElastic net: ", StartMod.validation(enReg, x_train, y_train))
 
     @classmethod
-    def lossClassification(yHat, y):
+    def lossClassification(cls, yHat, y):
         """
         Description: Classification Loss
             1. Cross-entropy loss, or log loss, measures the performance of a classification model whose output is a probability value 
@@ -652,9 +714,9 @@ class StartMod(StartML):
         print("R2 Score: \n", r2_score(y_true, y_pred)) 
 
     @classmethod
-    def metrics_report(cls, y_true, y_pred, cat_lab):
+    def classification_metrics_report(cls, y_true, y_pred, cat_lab):
         """
-        # Description: measure the quality of the models (comparing results before and after running prediction)
+        Description: measure the quality of the models (comparing results before and after running prediction)
 
             Binary Classification:
                 Accuracy = (TP + TN) / (TP + TN + FP + FN)
@@ -682,9 +744,8 @@ class StartMod(StartML):
         
         # Classification Model Evaluation
         print("Classification Report: \n", classification_report(y_true, y_pred, cat_lab=cat_lab))
-        print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred, labels=np.unique(y_true)))
-        acc = accuracy_score(y_true, y_pred)
-        print("\nAccuracy Score: \n", acc)
+        print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred, labels=np.unique(y_true)))        
+        print("\nAccuracy Score: \n", accuracy_score(y_true, y_pred))
 
         if len(np.unique(y_true))==2:
             print("binary")
@@ -698,15 +759,11 @@ class StartMod(StartML):
         print("\nPrecision Score: \n", prec)
         print("\nRecall Score: \n", rec)
         print("\nF-Score: \n", 2*prec*rec/ (prec+rec))
-
-        # TODO: 
-        # ROC receiver operating characteristic curve, 
-        # AUC area under the curve
         
     @classmethod
-    def validation(cls, model, x_val, y_val, parameters=[], cv=None, tune=False, vis=True):
+    def classification_validation(cls, model, x_val, y_val, parameters=[], classification_metrics, tune=False, vis=True):
         """
-        # Description: apply K-Fold Cross_Validation to estimate the model (classification) Bias vs Variance
+        Description: apply K-Fold Cross_Validation to estimate the model (classification) Bias vs Variance
 
         Debugging a learning algorithm:
             - Get more training data
@@ -729,20 +786,28 @@ class StartMod(StartML):
         :param model:
         :param x_val: x_validation_feature_values
         :param y_val: y_validation_categorical_values
-        :param cv (Cross_Validation) default is 10-fold if None
+        :param classification_metrics: classification accuracy {Accuracy, Logistic Loss, Area under ROC Curve}
         :param parameters (used for tuning hyperparameters) default is []
         :param tune (turn on grid search method to find the best parameters for model) default is False
         :return:
         """
+        # Evaluate using Cross validation with k-parts with default n_splits = 10
+        kfold = KFold(n_splits=10, random_state=7)
 
-        if not cv:
-            scores = cross_val_score(estimator=model, X=x_val, y=y_val, cv=10)
+        if classification_metrics is 'accuracy':
+            # Cross Validation Classification Accuracy as the number of correct predictions
+            scores = cross_val_score(estimator=model, X=x_val, y=y_val, cv=kfold, scoring='accuracy')
+        elif classification_metrics is 'neg_log_loss':
+            # Cross Validation Classification Logistic Loss (logloss) for evaluating the predictions of probabilities
+            scores = cross_val_score(estimator=model, X=x_val, y=y_val, cv=kfold, scoring='neg_log_loss')
         else:
-            scores = cross_val_score(estimator=model, X=x_val, y=y_val, cv=cv)
+            # Cross Validation Classification ROC AUC for binary classification problem
+            scores = cross_val_score(estimator=model, X=x_val, y=y_val, cv=kfold, scoring='roc_auc')
 
-        print("\nCross_validated scores: ", scores)
-        print("\nMean of cross_validated scores: ", scores.mean())
-        print("\nStandard Deviation of cross_validated scores: ", scores.std())
+        print("\nAccuracy")
+        print("\nCross_validated scores: ", scores)        
+        print("\nMean of cross_validated scores: %.3f%%" % (scores.mean()*100.0))
+        print("\nStandard Deviation of cross_validated scores : %.3f%%" % (scores.std()*100.0))               
 
         # Plot cross_validated predictions
         predictions = cross_val_predict(model, x_val, y_val, cv=6)
@@ -778,6 +843,27 @@ class StartMod(StartML):
 
         return scores
 
+    @classmethod
+    def regression_metrics_report(cls, model, x_val, y_val, regression_metrics):
+        """ Description: Metrics for evaluating predictions on regression machine learning problems """
+        
+        # Evaluate using Cross validation with k-parts with default n_splits = 10
+        kfold = KFold(n_splits=10, random_state=7)
+
+        if regression_metrics is 'neg_mean_absolute_error':
+            # Mean Absolute Error MAE 
+            scores = cross_val_score(estimator=model, X=x_val, y=y_val, cv=kfold, scoring='neg_mean_absolute_error')
+        elif regression_metrics is 'neg_mean_squared_error':
+            # Mean Squared Error MSE
+            scores = cross_val_score(estimator=model, X=x_val, y=y_val, cv=kfold, scoring='neg_mean_squared_error')
+        else:
+            # R2 Squared
+            scores = cross_val_score(estimator=model, X=x_val, y=y_val, cv=kfold, scoring='r2')
+
+        print("\nAccuracy")
+        print("\nCross_validated scores: ", scores)        
+        print("\nMean of cross_validated scores: %.3f%%" % (scores.mean()*100.0))
+        print("\nStandard Deviation of cross_validated scores : %.3f%%" % (scores.std()*100.0))     
 
 info_mod = StartMod.info_help()
 
