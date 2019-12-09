@@ -14,13 +14,14 @@ __author__ = 'Long Phan'
 
 from Starts.startml import *
 from Starts.startvis import *
+from scipy.stats import uniform
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.preprocessing import StandardScaler
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import Binarizer
 from sklearn.preprocessing import Normalizer
 from sklearn.decomposition import PCA
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 from sklearn.metrics import classification_report
@@ -37,6 +38,7 @@ from sklearn.model_selection import KFold
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import cross_val_predict
 from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import RandomizedSearchCV
 from sklearn.linear_model import Ridge
 from sklearn.linear_model import Lasso
 from sklearn.linear_model import ElasticNet
@@ -511,7 +513,7 @@ class StartMod(StartML):
         :param dependent_label:
         :param tech: choose the technique to redude dimension (default is PCA)
         :param k_components: number of principal components (for PCA, default is 3)
-        :return: array of explained_variance_ratio, x_train, x_test, y_train, y_test
+        :return: model, x_train, x_test, y_train, y_test
         """
         # TODO: choose the most best variance to get max possible total percentages
         x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label)
@@ -523,7 +525,7 @@ class StartMod(StartML):
             print("Explained Variance: %s" % pca.explained_variance_ratio_)
             return pca, x_train, x_test, y_train, y_test
         else:
-            lda = LDA(n_components = k_components)
+            lda = LinearDiscriminantAnalysis(n_components = k_components)
             x_train = lda.fit_transform(x_train, y_train)
             x_test = lda.transform(x_test)
             print("Explained Variance: %s" % lda.explained_variance_ratio_)
@@ -761,7 +763,7 @@ class StartMod(StartML):
         print("\nF-Score: \n", 2*prec*rec/ (prec+rec))
         
     @classmethod
-    def classification_validation(cls, model, x_val, y_val, parameters=[], classification_metrics, tune=False, vis=True):
+    def classification_validation(cls, model, x_val, y_val, classification_metrics='accuracy', tune=False, vis=True):
         """
         Description: apply K-Fold Cross_Validation to estimate the model (classification) Bias vs Variance
 
@@ -791,7 +793,7 @@ class StartMod(StartML):
         :param tune (turn on grid search method to find the best parameters for model) default is False
         :return:
         """
-        # Evaluate using Cross validation with k-parts with default n_splits = 10
+        # Evaluate using Cross validation with k-parts with default n_splits = 10, random_state = 7
         kfold = KFold(n_splits=10, random_state=7)
 
         if classification_metrics is 'accuracy':
@@ -819,18 +821,19 @@ class StartMod(StartML):
         # calculate R_Squared to measure the cross_predicted accuracy of the model
         accuracy = r2_score(y_val, predictions)
         print("\nCross_predicted accuracy:", accuracy)
-
+    
         if tune:
+            alphas = np.array([1, 0.1, 0.01, 0.001, 0.0001, 0])
+            param_grid = dict(alpha = alphas)
+
             # setup grid search input parameters to tune the hyper parameter e.g. n_jobs=-1 for large data set
-            gs = GridSearchCV(estimator=model, param_grid=parameters, scoring='accuracy', cv=cv, n_jobs=-1)
-            gs = gs.fit(x_val, y_val)
-
-            best_accuracy = gs.best_score_
-            best_parameters = gs.best_params_
-
-            print("Best accuracy: ", best_accuracy)
-            print("Best parameters: ", best_parameters)
-            print("Best: %f using %s" % (gs.best_score_, gs.best_params_))
+            gs = GridSearchCV(estimator=model, param_grid=param_grid, scoring='accuracy', cv=3, n_jobs=-1)
+            gs.fit(x_val, y_val)           
+            
+            print("Grid Search Parameter - Best accuracy: ", gs.best_score_)
+            print("Grid Search Parameter - Best parameters: ", gs.best_params_)
+            print("Grid Search Parameter - Best estimator alpha: ", gs.best_estimator_.alpha)
+            print("Grid Search Parameter - Best: %f using %s" % (gs.best_score_, gs.best_params_))
 
             means = gs.cv_results_['mean_test_score']
             stds = gs.cv_results_['std_test_score']
@@ -839,9 +842,12 @@ class StartMod(StartML):
             for mean, stdev, param in zip(means, stds, params):
                 print("Mean: %f, Standard Deviation: (%f), Parameters: %r" % (mean, stdev, param))
 
-            return scores, gs
-
-        return scores
+            # Total 100 iterations are performed randomly with alpha values between 0 and 1
+            param_grid = {'alpha': uniform()}            
+            rs = RandomizedSearchCV(estimator=model, param_distributions=param_grid, n_iter=100, cv=3, random_state=7)
+            rs.fit(x_val, y_val)
+            print("Random Search Parameter - Best Score: ", rs.best_score_)
+            print("Random Search Parameter - Best estimator alpha: ", rs.best_estimator_.alpha) 
 
     @classmethod
     def regression_metrics_report(cls, model, x_val, y_val, regression_metrics):

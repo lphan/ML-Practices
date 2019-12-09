@@ -28,10 +28,13 @@ from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.linear_model import LinearRegression
+from sklearn.linear_model import Ridge
 
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neighbors import KNeighborsRegressor
 from sklearn.naive_bayes import GaussianNB
 from sklearn.svm import SVC
+from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.tree import DecisionTreeRegressor
 
@@ -60,7 +63,7 @@ class StartModSKL(StartMod):
         super().__init__()  # StartMod.__init__(self)  or super(StartModSKL, self).__init__()
 
     @classmethod
-    def regression_linear(cls, data, dependent_label, poly=False, vis=True, save=True, regularization=True):
+    def regression_linear(cls, data, dependent_label, poly=False, ridge=False, vis=True, save=True, regularization=True):
         """
         Description: apply method Linear regression y = ax + b (one independent variable, one dependent_label)
 
@@ -70,6 +73,7 @@ class StartModSKL(StartMod):
         :param data: pandas.core.frame.DataFrame
         :param dependent_label: categorical column
         :param poly: initiate polynomial linear regression
+        :param ridge: Linear least squares with l2 regularization.
         :param vis: default True to visualize
         :param save: default True to save the trained model
         :param regularization:
@@ -118,6 +122,30 @@ class StartModSKL(StartMod):
                                          title='Training vs predicted data')
 
             return reg_poly, y_test, y_predict
+
+        elif ridge:
+            # apply Ridge regression
+            model = Ridge()
+            model.fit(x_train, y_train)
+
+            y_predict = model.predict(model.fit_transform(x_test)) 
+
+            if save:
+                joblib.dump(model, filename+'_model.sav')
+
+            if regularization:
+                StartMod.regularization(data, dependent_label)
+
+            if vis:
+                # Visual the result
+                StartVis.vis_obj_predict(list(range(len(x_test))), y_test, y_predict,
+                                         title='Training vs predicted data')
+
+            print("Calculating coefficients: ", model.coef_)
+            print("Evaluation using r-square: ", model.score(x_test, y_test))
+
+            return model, y_test, y_predict
+
         else:
             # fit model with training-data
             lin_reg = LinearRegression()
@@ -339,7 +367,7 @@ class StartModSKL(StartMod):
         :param k_features: number of chosen features (default is)
         :param save: default True to save the trained model
         :param regularization: default True to turn on the regularization methods L1, L2
-        :return: LogisticRegression object, true_test_result, predicted_result
+        :return: LogisticRegression_model, true_test_result, predicted_result
         """
         # # save the dependent value into y
         # y = data[dependent_label].values
@@ -388,7 +416,7 @@ class StartModSKL(StartMod):
         :param dependent_label: categorical column
         :param  k_nb: number of neighbors
         :param save: default True to save the trained model
-        :return: KNeighborsClassifier object, true_test_result, predicted_result
+        :return: knn_model, true_test_result, predicted_result
         """
 
         # split data into feature (independent) values and dependent values in type Numpy.array
@@ -426,12 +454,12 @@ class StartModSKL(StartMod):
 
         :param data: pandas.core.frame.DataFrame
         :param dependent_label: categorical column
-        :param kernel: default is 'rbf', kernel_options = ['linear', 'poly', 'sigmoid']
+        :param kernel: default is Radial Basis Function ('rbf'), kernel_options = ['linear', 'poly', 'sigmoid']
         :param save: default True to save the trained model
-        :return: SVC Object, true_test_result, predicted_result
+        :return: SVC_model, true_test_result, predicted_result
         """
         def kernel_compute(kn):
-            kc_clf_svc = SVC(kernel=kn, random_state=cls.__random_state)
+            kc_clf_svc = SVC(kernel=kn, random_state=cls.__random_state, gamma='auto')
             kc_clf_svc.fit(x_train, y_train)
 
             # Predicting the Test set results
@@ -443,7 +471,7 @@ class StartModSKL(StartMod):
 
         x_train, x_true, y_train, y_true = StartMod.split_data(data, dependent_label, type_pd=False)
 
-        # Find and choose the best Kernel-SVM to fit with the Training set
+        # TODO: Find and choose the best Kernel-SVM to fit with the Training set
         # kernel_options = ['linear', 'poly', 'sigmoid']
         classifier_svc, y_predict = kernel_compute(kernel)
 
@@ -473,7 +501,7 @@ class StartModSKL(StartMod):
         :param data: pandas.core.frame.DataFrame
         :param dependent_label: categorical column
         :param save: default True to save the trained model
-        :return: GaussianNB, true_test_result, predicted_result
+        :return: GaussianNB_model, true_test_result, predicted_result
         """
         x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
 
@@ -497,7 +525,7 @@ class StartModSKL(StartMod):
     @classmethod
     def classification_bagged_dt(cls, data, dependent_label, n_trees, save=True):
         """
-        Description: apply Ensemble meta-estimator BaggingClassifier to classify data
+        Description: apply Ensemble meta-estimator BaggingClassifier Decision Tree to classify data
 
         # References:
             https://machinelearningmastery.com/ensemble-machine-learning-algorithms-python-scikit-learn/
@@ -507,7 +535,7 @@ class StartModSKL(StartMod):
         :param dependent_label:
         :param n_trees: number of trees
         :param save: default True to save the trained model
-        :return:
+        :return: decision tree_model, y_test, y_predict
         """
         x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
 

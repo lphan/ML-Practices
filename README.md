@@ -3,7 +3,7 @@
 ## INTRO: 
 
 as a person who is passionate about Data Science, Machine Learning and Deep Learning so that I want to 'learn by doing' a framework layer in between many popular frameworks (Pandas, Numpy, Matplotlib, statsmodels, Tensorflow, Spark, etc.). 
-Shortly, 'Starts' is a Wrapper package with the functions which are written with simple code by re-applying of many other data analysis frameworks. 
+Shortly, 'Starts' is a Wrapper package with the functions which are written with simple reusable code by reuse many ready-made functions. 
  
 - Person who want to learn by doing is able to have a first look into the data science picture  with little effort and overcome the raw-theories's barriers without having to go into technical detail.
 - Person who want to analyse data and get the result/ information asap, but do not have much time to deal with the complexity of many different frameworks. 
@@ -23,7 +23,30 @@ Loop_of_the_path_to_DataScience_and_MachineLearning:
 	4. Integrate the implementation into the package Starts
 
 ## Example of a analysis workflow: 
-	cont.
+>	1. 	Preparation
+	Load dataset and libraries
+
+>	2. 	Have a first look on data
+	Descriptive Statistics and Visualization
+
+>	3.	Data Preprocessing
+	Data Cleaning
+	Feature Selection 
+	Data Transform
+
+>	4.	Data Processing
+	Choose the right algorithms (regression, classification, etc.) and build model (or load model)
+	Evaluation and compare the chosen Algorithms
+
+>	5.	Data Post-processing
+	Testing and Performance Tuning (e.g. GridSearchCV) to choose the best parameters
+	Improve the accuracy
+	Ensembles
+
+>	6.	Finalization
+	Predict with model
+	Serialize model  
+	Present and save results
 
 ## Status of the data analysis packages: On-going 
 

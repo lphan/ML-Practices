@@ -259,7 +259,7 @@ class StartML(object):
         """
         grouped = data.groupby(groupby_label)
         if classification:
-            print(data.groupby('groupby_label').size())
+            print(data.groupby(groupby_label).size())
 
         if func is None:
             return grouped.groups

@@ -362,7 +362,7 @@ class StartVis(StartML):
         """
         fig = plt.figure()
         ax = fig.add_subplot(111)
-        cax = ax.matshow(data.corr(), vmin=-1, vmax=1)
+        cax = ax.matshow(data.corr(), vmin=-1, vmax=1, interpolation='none')
         fig.colorbar(cax)        
         ax.set_xticks(np.arange(0, 9, 1))
         ax.set_yticks(np.arange(0, 9, 1))
