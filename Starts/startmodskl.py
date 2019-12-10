@@ -174,6 +174,26 @@ class StartModSKL(StartMod):
             return lin_reg, y_test, y_predict
 
     @classmethod
+    def regression_knn(cls, data, dependent_label):
+        """
+        """
+        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, random_state=cls.__random_state,
+                                                               type_pd=False)
+
+        reg_knn = KNeighborsRegressor()
+        reg_knn.fit(x_train, y_train)
+
+        # checking the magnitude of features
+        features = data.columns.drop(dependent_label)
+        features_important = reg_knn.feature_importances_
+        print("Features: ", features, "\nFeatures_Important: ", features_important)
+
+        # Predicting the Test and return the predicted result
+        y_predict = reg_knn.predict(x_test)
+
+        return reg_knn, y_test, y_predict
+
+    @classmethod
     def regression_multi_linear(cls, data, dependent_label, pr=True, vis=True, save=True):
         """
         Description: apply method Multiple Linear regression y = b0 + b1.x1 + b2.x2 + ... + bn.xn
@@ -265,7 +285,7 @@ class StartModSKL(StartMod):
         # x = data.drop(dependent_label, axis=1).values
 
         # split data into feature (independent) values and dependent values in type Numpy.array
-        x_train, x_true, y_train, y_true = StartMod.split_data(data, dependent_label, random_state=cls.__random_state,
+        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, random_state=cls.__random_state,
                                                                type_pd=False)
 
         reg_dt = DecisionTreeRegressor(random_state=cls.__random_state)
@@ -280,7 +300,7 @@ class StartModSKL(StartMod):
         print("Features: ", features, "\nFeatures_Important: ", features_important)
 
         # Predict
-        y_predict = reg_dt.predict(x_true)
+        y_predict = reg_dt.predict(x_test)
 
         if save:
             filename = StartModSKL.regression_decision_tree.__name__
@@ -295,9 +315,9 @@ class StartModSKL(StartMod):
             plt.xticks(rotation=45)
 
             # Visual the result
-            StartVis.vis_obj_predict(list(range(len(x_true))), y_true, y_predict, title='Training vs predicted data')
+            StartVis.vis_obj_predict(list(range(len(x_test))), y_test, y_predict, title='Training vs predicted data')
 
-        return reg_dt, y_true, y_predict
+        return reg_dt, y_test, y_predict
 
     @classmethod
     def regression_random_forest(cls, data, dependent_label, n_trees=10, ens=False, save=True):
@@ -314,7 +334,7 @@ class StartModSKL(StartMod):
         :param save: default True to save the trained model
         :return:
         """
-        x_train, x_true, y_train, y_true = StartMod.split_data(data, dependent_label, type_pd=False)
+        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
 
         reg_rf = RandomForestRegressor(n_estimators=n_trees, random_state=cls.__random_state)
         reg_rf.fit(x_train, y_train)
@@ -324,22 +344,45 @@ class StartModSKL(StartMod):
         # then get the mean result from every decision tree
 
         # Predicting a new result
-        y_predict = reg_rf.predict(x_true)
+        y_predict = reg_rf.predict(x_test)
 
         if save:
             filename = StartModSKL.regression_random_forest.__name__
             joblib.dump(reg_rf, filename + '_model.sav')
 
-        return reg_rf, y_true, y_predict
+        return reg_rf, y_test, y_predict
 
     @classmethod
-    def regression_svr(cls, data, dependent_label):
+    def regression_svr(cls, data, dependent_label, kn='rbf'):
         """
+        Description: apply Support Vector Regression (SVR) to predict the information as real number
+        References: 
+            https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html
+            https://www.saedsayad.com/support_vector_machine_reg.htm
+            https://medium.com/pursuitnotes/support-vector-regression-in-6-steps-with-python-c4569acd062d
 
-        :param data:
+        :param data: pandas.core.frame.DataFrame
+        :param dependent_label: 
+        :param kernel: default is Radial Basis Function ('rbf'), kernel_options = ['linear', 'poly', 'sigmoid']
+
         :return:
         """
-        pass
+        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
+
+        reg_svr = SVR(gamma='auto', kernel=kn)
+        reg_svr.fit(x_train, y_train)
+
+        print("Number features: %d" % reg_svr.n_features_)
+        print("Selected features: %s" % reg_svr.support_)
+        print("Feature Ranking: %s" % reg_svr.ranking_)
+
+        # Predicting the Test set results
+        y_predict = reg_svr.predict(x_test)
+
+        # estimate the model by cross_validation method and training_data
+        StartMod.validation(reg_svr, x_train, y_train)
+
+        return reg_svr, y_test, y_predict
 
     @classmethod
     def regression_logistic(cls, data, dependent_label, solver='liblinear', k_features=3, max_iter=100, multi_class='warn', save=True, regularization=True):
@@ -382,17 +425,17 @@ class StartModSKL(StartMod):
         
         # Feature extraction using Recursive Feature Elimination (RFE)
         rfe = RFE(reg_log, k_features)
-        fit = rfe.fit(x_train, y_train)
+        rfe_fit = rfe.fit(x_train, y_train)
 
-        print("Number features: %d" % fit.n_features_)
-        print("Selected features: %s" % fit.support_)
-        print("Feature Ranking: %s" % fit.ranking_)
+        print("Number features: %d" % rfe_fit.n_features_)
+        print("Selected features: %s" % rfe_fit.support_)
+        print("Feature Ranking: %s" % rfe_fit.ranking_)
 
         # Predicting the Test set results
-        y_predict = rfe.predict(x_test)
+        y_predict = rfe_fit.predict(x_test)
 
         # estimate the model by cross_validation method and training_data
-        StartMod.validation(rfe, x_train, y_train)
+        StartMod.validation(rfe_fit, x_train, y_train)
 
         # estimate regularization
         if regularization:
@@ -400,9 +443,9 @@ class StartModSKL(StartMod):
 
         if save:
             filename = StartModSKL.regression_random_forest.__name__
-            joblib.dump(rfe, filename + '_model.sav')
+            joblib.dump(rfe_fit, filename + '_model.sav')
 
-        return rfe, y_test, y_predict
+        return rfe_fit, y_test, y_predict
 
     @classmethod
     def classification_knn(cls, data, dependent_label, k_nb=5, save=True):
@@ -463,13 +506,13 @@ class StartModSKL(StartMod):
             kc_clf_svc.fit(x_train, y_train)
 
             # Predicting the Test set results
-            kc_y_predict = kc_clf_svc.predict(x_true)
+            kc_y_predict = kc_clf_svc.predict(x_test)
             # cm = confusion_matrix(y_test, kc_y_predict)
             # kc_correct = cm[0][0] + cm[1][1]
             # print(kc_clf_svc, kc_correct)
             return kc_clf_svc, kc_y_predict
 
-        x_train, x_true, y_train, y_true = StartMod.split_data(data, dependent_label, type_pd=False)
+        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
 
         # TODO: Find and choose the best Kernel-SVM to fit with the Training set
         # kernel_options = ['linear', 'poly', 'sigmoid']
@@ -488,7 +531,7 @@ class StartModSKL(StartMod):
             filename = StartModSKL.classification_knn.__name__
             joblib.dump(classifier_svc, filename + '_model.sav')
 
-        return classifier_svc, y_true, y_predict
+        return classifier_svc, y_test, y_predict
 
     @classmethod
     def classification_gnb(cls, data, dependent_label, save=True):
@@ -558,6 +601,8 @@ class StartModSKL(StartMod):
     @classmethod
     def classification_extraTrees(cls, data, n_estimators):
         """
+        Description: 
+            classification using extra Trees
         """
         array = data.values
         X = array[:, 0:len(array)]
@@ -803,18 +848,7 @@ class StartModSKL(StartMod):
             joblib.dump(k_means, filename + '_model.sav')
 
         return k_means, y_clusters
-
-    @classmethod
-    def ensemble(cls, data):
-        """
-        References:
-            http://scikit-learn.org/stable/modules/ensemble.html
-            https://machinelearningmastery.com/ensemble-machine-learning-algorithms-python-scikit-learn/
-        :param data:
-        :return:
-        """
-        pass
-
+ 
     @staticmethod
     def info_help():
         info = {

@@ -686,7 +686,7 @@ class StartMod(StartML):
             return -np.log(1 - yHat)
 
     @classmethod
-    def lossRegression(cls, y_pred, y_true, delta):
+    def lossRegression(cls, y_pred, y_test, delta):
         """
         Description: Regression Loss
             L1-Loss MAE, L2-Loss MSE, Huber Loss (Smooth Mean), Log cosh Loss, Quantile Loss
@@ -704,19 +704,19 @@ class StartMod(StartML):
             https://heartbeat.fritz.ai/5-regression-loss-functions-all-machine-learners-should-know-4fb140e9d4b0            
         """
         # Regression Model Evaluation            
-        print("L1-Loss Mean Absolute Error: \n", mean_absolute_error(y_true, y_pred))
-        print("L2-Loss Mean Squared Error: \n", mean_squared_error(y_true, y_pred))
+        print("L1-Loss Mean Absolute Error: \n", mean_absolute_error(y_test, y_pred))
+        print("L2-Loss Mean Squared Error: \n", mean_squared_error(y_test, y_pred))
 
-        huber_loss = np.sum(np.where(np.abs(y_true-y_pred) < delta , 1/2*((y_true-y_pred)**2), delta*np.abs(y_true - y_pred) - 1/2*(delta**2)))
-        log_cosh_loss = np.sum(np.log(np.cosh(y_pred - y_true)))
+        huber_loss = np.sum(np.where(np.abs(y_test-y_pred) < delta , 1/2*((y_test-y_pred)**2), delta*np.abs(y_test - y_pred) - 1/2*(delta**2)))
+        log_cosh_loss = np.sum(np.log(np.cosh(y_pred - y_test)))
 
         print("Huber Loss: \n ", huber_loss)
         print("Cosh Loss: \n ", log_cosh_loss)
         
-        print("R2 Score: \n", r2_score(y_true, y_pred)) 
+        print("R2 Score: \n", r2_score(y_test, y_pred)) 
 
     @classmethod
-    def classification_metrics_report(cls, y_true, y_pred, cat_lab):
+    def classification_metrics_report(cls, y_test, y_pred, cat_lab):
         """
         Description: measure the quality of the models (comparing results before and after running prediction)
 
@@ -738,25 +738,25 @@ class StartMod(StartML):
             http://scikit-learn.org/stable/modules/generated/sklearn.metrics.accuracy_score.html
             http://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_score.html
 
-        :param y_true: the truth values
+        :param y_test: the truth values
         :param y_pred: the predicted values
         :param cat_lab: categorical label name used for classification 
         :return:
         """
         
         # Classification Model Evaluation
-        print("Classification Report: \n", classification_report(y_true, y_pred, cat_lab=cat_lab))
-        print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred, labels=np.unique(y_true)))        
-        print("\nAccuracy Score: \n", accuracy_score(y_true, y_pred))
+        print("Classification Report: \n", classification_report(y_test, y_pred, cat_lab=cat_lab))
+        print("Confusion Matrix: \n", confusion_matrix(y_test, y_pred, labels=np.unique(y_test)))        
+        print("\nAccuracy Score: \n", accuracy_score(y_test, y_pred))
 
-        if len(np.unique(y_true))==2:
+        if len(np.unique(y_test))==2:
             print("binary")
-            prec = precision_score(y_true, y_pred)
-            rec = recall_score(y_true, y_pred)
+            prec = precision_score(y_test, y_pred)
+            rec = recall_score(y_test, y_pred)
         else:
             print("set average")
-            prec = precision_score(y_true, y_pred, average='micro')
-            rec = recall_score(y_true, y_pred, average='micro')
+            prec = precision_score(y_test, y_pred, average='micro')
+            rec = recall_score(y_test, y_pred, average='micro')
 
         print("\nPrecision Score: \n", prec)
         print("\nRecall Score: \n", rec)

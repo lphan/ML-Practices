@@ -154,11 +154,10 @@ class StartVis(StartML):
         :return:
         """
         fig = plt.figure(1, figsize=(9, 6))
-        ax = fig.add_subplot(111)
-
         data_to_plot = [data[col].values for col in data.columns]
-
+        ax = fig.add_subplot(111)
         ax.boxplot(data_to_plot)
+        ax.set_xticklabels(data.columns)
         plt.title("Visual Boxplot")
         plt.show()
 
@@ -189,22 +188,22 @@ class StartVis(StartML):
         plt.scatter(x_data, y_data, c=label_data)
 
     @classmethod
-    def vis_obj_predict(cls, x_index, y_true, y_pred, title):
+    def vis_obj_predict(cls, x_index, y_test, y_pred, title):
         """
         Visualizing result of the predicting object
 
         :param x_index:
-        :param y_true:
+        :param y_test:
         :param y_pred:
         :param title:
         :return:
         """
         plt.figure()
-        plt.bar(x_index, y_true, align='center', alpha=1)
+        plt.bar(x_index, y_test, align='center', alpha=1)
         plt.bar(x_index, y_pred, align='center', alpha=1)
         plt.title(title)
         plt.xlabel(str(type(x_index)))
-        plt.ylabel(str(type(y_true)))
+        plt.ylabel(str(type(y_test)))
         plt.legend()
         plt.show()
 

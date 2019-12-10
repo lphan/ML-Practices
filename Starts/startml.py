@@ -675,8 +675,8 @@ class StartML(object):
         """
         nan_bool = data.isnull().any()
         if isinstance(data, pd.DataFrame):
-            key_true = [key for key, value in nan_bool.iteritems() if value]
-            return key_true
+            key_test = [key for key, value in nan_bool.iteritems() if value]
+            return key_test
         else:
             return nan_bool
 

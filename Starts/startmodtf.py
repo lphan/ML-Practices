@@ -219,7 +219,7 @@ class StartModTF(StartMod):
         References:
             https://www.tensorflow.org/api_docs/python/tf/estimator/inputs/pandas_input_fn
 
-        :param test_features: from test_data (x_true)
+        :param test_features: from test_data (x_test)
         :param batch_size: size of one batch data interated for Gradient Descent
         :return:
         """        
@@ -336,7 +336,7 @@ class StartModTF(StartMod):
         :param data: pandas.core.frame.DataFrame
         :param dependent_label:
         :param model_lin: default is LinearClassifier
-        :return: LinearClassifier object (DNNClassifier object), y_true, y_predict
+        :return: LinearClassifier object (DNNClassifier object), y_test, y_predict
         """
         if dependent_label is None:
             print("Please choose other method as Clustering to process data\n")
@@ -345,10 +345,10 @@ class StartModTF(StartMod):
         # print(self.data.columns)
         # fea_cols = [tf.feature_column.numeric_column(key=fea) for fea in self.data.columns]
 
-        x_train, x_true, y_train, y_true = self.split_data(data, dependent_label)
+        x_train, x_test, y_train, y_test = self.split_data(data, dependent_label)
         if self.feature_scl:
             x_train = StartMod.feature_scaling(x_train, type_pd=True)
-            x_true = StartMod.feature_scaling(x_true, type_pd=True)
+            x_test = StartMod.feature_scaling(x_test, type_pd=True)
 
         # create feature_columns for model
         fea_cols = self.setup_feature_columns(x_train)
@@ -375,7 +375,7 @@ class StartModTF(StartMod):
         print("\n", result_eval)
 
         # Prediction
-        pred_input_func = StartModTF.pred_input_fn(test_features=x_true, batch_size=self.batch_size)
+        pred_input_func = StartModTF.pred_input_fn(test_features=x_test, batch_size=self.batch_size)
         y_predict = classifier.predict(input_fn=pred_input_func)
 
         # show metrics report
@@ -386,7 +386,7 @@ class StartModTF(StartMod):
         final_pred = [pred['class_ids'][0] for pred in list(y_predict)]
 
         # self.data['predicted'] = y_predict
-        return classifier, y_true, final_pred
+        return classifier, y_test, final_pred
 
     @classmethod
     def regularization_nn(cls):
