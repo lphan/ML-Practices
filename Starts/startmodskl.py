@@ -288,7 +288,8 @@ class StartModSKL(StartMod):
         x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, random_state=cls.__random_state,
                                                                type_pd=False)
 
-        reg_dt = DecisionTreeRegressor(random_state=cls.__random_state)
+        # Default parameters value: criterion='mean squared error' with max_depth=3 
+        reg_dt = DecisionTreeRegressor(criterion='mse', max_depth=3, random_state=cls.__random_state)
         reg_dt.fit(x_train, y_train)
 
         # Estimate the model by cross_validation method and training_data
@@ -320,28 +321,23 @@ class StartModSKL(StartMod):
         return reg_dt, y_test, y_predict
 
     @classmethod
-    def regression_random_forest(cls, data, dependent_label, n_trees=10, ens=False, save=True):
+    def regression_random_forest(cls, data, dependent_label, n_trees=10, save=True):
         """
-        Description: apply method Random forest regression
+        Description: combine decision trees to form an ensemble random forest for regression in order to decrease the model’s variance. 
 
         # References:
             http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestRegressor.html
 
         :param data: pandas.core.frame.DataFrame
         :param dependent_label:
-        :param n_trees: the number of trees in the forest.
-        :param ens: ensemble learning by decision tree and other regression model
+        :param n_trees: the number of decision trees in the forest (default: 10)
         :param save: default True to save the trained model
         :return:
         """
         x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
 
         reg_rf = RandomForestRegressor(n_estimators=n_trees, random_state=cls.__random_state)
-        reg_rf.fit(x_train, y_train)
-
-        # TODO:
-        # If ens (ensemble learning), re_implement random forest by applying other regression_model as one decision tree
-        # then get the mean result from every decision tree
+        reg_rf.fit(x_train, y_train)      
 
         # Predicting a new result
         y_predict = reg_rf.predict(x_test)
@@ -575,14 +571,15 @@ class StartModSKL(StartMod):
             http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.BaggingClassifier.html
 
         :param data: pandas.core.frame.DataFrame
-        :param dependent_label:
+        :param dependent_label: (categorical) target label
         :param n_trees: number of trees
         :param save: default True to save the trained model
         :return: decision tree_model, y_test, y_predict
         """
         x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
 
-        cart = DecisionTreeClassifier()
+        # Default parameters: criterion='entropy', max_depth of decision tree=4, random_state=1
+        cart = DecisionTreeClassifier(criterion='entropy', max_depth=4, random_state=1)
         clf_bdt = BaggingClassifier(base_estimator=cart, n_estimators=n_trees, random_state=cls.__random_state)
         clf_bdt.fit(x_train, y_train)
 

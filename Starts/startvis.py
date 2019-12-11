@@ -20,6 +20,8 @@ from mpl_toolkits.basemap import Basemap
 from mpl_toolkits.mplot3d import Axes3D
 from pd.plotting import scatter_matrix
 from matplotlib.pylab import rcParams
+from pydotplus.graphviz import graph_from_dot_data
+from sklearn.tree import export_graphviz
 from Starts.startml import *
 rcParams['figure.figsize'] = 20, 6
 
@@ -373,10 +375,31 @@ class StartVis(StartML):
     def vis_scatter_matrix(cls, data):
         """
         Description: scatter plot for each pair of columns attributes for spotting structured relationships 
+        :param data:  pandas.core.frame.DataFrame
+        :return:    
         """
         scatter_matrix(data)
         plt.show()
 
+    @classmethod
+    def vis_tree(cls, decision_tree_model, data, dependent_label):
+        """
+        Description: visualize the decision tree using GraphViz. 
+        Requirement: 
+            pip3 install pydotplus
+            apt install graphviz
+
+        :param decision_tree_model:
+        :param data:  pandas.core.frame.DataFrame
+        :param dependent_label: categorical label
+        :return:
+
+        """
+        categorical_values = np.unique(data[dependent_label].values)
+        dot_data = export_graphviz(decision_tree_model, filled=True, rounded=True, class_names=categorical_values, feature_names=data.columns, out_file=None)
+        graph = graph_from_dot_data(dot_data)                 # Create graph from dot data
+        graph.write_png('decision_tree.png')                  # Write graph to PNG image
+        
     @classmethod
     def vis_features_acc(cls):
         """
