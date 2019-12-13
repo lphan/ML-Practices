@@ -6,4 +6,6 @@ statsmodels>=0.8.0
 tensorflow>=1.4.1
 Keras>=2.1.2
 matplotlib>=2.1.2
+cartopy>=0.17.0
 pyspark>=2.3.0
+dask>=2.6.0

@@ -13,8 +13,11 @@ __author__ = 'Long Phan'
 
 
 import configparser
+import dask
+import dask.dataframe as dd
 import pandas as pd
 import numpy as np
+from dask.delayed import delayed
 from sklearn.preprocessing import Imputer
 from sklearn.decomposition import TruncatedSVD
 
@@ -943,75 +946,3 @@ class StartML(object):
             run data processing pipeline
         """
         pass
-
-    @staticmethod
-    def import_data():
-        """
-        Description: 
-            read data from data_set .csv and convert them into Pandas Data Frame and append them into a list
-
-        References:
-            https://docs.python.org/3/library/codecs.html#standard-encodings
-        """
-        StartML._arguments()
-        if not StartML.kwargs:
-            return
-
-        df = []
-        try:
-            if StartML.kwargs['data_path']:
-                paths = StartML.kwargs['data_path'].split(',')
-                for path in paths:
-
-                    # remove space before and after string
-                    path = path.strip()
-
-                    # Delimiter processing
-                    if path.endswith('.xlsx') or path.endswith('.xls'):
-                        data_exl = pd.read_excel(path)
-                        df.append(data_exl)
-                    elif path.endswith('.json'):
-                        data_json = pd.read_json(path)
-                        df.append(data_json)
-                    elif path.endswith('.csv'):
-                        data_csv = pd.read_csv(path, low_memory=False)
-                        df.append(data_csv)
-                    else:
-                        print('Unknown format')
-                        return
-            else:
-                print("Data is not given")
-                return
-
-        except FileNotFoundError as fe:
-            print("\nFileNotFoundError, data does not exist", fe)
-            # raise
-            import sys
-            sys.exit(1)
-
-        return df
-
-    @staticmethod
-    def info_help():
-
-        return {
-            "info_help_StartML": StartML.__name__,
-            "StartML.kwargs": "Show key words arguments from config.ini",
-            "StartML.summary(data)": StartML.summary.__doc__,
-            "StartML.pre_processing_columns(data)": StartML.process_nan_columns.__doc__,
-            "StartML.pre_processing_rows(data)": StartML.process_nan_rows.__doc__,
-            "StartML.nan_columns(data)": StartML.nan_columns.__doc__,
-            "StartML.nan_rows(data)": StartML.nan_rows.__doc__,
-            "data": idata.__class__
-        }
-
-
-idata = []
-for dat in StartML.import_data():
-    if isinstance(dat, pd.DataFrame):
-        dat.columns = [col.strip() for col in dat.columns]
-        idata.append(dat)
-
-info_ml = StartML.info_help()
-
-StartML.__doc__

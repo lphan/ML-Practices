@@ -265,8 +265,9 @@ class StartVis(StartML):
     def vis_basemap(cls, data, magnitude=False):
         """
         Visual the Geo-coordinates Latitude Longitude
+        Notes: Basemap is deprecated. Cartopy is the replaceable package.
         References:
-            https://matplotlib.org/basemap/
+            https://matplotlib.org/basemap/users/intro.html
 
         :param data: pandas.core.frame.DataFrame (with geospatial coordinates 'Longitude' and 'Latitutde'
         :return:
