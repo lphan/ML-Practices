@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2018
+# Copyright (c) 2019
 #
 # This software is licensed to you under the GNU General Public License,
 # version 2 (GPLv2). There is NO WARRANTY for this software, express or
@@ -45,6 +45,7 @@ from sklearn.linear_model import ElasticNet
 # from sklearn.pipeline import make_pipeline
 # from sklearn.ensemble.partial_dependence import plot_partial_dependence
 
+import numpy as np
 import statsmodels.formula.api as sm
 
 
@@ -92,7 +93,7 @@ class StartMod(StartML):
             This encoding is needed for feeding categorical data to many scikit-learn estimators,
             notably linear models and SVMs with the standard kernels.
 
-        # References:
+        References:
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html
 
@@ -179,7 +180,7 @@ class StartMod(StartML):
         Description:
             split data by rows into training_data and test_data used for (regression, classification) methods
 
-        # References:
+        References:
             https://machinelearningmastery.com/difference-test-validation-datasets/
             http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.train_test_split.html
             
@@ -286,7 +287,7 @@ class StartMod(StartML):
             support the evaluation on (regression) models by finding maximal p_value (< pre-defined SL)
             and applying method Backward Elimination for feature selection
 
-        # References:
+        References:
             http://www.stephacking.com/multivariate-linear-regression-python-step-6-backward-elimination/
 
         :param data: pandas.core.frame.DataFrame
@@ -348,7 +349,7 @@ class StartMod(StartML):
             of a standard normal distribution with a mean of 0 and a standard deviation of 1
 
 
-        # References:
+        References:
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html
             http://scikit-learn.org/stable/auto_examples/preprocessing/plot_scaling_importance.html
@@ -416,7 +417,7 @@ class StartMod(StartML):
             function to simplify feature selection and dimensionality reduction respectively
             apply Backward Elimination, Forward Selection, Bidirectional Elimination, Score comparision
 
-        # References:
+        References:
             http://scikit-learn.org/stable/modules/feature_selection.html
 
         :param data: pandas.core.frame.DataFrame
@@ -485,7 +486,7 @@ class StartMod(StartML):
         """
         Description: benefit on low-memory and speed up the performance
 
-        # References:
+        References:
             http://scikit-learn.org/stable/modules/feature_extraction.html
             http://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.FeatureHasher.html
 
@@ -536,7 +537,7 @@ class StartMod(StartML):
         """
         Description: renew data with new_feature using the new attributes_new_feature
 
-        # References:
+        References:
             https://triangleinequality.wordpress.com/2013/09/08/basic-feature-engineering-with-the-titanic-data/
 
         :param data: pandas.core.frame.DataFrame
@@ -613,7 +614,7 @@ class StartMod(StartML):
 
         3. Elastic Net Regression
 
-        # References:
+        References:
             https://www.analyticsvidhya.com/blog/2017/06/a-comprehensive-guide-for-linear-ridge-and-lasso-regression/
             https://www.analyticsvidhya.com/blog/2016/01/complete-tutorial-ridge-lasso-regression-python/
             https://codingstartups.com/practical-machine-learning-ridge-regression-vs-lasso/
@@ -729,7 +730,7 @@ class StartMod(StartML):
             Regression models: 
                 Mean absolute error, Mean Squared error and R2 score
 
-        # References:
+        References:
             https://medium.com/acing-ai/how-to-evaluate-regression-models-d183b4f5853d
             http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics
             http://scikit-learn.org/stable/modules/model_evaluation.html#model-evaluation
@@ -775,7 +776,7 @@ class StartMod(StartML):
             - Try decreasing regularization parameter
             - Try increasing regularization parameter
 
-        # References:
+        References:
             http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.KFold.html
             http://scikit-learn.org/stable/modules/cross_validation.html
             http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.cross_val_score.html

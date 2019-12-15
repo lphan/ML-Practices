@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2018
+# Copyright (c) 2019
 #
 # This software is licensed to you under the GNU General Public License,
 # version 2 (GPLv2). There is NO WARRANTY for this software, express or
@@ -38,40 +38,7 @@ class StartML(object):
 
     def __init__(self):
         pass
-
-    @staticmethod
-    def _arguments():
-        """
-        Description: read config-parameters from local file config.ini
-        """
-
-        # key words arguments which contains all values from config.ini
-        try:
-            config = configparser.ConfigParser()
-            config.read('config.ini')
-        except IOError:
-            print("Error open file config.ini")
-            return
-
-        # pass data from config file to local var
-        data_path = config['paths']['data_path']
-
-        exclude_obj_col = config.getboolean('StartML', 'exclude_object_column')
-        nan_drop_col = config.getboolean('StartML', 'nan_drop_column')
-        nan_drop_row = config.getboolean('StartML', 'nan_drop_row')
-        nan_zero = config.getboolean('StartML', 'nan_zero')
-        nan_mean = config.getboolean('StartML', 'nan_mean')
-        nan_mean_neighbors = config.getboolean('StartML', 'nan_mean_neighbors')
-
-        StartML.kwargs.update({"data_path": data_path,
-                               "drop_obj_col": exclude_obj_col,
-                               "nan_drop_col": nan_drop_col,
-                               "nan_drop_row": nan_drop_row,
-                               "nan_zero": nan_zero,
-                               "nan_mean": nan_mean,
-                               "nan_mean_neighbors": nan_mean_neighbors})
-        print("local_kwargs", StartML.kwargs)
-
+    
     @classmethod
     def convert_time_series(cls, data, time_column, format=None, add_day=False):
         """

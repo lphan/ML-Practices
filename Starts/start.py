@@ -48,12 +48,12 @@ class Start(object):
         # pass data from config file to local var
         data_path = config['paths']['data_path']
 
-        exclude_obj_col = config.getboolean('StartML', 'exclude_object_column')
-        nan_drop_col = config.getboolean('StartML', 'nan_drop_column')
-        nan_drop_row = config.getboolean('StartML', 'nan_drop_row')
-        nan_zero = config.getboolean('StartML', 'nan_zero')
-        nan_mean = config.getboolean('StartML', 'nan_mean')
-        nan_mean_neighbors = config.getboolean('StartML', 'nan_mean_neighbors')
+        exclude_obj_col = config.getboolean('Start', 'exclude_object_column')
+        nan_drop_col = config.getboolean('Start', 'nan_drop_column')
+        nan_drop_row = config.getboolean('Start', 'nan_drop_row')
+        nan_zero = config.getboolean('Start', 'nan_zero')
+        nan_mean = config.getboolean('Start', 'nan_mean')
+        nan_mean_neighbors = config.getboolean('Start', 'nan_mean_neighbors')
 
         Start.kwargs.update({"data_path": data_path,
                                "drop_obj_col": exclude_obj_col,
@@ -145,7 +145,7 @@ class Start(object):
 
         return df
 
-    
+# Pre-Initialized the object idata    
 idata = []
 for dat in Start.import_data():
     # if isinstance(dat, pd.DataFrame):

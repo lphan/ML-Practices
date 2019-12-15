@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2018
+# Copyright (c) 2019
 #
 # This software is licensed to you under the GNU General Public License,
 # version 2 (GPLv2). There is NO WARRANTY for this software, express or
@@ -18,9 +18,12 @@ from math import sqrt
 from Starts.startmod import *
 from Starts.startmod import StartMod
 from keras.models import Sequential
+from keras.wrappers.scikit_learn import KerasClassifier
 from keras.layers import Dense, Flatten, Conv1D, Dropout, LSTM
 from keras.optimizers import SGD
 from keras.initializers import random_uniform
+from sklearn.model_selection import StratifiedKFold
+from sklearn.model_selection import GridSearchCV
 
 
 class StartModTF(StartMod):
@@ -42,7 +45,16 @@ class StartModTF(StartMod):
     def __init__(self, n_classes, dependent_label):
         """
         Description: init parameters for neuron network
-        :param dependent_label: target_feature
+        
+        Reducing Overfitting:
+            regularization for neural network: L1, L2
+            dropout regularization: shrink weights
+            other regularization: data augmentation, early stopping
+            
+        Choose NN architectures: RNN, CNN, others
+
+        :param n_classes: number of classes
+        :param dependent_label: target_feature  
 
         References:
             https://keras.io/losses/
@@ -61,9 +73,8 @@ class StartModTF(StartMod):
         self.drop_out_rate = 0.2
         self.rec_drop_out = 0.2
 
-        # Batch_size is used for mini-batch GD, corresponds with available system memory capacity
-        # to avoid out_of_memory_error,
-        # batch_size: small for many features, big for performance and whole data set as once = stochastic GD
+        # Batch_size is used for mini-batch GD, corresponds with available system memory capacity to avoid out_of_memory_error,
+        # Batch_size: small for many features, big for performance and whole data set as once = stochastic GD
         self.batch_size = 10                # default batch_size 10
 
         self.nr_epochs = 1                  # default number of epochs 1 (for large dataset) and 10 (for small dataset)
@@ -79,14 +90,7 @@ class StartModTF(StartMod):
         self.n_filters = 1
         self.n_padding = 1
         self.n_strides = 1
-        self.momentum = 0.2  # Optimizer parameter
-
-        # Reducing Overfitting:
-        #   regularization for neural network: L1, L2
-        #   dropout regularization: shrink weights
-        #   other regularization: data augmentation, early stopping
-        #
-        # Choose NN architectures: RNN, CNN, others
+        self.momentum = 0.2  # Optimizer parameter      
 
     def _get_attributes(self):
         """
@@ -175,7 +179,7 @@ class StartModTF(StartMod):
         """
         Description: input function for training
 
-        # References:
+        References:
             https://github.com/tensorflow/models/blob/master/samples/core/get_started/iris_data.py
 
         :param features:
@@ -189,7 +193,6 @@ class StartModTF(StartMod):
         #
         #   dataset = tf.data.Dataset.from_tensor_slices(tensors)
         #
-        # # Shuffle, repeat, and batch the examples.
         # return dataset.shuffle(1000).repeat().batch(batch_size)
         return tf.estimator.inputs.pandas_input_fn(x=features, y=dependent_label, batch_size=batch_size,
                                                    num_epochs=nr_epochs, shuffle=True)
@@ -199,7 +202,7 @@ class StartModTF(StartMod):
         """
         Description: input function for evaluation
 
-        # References:
+        References:
             https://www.tensorflow.org/api_docs/python/tf/estimator/inputs/pandas_input_fn
 
         :param features:
@@ -229,7 +232,7 @@ class StartModTF(StartMod):
         """
         Description: setup feature columns into TensorFlow format (numeric, bucketized, hash_bucket)
 
-        # References:
+        References:
             https://www.tensorflow.org/get_started/feature_columns
 
         :param self:
@@ -329,23 +332,21 @@ class StartModTF(StartMod):
         """
         Description: apply pre-made Estimator to classify data
 
-        # References:
+        References:
             https://www.tensorflow.org/api_docs/python/tf/contrib/learn/LinearClassifier
             https://www.tensorflow.org/api_docs/python/tf/contrib/learn/DNNClassifier
 
         :param data: pandas.core.frame.DataFrame
-        :param dependent_label:
+        :param dependent_label: target label
         :param model_lin: default is LinearClassifier
         :return: LinearClassifier object (DNNClassifier object), y_test, y_predict
         """
-        if dependent_label is None:
-            print("Please choose other method as Clustering to process data\n")
-            return
-
+        
         # print(self.data.columns)
         # fea_cols = [tf.feature_column.numeric_column(key=fea) for fea in self.data.columns]
 
-        x_train, x_test, y_train, y_test = self.split_data(data, dependent_label)
+        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label=self.dependent_label)
+        
         if self.feature_scl:
             x_train = StartMod.feature_scaling(x_train, type_pd=True)
             x_test = StartMod.feature_scaling(x_test, type_pd=True)
@@ -381,20 +382,46 @@ class StartModTF(StartMod):
         # show metrics report
         # final_pred = [pred['class_ids'][0] for pred in list(result_predict)]
         # StartMod.metrics_report(self.y_test.values, final_pred)
-        # print(type(self.y_test))
         # convert y_predict into numeric_values, Convert the predicted value y_pred and show the metrics_report
         final_pred = [pred['class_ids'][0] for pred in list(y_predict)]
 
         # self.data['predicted'] = y_predict
         return classifier, y_test, final_pred
+    
+    def evaluateTuneParameters(self, model, data):
+        """
+        Description: 
+            Use Grid_Search and StratifiedKFold to evaluate different configurations of Neural network to check
+            which combination of optimizer, schema, epochs, batches deliver best result. 
+            Therefore, we are able to tune these hyper_parameters accordingly
+        :param model: trained model
+        :param data: pandas.core.frame.DataFrame
+        """
+        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label=self.dependent_label)
 
-    @classmethod
-    def regularization_nn(cls):
-        """
-        e.g. Dropout to prevent Neural Networks from Overfitting
-            Grid_Search to tune the hyper_parameter
-        """
-        pass
+        optimizers = ['rmsprop', 'adam']
+        schemas = ['glorot_uniform', 'normal', 'uniform']
+        epochs = [50, 100, 150]
+        batches = [5, 10, 20]
+        param_grid = dict(optimizer=optimizers, epochs=epochs, batch_size=batches, init=schemas)
+
+        # Apply GridSearchCV 
+        grid = GridSearchCV(estimator=model, param_grid=param_grid, cv=10)
+        grid_result = grid.fit(x_train, y_train)
+        
+        print("Best: %f using %s" % (grid_result.best_score_, grid_result.best_params_))
+
+        means = grid_result.cv_results_['mean_test_score']
+        stds = grid_result.cv_results_['std_test_score']
+        params = grid_result.cv_results_['params']
+        for mean, stdev, param in zip(means, stds, params):
+            print("GridSearchCV - Mean: %f, Standard deviation: %f, Parameter: %r" % (mean, stdev, param))
+
+        # Apply StratifiedKFold to perform the evaluation using 10-fold cross validation
+        model = KerasClassifier(build_fn=model, param_grid=param_grid, verbose=0)        
+        kfold = StratifiedKFold(n_splits=10, shuffle=True)
+        results = cross_val_score(model, x_train, y_train, cv=kfold)
+        print("StratifiedKFold - results Mean Value: %2f" % results.mean())
 
     @classmethod
     def auto_encoder(cls):
@@ -444,7 +471,7 @@ class StartModTFANN(StartModTF):
         """
         Description: setup Keras and run the Sequential method to predict value
 
-        # References:
+        References:
             https://keras.io/getting-started/sequential-model-guide/
             https://stackoverflow.com/questions/44747343/keras-input-explanation-input-shape-units-batch-size-dim-etc#
 
@@ -494,7 +521,7 @@ class StartModTFANN(StartModTF):
         # Fit the keras_model to the training_data and see the real time training of model on data with result of loss
         # and accuracy. The smaller batch_size and higher epochs, the better the result. However, slow_computing!
         print(x_train.shape, y_train.shape)
-        model.fit(x_train, y_train, batch_size=self.batch_size, epochs=self.nr_epochs)
+        model.fit(x_train, y_train, validation_split=0.3, batch_size=self.batch_size, epochs=self.nr_epochs)
 
         # Predictions and evaluating the model
         y_pred = model.predict(x_eval)
@@ -502,6 +529,12 @@ class StartModTFANN(StartModTF):
         # Evaluate the model
         scores, accuracy = model.evaluate(x_train, y_train)
         print("\nModel %s: Scores: %.2f%%, Accuracy: %.2f%%" % (model, scores*100, accuracy*100))
+
+        # make class predictions with the model
+        predictions = model.predict_classes(x_eval)
+        # summarize the first 5 cases
+        for i in range(5):
+            print('%s => %d (expected %d)' % (x_eval[i].tolist(), predictions[i], y_eval[i]))
 
         return model, y_eval, y_pred
 

@@ -38,7 +38,7 @@ __author__ = 'Long Phan'
 
 > Visualization: Matplotlib, Seaborn
 
-> Big Data tools: Spark
+> Big Data/ Parallel: Dask, Spark
 
 > Database: MongoDB
 

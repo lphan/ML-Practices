@@ -1,11 +1,13 @@
-pandas==0.22.0
+xarray>=0.13.0
+pandas>=0.22.0
 numpy>=1.13.3
-scipy==1.0.0
+scipy>=1.0.0
 scikit-learn>=0.19.1
 statsmodels>=0.8.0
 tensorflow>=1.4.1
 Keras>=2.1.2
 matplotlib>=2.1.2
-cartopy>=0.17.0
+Cartopy>=0.17.0
 pyspark>=2.3.0
 dask>=2.6.0
+xgboost>=0.90

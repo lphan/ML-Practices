@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (c) 2018
+# Copyright (c) 2019
 #
 # This software is licensed to you under the GNU General Public License,
 # version 2 (GPLv2). There is NO WARRANTY for this software, express or
@@ -18,7 +18,7 @@ __author__ = 'Long Phan'
 import matplotlib.pyplot as plt
 from mpl_toolkits.basemap import Basemap
 from mpl_toolkits.mplot3d import Axes3D
-from pd.plotting import scatter_matrix
+from pandas.plotting import scatter_matrix
 from matplotlib.pylab import rcParams
 from pydotplus.graphviz import graph_from_dot_data
 from sklearn.tree import export_graphviz
