@@ -4,6 +4,7 @@ import dask
 import dask.dataframe as dd
 import pandas as pd
 import numpy as np
+
 from dask.delayed import delayed
 
 from pickle import dump
@@ -11,6 +12,7 @@ from pickle import load
 
 from sklearn.externals.joblib import dump as joblib_dump
 from sklearn.externals.joblib import load as joblib_load
+from sklearn.utils import shuffle
 
 from pip._internal.operations.freeze import freeze
 
@@ -23,7 +25,7 @@ class Start(object):
 
     Start: 
         jupyter notebook
-        -> from startml import *
+        -> from start import *
         -> info_help
     """
     # init keywords arguments
@@ -31,6 +33,7 @@ class Start(object):
 
     def __init__(self):
         pass
+
     @staticmethod
     def _arguments():
         """
@@ -63,7 +66,7 @@ class Start(object):
                                "nan_mean": nan_mean,
                                "nan_mean_neighbors": nan_mean_neighbors})
         print("local_kwargs", Start.kwargs)
-
+    
     @classmethod
     def saveModel(cls, model, filename, joblib=False):
         # Find and export the Python version and Library version 

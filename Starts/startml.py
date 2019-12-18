@@ -17,12 +17,13 @@ import dask
 import dask.dataframe as dd
 import pandas as pd
 import numpy as np
+from Starts.start import *
 from dask.delayed import delayed
 from sklearn.preprocessing import Imputer
 from sklearn.decomposition import TruncatedSVD
 
 
-class StartML(object):
+class StartML(Start):
     """
     Description: StartML - Start Machine Learning
     Import parameters from config.ini and execute basic pre_processing operations
@@ -33,9 +34,7 @@ class StartML(object):
         -> from startml import *
         -> info_help
     """
-    # init keywords arguments
-    kwargs = {}
-
+    
     def __init__(self):
         pass
     
@@ -212,7 +211,7 @@ class StartML(object):
         pass
 
     @classmethod
-    def groupby_columns(cls, data, columns, groupby_label, func=None, classification=False):
+    def groupby_columns(cls, data, groupby_label, columns=None, func=None, classification=False):
         """
         Description: execute operation group_by on columns by label_groupby
             e.g. compute mean value by column 'day'
@@ -228,11 +227,12 @@ class StartML(object):
         :return: dict-object (which can be used to compute further)
         """
         grouped = data.groupby(groupby_label)
-        if classification:
-            print(data.groupby(groupby_label).size())
+        # if classification:
+        #     print(data.groupby(groupby_label).size())
 
         if func is None:
-            return grouped.groups
+            # return grouped.groups
+            return grouped
         else:
             # return grouped.aggregate(func)
             return grouped[columns].agg(func)
@@ -644,7 +644,7 @@ class StartML(object):
         :return: list of all possible NaN_column(s)
         """
         nan_bool = data.isnull().any()
-        if isinstance(data, pd.DataFrame):
+        if isinstance(data, dask.dataframe.core.DataFrame):
             key_test = [key for key, value in nan_bool.iteritems() if value]
             return key_test
         else:
@@ -660,10 +660,10 @@ class StartML(object):
         :param nan: Boolean-input True to search for NaN values, False for not_NaN
         :return: data with all possible found NaN_rows or not_NaN_rows (if nan=False)
         """
-        if isinstance(data, pd.DataFrame) and nan:
+        if isinstance(data, dask.dataframe.core.DataFrame) and nan:
             return data[data.isnull().any(axis=1)]
 
-        elif isinstance(data, pd.DataFrame) and not nan:
+        elif isinstance(data, dask.dataframe.core.DataFrame) and not nan:
             return data[data.notnull().any(axis=1)].dropna(axis=0, how='any')
 
         else:
@@ -702,35 +702,37 @@ class StartML(object):
         :param data: pandas.core.frame.DataFrame
         :return: data after pre-processing
         """
-
+        # find columns containing NaN-value
         nan_cols = cls.nan_columns(data)
+                       
+        # if nan_cols and Start.kwargs['drop_obj_col']:            
+        #     # drop all columns with type object if all values are NA, drop that label
+        #     data = data.dropna(how='all')
+        #     # return data.select_dtypes(exclude=object)
+        #     return data
 
-        # Drop the columns where all elements are nan
-        data = data.dropna(axis=1, how='all')
-
-        if nan_cols and StartML.kwargs['drop_obj_col']:
-            # drop all columns with type object
-            return data.select_dtypes(exclude=object)
-
-        elif nan_cols and StartML.kwargs['nan_drop_col']:
-
+        if nan_cols and Start.kwargs['nan_drop_col']:
             # drop all nan_columns, axis : {0 or 'index (rows)', 1 or 'columns'}
+            print("-> Drop all columns: ", nan_cols)   
             return data.drop(nan_cols, axis=1)
 
-        elif nan_cols and StartML.kwargs['nan_zero']:
-
+        elif nan_cols and Start.kwargs['nan_zero']:
             # convert nan_value in column into zero_value (WARNING: columns in dtypes float64, int64), axis=1
             for nan_col in nan_cols:
                 if data[nan_col].dtype == np.float64 or data[nan_col].dtype == np.int64:
-                    data[nan_col] = data[nan_col].replace(to_replace=np.NaN, value=0)
+                    print("-> Replace NaN value by value 0 at column: ", nan_col)                    
+                    data[nan_col] = data[nan_col].mask(data == np.NaN, 0)
             return data
 
-        elif nan_cols and StartML.kwargs['nan_mean']:
+        elif nan_cols and Start.kwargs['nan_mean']:
             # convert nan into mean_value of column (WARNING: only suitable for columns in dtypes float64, int64)
             for nan_col in nan_cols:
                 if data[nan_col].dtype == np.float64 or data[nan_col].dtype == np.int64:
-                    # data[nan_col] = data[nan_cols].groupby(nan_col).mean()
-                    data[nan_col] = data[nan_col].replace(to_replace=np.NaN, value=np.mean(data[nan_col]))
+                    print("-> Replace NaN value by mean-value at column: ", nan_col)                    
+                    data[nan_col] = data[nan_col].mask(data == np.NaN, np.mean(data[nan_col]))
+                elif data[nan_col].dtype == np.object:
+                    print("-> Drop column: ", nan_col)
+                    data = data.drop(nan_col, axis=1)
             return data
 
         else:
@@ -753,14 +755,14 @@ class StartML(object):
         # drop the duplicates rows
         data = data.drop_duplicates()
 
-        if not nan_rows.empty and StartML.kwargs['nan_drop_row']:
+        if not nan_rows.empty and Start.kwargs['nan_drop_row']:
             # Drop the rows where all elements are nan
             data = data.dropna(axis=0, how='all')
 
             # Drop row if it does not have at least two values that are **not** NaN
             return data.dropna(thresh=2)
 
-        elif not nan_rows.empty and StartML.kwargs['nan_zero']:
+        elif not nan_rows.empty and Start.kwargs['nan_zero']:
 
             # convert nan in row into zero_value, axis=0
             for nan_col in nan_cols:
@@ -768,7 +770,7 @@ class StartML(object):
                     data[nan_col] = data[nan_col].replace(to_replace=np.NaN, value=0)
             return data
 
-        elif not nan_rows.empty and StartML.kwargs['nan_mean']:
+        elif not nan_rows.empty and Start.kwargs['nan_mean']:
 
             for nan_col in nan_cols:
                 if data[nan_col].dtype == np.float64 or data[nan_col].dtype == np.int64:
@@ -780,7 +782,7 @@ class StartML(object):
                     data[nan_col] = imputer.transform(data[nan_col].values.reshape(1, -1))[0]
             return data
 
-        elif not nan_rows.empty and StartML.kwargs['nan_mean_neighbors']:
+        elif not nan_rows.empty and Start.kwargs['nan_mean_neighbors']:
 
             for nan_col in nan_cols:
                 if data[nan_col].dtype == np.float64 or data[nan_col].dtype == np.int64:
@@ -799,7 +801,7 @@ class StartML(object):
     def process_nan_simply(cls, data, nan_column=None):
         """
         Description: 
-            simply process all nan-value by replacing with 'Unknown'
+            simply process all nan-value filled by 'Unknown'
 
         :param data: pandas.core.frame.DataFrame
         :param nan_column: single NaN_column
@@ -896,14 +898,14 @@ class StartML(object):
         
         :param data: pandas.core.frame.DataFrame
         """
-        print("\nData Columns: {}".format(data.columns), "\n")
+        print("\Data type: {}".format(type(data)), "\n")
+        print("Data Columns: {}".format(data.columns), "\n")
         print("Missing values in Data: \n{}".format(data.isnull().sum()), "\n")
         print("Raw Data first look at data: \n{}".format(data.head(10)), "\n")
         print("Dimension of Data: \n{}".format(data.shape), "\n")
         print("Data Type for Attribute: \n{}".format(data.dtypes), "\n")
         print("Data Information: \n{}".format(data.info()), "\n")
-        print("Descriptive Statistics (Count, Mean, Standard Deviation, Minimum-, (25, 50, 75) Percentile, -Maximum): \n{}".format(data.describe()), "\n")
-        print("Skew of Univariante Distributions: \n{}".format(data.skew()), "\n")
+        print("Descriptive Statistics (Count, Mean, Standard Deviation, Minimum-, (25, 50, 75) Percentile, -Maximum): \n{}".format(data.describe()), "\n")        
         print(StartML.nan_summary(data))
 
     @staticmethod

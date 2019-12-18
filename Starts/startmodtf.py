@@ -19,11 +19,15 @@ from Starts.startmod import *
 from Starts.startmod import StartMod
 from keras.models import Sequential
 from keras.wrappers.scikit_learn import KerasClassifier
+from keras.wrappers.scikit_learn import KerasRegressor
 from keras.layers import Dense, Flatten, Conv1D, Dropout, LSTM
 from keras.optimizers import SGD
 from keras.initializers import random_uniform
+from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import GridSearchCV
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
 
 
 class StartModTF(StartMod):
@@ -66,10 +70,10 @@ class StartModTF(StartMod):
         self.output_units = 1
 
         self.optimizer = "Adagrad"          # default Adaptive Gradients Optimizer. Optional: AdaDelta, Adam
-        self.activation_fn = "relu"         # default 'relu' function
+        self.activation_fn = "relu"         # default 'relu' function. Optional: softmax, sigmoid
         self.learning_rate = 0.001          # default 0.001 -> 0.01 -> 0.1
         self.steps = 1000                   # default training_steps 1000
-        self.loss = 'mean_squared_error'    # option: binary_crossentropy, categorical_crossentropy, mean_absolute_error
+        self.loss = 'mean_squared_error'    # option: binary_crossentropy, categorical_crossentropy (multi_labels), mean_absolute_error
         self.drop_out_rate = 0.2
         self.rec_drop_out = 0.2
 
@@ -388,7 +392,7 @@ class StartModTF(StartMod):
         # self.data['predicted'] = y_predict
         return classifier, y_test, final_pred
     
-    def evaluateTuneParameters(self, model, data):
+    def evaluateTuneParameters(self, model, data, pipeline=False, regression=False):
         """
         Description: 
             Use Grid_Search and StratifiedKFold to evaluate different configurations of Neural network to check
@@ -417,11 +421,27 @@ class StartModTF(StartMod):
         for mean, stdev, param in zip(means, stds, params):
             print("GridSearchCV - Mean: %f, Standard deviation: %f, Parameter: %r" % (mean, stdev, param))
 
-        # Apply StratifiedKFold to perform the evaluation using 10-fold cross validation
-        model = KerasClassifier(build_fn=model, param_grid=param_grid, verbose=0)        
-        kfold = StratifiedKFold(n_splits=10, shuffle=True)
-        results = cross_val_score(model, x_train, y_train, cv=kfold)
-        print("StratifiedKFold - results Mean Value: %2f" % results.mean())
+        if pipeline: 
+            # Evaluate model with standardized dataset using Pipeline
+            estimators = []
+            estimators.append(('standardize', StandardScaler()))
+            if regression:
+                estimators.append(('mlp', KerasRegressor(build_fn=model, param_grid=param_grid, verbose=0)))
+            else:
+                estimators.append(('mlp', KerasClassifier(build_fn=model, param_grid=param_grid, verbose=0)))
+            pipeline = Pipeline(estimators)
+            kfold = StratifiedKFold(n_splits=10, shuffle=True)
+            results = cross_val_score(pipeline, x_train, y_train, cv=kfold)
+        else: 
+            # Apply StratifiedKFold to perform the evaluation using 10-fold cross validation
+            if regression:
+                model = KerasRegressor(build_fn=model, param_grid=param_grid, verbose=0)
+            else:
+                model = KerasClassifier(build_fn=model, param_grid=param_grid, verbose=0)        
+            kfold = StratifiedKFold(n_splits=10, shuffle=True)
+            results = cross_val_score(model, x_train, y_train, cv=kfold)
+
+        print("StratifiedKFold - Accuracy: %.2f%% (%.2f%%)" % (results.mean()*100, results.std()*100))
 
     @classmethod
     def auto_encoder(cls):
@@ -506,8 +526,8 @@ class StartModTFANN(StartModTF):
             model.add(Dense(activation=self.activation_fn, units=hidden_units[i], kernel_initializer=hidden_initializer))
 
         # Adding the output layer (in case of there's only one dependent_label),
-        # n_classes = 2 (binary), then activation function is chosen as sigmoid function
-        # n_classes > 2 (not binary), then activation function is chosen as softmax function
+        # n_classes = 2 (binary), then activation function = sigmoid
+        # n_classes > 2 (not binary), then activation function = softmax
         if self.n_classes == 2:
             output_activation = "sigmoid"
         else:
@@ -515,8 +535,8 @@ class StartModTFANN(StartModTF):
 
         model.add(Dense(units=self.output_units, kernel_initializer=hidden_initializer, activation=output_activation))
 
-        # Compiling the ANN with optimizer='adam'
-        model.compile(optimizer='adam', loss=self.loss, metrics=['accuracy'])
+        # Compiling the ANN: optional optimizer='adam', loss='categorical_crossentropy'
+        model.compile(optimizer=self.optimizer, loss=self.loss, metrics=['accuracy'])
 
         # Fit the keras_model to the training_data and see the real time training of model on data with result of loss
         # and accuracy. The smaller batch_size and higher epochs, the better the result. However, slow_computing!
@@ -830,7 +850,7 @@ class StartModTFRNN(StartModTF):
         """
         pass
 
-# Example: How to update parameters
+# Example: How to update/ tune hypeparameters - structure of the network: make it smaller and make it larger
 # new_param = {'input_units': 1000, 'hidden_units': [500, 250], 'output_units': 3, 'optimizer':'Adam',
 #             'activation_fn': 'relu', 'learning_rate': 0.0025,
 #             'steps': 5000, 'batch_size': 10, 'num_epochs': 100, 'feature_scl': True,

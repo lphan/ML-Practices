@@ -13,7 +13,7 @@ __author__ = 'Long Phan'
 
 
 from Starts.startml import *
-from Starts.startvis import *
+# from Starts.startvis import *
 from scipy.stats import uniform
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.preprocessing import StandardScaler
@@ -103,13 +103,12 @@ class StartMod(StartML):
         :return: data and x_values (the encoded data in type numpy.array)
         """
 
-        for label_col in label_columns:
-            try:
-                # Encode label only applies to Column in type Object
-                if data[label_col].dtype == np.float64 or data[label_col].dtype == np.int64:
-                    print("Type of label_column " + label_col + " is " + str(data[label_col].dtypes))
-            except ValueError:
-                return []
+        for label_col in label_columns:            
+            # Encode label only applies to Column in type Object
+            if data[label_col].dtype is not np.object:
+                print("Type of label_column " + label_col + " is " + str(data[label_col].dtype))
+            
+            return data
 
         x_values = data.values
         try:
@@ -872,7 +871,7 @@ class StartMod(StartML):
         print("\nMean of cross_validated scores: %.3f%%" % (scores.mean()*100.0))
         print("\nStandard Deviation of cross_validated scores : %.3f%%" % (scores.std()*100.0))     
 
-info_mod = StartMod.info_help()
+# info_mod = StartMod.info_help()
 
 # update parameters
 # new_param={'dependent_label': self.dependent_label}

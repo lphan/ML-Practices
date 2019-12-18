@@ -7,4 +7,5 @@ reports/
 .vscode/
 .idea/
 Starts/__pycache__/
+*/data/
 .ipynb_checkpoints/
