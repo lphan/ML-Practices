@@ -16,7 +16,8 @@ __author__ = 'Long Phan'
 # import plotly
 # import plotnine
 import matplotlib.pyplot as plt
-from mpl_toolkits.basemap import Basemap
+import numpy as np
+# from mpl_toolkits.basemap import Basemap  # DEPRECATED LIBRARY, REPLACED BY CARTOPY
 from mpl_toolkits.mplot3d import Axes3D
 from pandas.plotting import scatter_matrix
 from matplotlib.pylab import rcParams
@@ -83,7 +84,6 @@ class StartVis(StartML):
         :param rot: rotation (default = 0)
         :return:
         """
-
         grouped_data = StartML.groupby_columns(data, columns, gb_columns)  # dict-type
 
         # compute left and height for bar-chart
@@ -261,51 +261,54 @@ class StartVis(StartML):
         plt.title(title)
         plt.show()
 
-    @classmethod
-    def vis_basemap(cls, data, magnitude=False):
-        """
-        Visual the Geo-coordinates Latitude Longitude
-        Notes: Basemap is deprecated. Cartopy is the replaceable package.
-        References:
-            https://matplotlib.org/basemap/users/intro.html
+    """
+    DEPRECATED BASEMAP-MODULE, BEING REPLACED BY CARTOPY. TBD
+    """
+    # @classmethod
+    # def vis_basemap(cls, data, magnitude=False):
+    #     """
+    #     Visual the Geo-coordinates Latitude Longitude
+    #     Notes: Basemap is deprecated. Cartopy is the replaceable package.
+    #     References:
+    #         https://matplotlib.org/basemap/users/intro.html
 
-        :param data: pandas.core.frame.DataFrame (with geospatial coordinates 'Longitude' and 'Latitutde'
-        :return:
-        """
-        try:
-            latitude = data['Latitude'].tolist()
-            longitude = data['Longitude'].tolist()
-        except KeyError:
-            print("Coordinates data Latitude and Longitude not sufficient")
+    #     :param data: pandas.core.frame.DataFrame (with geospatial coordinates 'Longitude' and 'Latitutde'
+    #     :return:
+    #     """
+    #     try:
+    #         latitude = data['Latitude'].tolist()
+    #         longitude = data['Longitude'].tolist()
+    #     except KeyError:
+    #         print("Coordinates data Latitude and Longitude not sufficient")
 
-        if 'Magnitude' in data.columns:
-            mag = data['Magnitude'].tolist()
-        else:
-            mag = []
+    #     if 'Magnitude' in data.columns:
+    #         mag = data['Magnitude'].tolist()
+    #     else:
+    #         mag = []
 
-        earth = Basemap(projection='mill', resolution='c')
-        x, y = earth(longitude, latitude)
+    #     earth = Basemap(projection='mill', resolution='c')
+    #     x, y = earth(longitude, latitude)
 
-        plt.figure(figsize=(16, 14))
-        plt.title("Observation locations")
+    #     plt.figure(figsize=(16, 14))
+    #     plt.title("Observation locations")
 
-        if mag:
-            print("Scatter function ...")
-            size = [s**2 for s in mag]
-            earth.scatter(x, y, s=size, marker='.', color='red')
-        else:
-            print("Plot function ...")
-            earth.scatter(x, y, s=5, marker='x', color='red')
+    #     if mag:
+    #         print("Scatter function ...")
+    #         size = [s**2 for s in mag]
+    #         earth.scatter(x, y, s=size, marker='.', color='red')
+    #     else:
+    #         print("Plot function ...")
+    #         earth.scatter(x, y, s=5, marker='x', color='red')
 
-        # setup basemap
-        # earth.etopo(alpha=0.1)
-        # earth.bluemarble(alpha=0.42)
-        earth.drawcoastlines()
-        earth.fillcontinents(color='coral', lake_color='aqua')
-        earth.drawmapboundary()
-        earth.drawcountries()
+    #     # setup basemap
+    #     # earth.etopo(alpha=0.1)
+    #     # earth.bluemarble(alpha=0.42)
+    #     earth.drawcoastlines()
+    #     earth.fillcontinents(color='coral', lake_color='aqua')
+    #     earth.drawmapboundary()
+    #     earth.drawcountries()
 
-        plt.show()
+    #     plt.show()
 
     @classmethod
     def vis_3d_scatter(cls, data, features):

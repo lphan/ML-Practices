@@ -13,7 +13,7 @@ __author__ = 'Long Phan'
 
 
 from Starts.startml import *
-# from Starts.startvis import *
+from Starts.startvis import *
 from scipy.stats import uniform
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from sklearn.preprocessing import StandardScaler
@@ -340,7 +340,7 @@ class StartMod(StartML):
             return non_obj_feature, obj_feature
 
     @classmethod
-    def feature_scaling(cls, data, scale, feature_range=None, type_pd=True):
+    def feature_scaling(cls, data, scale='standard', feature_range=None):
         """
         Description: 
             - Minmax Rescaling is to normalize data value into the feature range between Min 0 and Max 1
@@ -355,13 +355,12 @@ class StartMod(StartML):
 
         :param data: pandas.core.frame.DataFrame or numpy.array
         :param feature_range: default (0,1)
-        :param type_pd: default True to convert data in Pandas Data-Frame
         :return: data in scaled format
         """
-        if type_pd:
+        if isinstance(data, dask.dataframe.core.DataFrame):
             # convert data in Pandas DataFrame, apply Min_Max method manually
-            data[data.columns] = data[data.columns].apply(lambda x: (x - x.min()) / (x.max() - x.min()))
-            return data
+            # data[data.columns] = data[data.columns].apply(lambda x: (x - x.min()) / (x.max() - x.min()), axis=1)
+            return data.apply(lambda x: (x - x.min()) / (x.max() - x.min()), axis=1)
           
         else:
             if scale is 'standard':

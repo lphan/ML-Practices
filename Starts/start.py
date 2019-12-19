@@ -140,9 +140,8 @@ class Start(object):
                 print("Data is not given")
                 return
 
-        except FileNotFoundError as fe:
-            print("\nFileNotFoundError, data does not exist", fe)
-            # raise
+        except (TypeError, OSError, FileNotFoundError):
+            print("Wrong Type Format of imported data")
             import sys
             sys.exit(1)
 

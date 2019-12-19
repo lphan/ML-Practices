@@ -849,7 +849,7 @@ class StartModSKL(StartMod):
     @staticmethod
     def info_help():
         info = {
-            "info_help_StartModSKL": StartMod.__name__,
+            "info_help_StartModSKL": StartModSKL.__name__,
             "StartModSKL.regression_linear": StartModSKL.regression_linear.__doc__,
             }
         # info.update(StartML.info_help())
@@ -857,4 +857,4 @@ class StartModSKL(StartMod):
         return info
 
 
-info_modskl = StartMod.info_help()
+info_modskl = StartModSKL.info_help()

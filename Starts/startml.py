@@ -729,7 +729,9 @@ class StartML(Start):
             for nan_col in nan_cols:
                 if data[nan_col].dtype == np.float64 or data[nan_col].dtype == np.int64:
                     print("-> Replace NaN value by mean-value at column: ", nan_col)                    
-                    data[nan_col] = data[nan_col].mask(data == np.NaN, np.mean(data[nan_col]))
+                    data[nan_col] = data[nan_col].mask(np.isnan(data[nan_col]), np.round_(data[nan_col].mean().compute(), 2))
+                    print("-> Replace NaN value by mean-value at column: RESULT SETUP")
+
                 elif data[nan_col].dtype == np.object:
                     print("-> Drop column: ", nan_col)
                     data = data.drop(nan_col, axis=1)
