@@ -64,6 +64,7 @@ class StartVis(StartML):
                 (data[column].value_counts() / len(data[column])).sort_index().plot.line()
             plt.title("Line Chart " + str(column) + " " + title)
 
+        plt.axvline(data.values.mean(), color='r')
         plt.xlabel(x_label)
         plt.ylabel(y_label)
         plt.xticks(rotation=rot)
@@ -100,11 +101,11 @@ class StartVis(StartML):
         plt.show()
 
     @classmethod
-    def vis_hist(cls, data, columns, x_label='', y_label='', title='', func_filter=None, rot=0):
+    def vis_hist(cls, data, columns, x_label='', y_label='', title='', func_filter=None, cumulative=False, bi=5, rot=0):
         """
         Description: Display Histogram of data and labels, with filter-function
 
-        :param data: pandas.core.frame.DataFrame
+        :param data: Pandas.core.series.Series
         :param columns: all column name
         :param func_filter: object type Pandas-Series
         :param x_label: label x_axis
@@ -116,11 +117,15 @@ class StartVis(StartML):
         """
 
         try:
+            if not isinstance(data, pd.core.series.Series):
+                data = pd.Series(data)
+
             if func_filter:
+                # plot multiple columns
                 for column in columns:
-                    data[func_filter][column].plot.hist()
+                    data[func_filter][column].plot.hist(cumulative=cumulative, bins=bi, label=column)
             else: 
-                data.hist()
+                data.hist(cumulative=cumulative, bins=bi)
 
             """ for column in columns:
                 if func_filter is None:

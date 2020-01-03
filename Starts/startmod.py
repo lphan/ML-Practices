@@ -12,6 +12,8 @@
 __author__ = 'Long Phan'
 
 
+import dask
+import pandas as pd
 from Starts.startml import *
 from Starts.startvis import *
 from scipy.stats import uniform
@@ -42,6 +44,7 @@ from sklearn.model_selection import RandomizedSearchCV
 from sklearn.linear_model import Ridge
 from sklearn.linear_model import Lasso
 from sklearn.linear_model import ElasticNet
+from scipy.stats import kurtosis, skew
 # from sklearn.pipeline import make_pipeline
 # from sklearn.ensemble.partial_dependence import plot_partial_dependence
 
@@ -347,21 +350,27 @@ class StartMod(StartML):
             - Standardization involves rescaling the features such that they have the properties
             of a standard normal distribution with a mean of 0 and a standard deviation of 1
 
-
         References:
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html
             http://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html
             http://scikit-learn.org/stable/auto_examples/preprocessing/plot_scaling_importance.html
 
-        :param data: pandas.core.frame.DataFrame or numpy.array
+        :param data: pandas.core.frame.DataFrame or dask.dataframe.core.DataFrame or numpy.array
         :param feature_range: default (0,1)
         :return: data in scaled format
         """
         if isinstance(data, dask.dataframe.core.DataFrame):
             # convert data in Pandas DataFrame, apply Min_Max method manually
             # data[data.columns] = data[data.columns].apply(lambda x: (x - x.min()) / (x.max() - x.min()), axis=1)
-            return data.apply(lambda x: (x - x.min()) / (x.max() - x.min()), axis=1)
-          
+            print(data.dtype)
+            func = lambda x: (x - x.min()) / (x.max() - x.min())
+            return data.apply(func, axis=1)
+
+        elif isinstance(data, pd.core.frame.DataFrame): 
+            print(type(data))
+            data[data.columns] = data[data.columns].apply(lambda x: (x - x.min()) / (x.max() - x.min()), axis=0)            
+            return data
+
         else:
             if scale is 'standard':
                 scaler = StandardScaler(copy=True, with_mean=True, with_std=True)
@@ -782,9 +791,8 @@ class StartMod(StartML):
             https://www.jeremyjordan.me/hyperparameter-tuning/
             http://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html
             http://scikit-learn.org/stable/modules/grid_search.html
-            https://www.youtube.com/watch?v=yoYA1MFpYRg&index=64&list=PLLssT5z_DsK-h9vYZkQkYNWcItqhlRJLN
-
-        :param model:
+            
+        :param model: trained model
         :param x_val: x_validation_feature_values
         :param y_val: y_validation_categorical_values
         :param classification_metrics: classification accuracy {Accuracy, Logistic Loss, Area under ROC Curve}
@@ -868,7 +876,11 @@ class StartMod(StartML):
         print("\nAccuracy")
         print("\nCross_validated scores: ", scores)        
         print("\nMean of cross_validated scores: %.3f%%" % (scores.mean()*100.0))
-        print("\nStandard Deviation of cross_validated scores : %.3f%%" % (scores.std()*100.0))     
+        print("\nStandard Deviation of cross_validated scores : %.3f%%" % (scores.std()*100.0))   
+
+        print( 'skewness of normal distribution (should be 0): {}'.format(skew(y_val)))        
+        print('Kurtosis for normal distribution (normal 0.0)', kurtosis(y_val, fisher = True))
+        print('Kurtosis for normal distribution Pearson’s definition is used (normal 3.0)', kurtosis(y_val, fisher = False)
 
 # info_mod = StartMod.info_help()
 

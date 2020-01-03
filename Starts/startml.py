@@ -18,7 +18,6 @@ import dask.dataframe as dd
 import pandas as pd
 import numpy as np
 from Starts.start import *
-from dask.delayed import delayed
 from sklearn.preprocessing import Imputer
 from sklearn.decomposition import TruncatedSVD
 
@@ -905,7 +904,7 @@ class StartML(Start):
         print("Missing values in Data: \n{}".format(data.isnull().sum()), "\n")
         print("Raw Data first look at data: \n{}".format(data.head(10)), "\n")
         print("Dimension of Data: \n{}".format(data.shape), "\n")
-        print("Data Type for Attribute: \n{}".format(data.dtypes), "\n")
+        print("Data Type for all Attributes/ features: \n{}".format(data.dtypes), "\n")
         print("Data Information: \n{}".format(data.info()), "\n")
         print("Descriptive Statistics (Count, Mean, Standard Deviation, Minimum-, (25, 50, 75) Percentile, -Maximum): \n{}".format(data.describe()), "\n")        
         print(StartML.nan_summary(data))
