@@ -12,7 +12,7 @@
 __author__ = 'Long Phan'
 # import pyqtgraph
 # import graphviz
-# import seaborn
+# import seaborn as sns
 # import plotly
 # import plotnine
 import matplotlib.pyplot as plt
@@ -40,7 +40,7 @@ class StartVis(StartML):
     """
 
     @classmethod
-    def vis_bar(cls, data, columns, x_label='', y_label='', title='', rot=0, bar=True):
+    def vis_bar(cls, data, columns, x_label='', y_label='', title='', legend_label='', rot=0, bar=True):
         """
         visualize the number of counted values in the given columns in bar-chart
 
@@ -68,7 +68,7 @@ class StartVis(StartML):
         plt.xlabel(x_label)
         plt.ylabel(y_label)
         plt.xticks(rotation=rot)
-        # plt.legend()
+        plt.legend([legend_label])
         plt.show()
 
     @classmethod
@@ -268,6 +268,7 @@ class StartVis(StartML):
 
     """
     DEPRECATED BASEMAP-MODULE, BEING REPLACED BY CARTOPY. TBD
+    See: https://geopandas.org/gallery/cartopy_convert.html#sphx-glr-gallery-cartopy-convert-py
     """
     # @classmethod
     # def vis_basemap(cls, data, magnitude=False):

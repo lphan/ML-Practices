@@ -71,7 +71,7 @@ class StartModTF(StartMod):
 
         self.optimizer = "Adagrad"          # default Adaptive Gradients Optimizer. Optional: AdaDelta, Adam
         self.activation_fn = "relu"         # default 'relu' function. Optional: softmax, sigmoid
-        self.learning_rate = 0.001          # default 0.001 -> 0.01 -> 0.1
+        self.learning_rate = 0.001          # default 0.001 -> 0.01 -> 0.1        
         self.steps = 1000                   # default training_steps 1000
         self.loss = 'mean_squared_error'    # option: binary_crossentropy, categorical_crossentropy (multi_labels), mean_absolute_error
         self.drop_out_rate = 0.2
@@ -82,6 +82,7 @@ class StartModTF(StartMod):
         self.batch_size = 10                # default batch_size 10
 
         self.nr_epochs = 1                  # default number of epochs 1 (for large dataset) and 10 (for small dataset)
+        self.decay_rate = self.learning_rate / self.nr_epochs   # after each update, the weights are multiplied by a factor slightly less than 1
         self.feature_scl = False            # default turn off feature scaling
 
         self.bias_initializer = 'random_uniform'
@@ -94,7 +95,7 @@ class StartModTF(StartMod):
         self.n_filters = 1
         self.n_padding = 1
         self.n_strides = 1
-        self.momentum = 0.2  # Optimizer parameter      
+        self.momentum = 0.9                 # Optimizer parameter      
 
     def _get_attributes(self):
         """
@@ -105,6 +106,7 @@ class StartModTF(StartMod):
         nn_attributes = {'input_units': self.input_units, 'hidden_units': self.hidden_units,
                          'output_units': self.output_units, 'optimizer': self.optimizer,
                          'activation_fn':self.activation_fn, 'learning_rate': self.learning_rate,
+                         'decay_rate': self.decay_rate, 
                          'steps': self.steps, 'batch_size': self.batch_size, 'num_epochs': self.nr_epochs,
                          'feature_scl': self.feature_scl, 'loss_fn': self.loss,
                          'drop_out': self.drop_out_rate, 'rec_drop_out': self.rec_drop_out,
@@ -157,6 +159,7 @@ class StartModTF(StartMod):
         print("Optimizer: {}".format(self.optimizer), "\n")
         print("Activation_function: {}".format(self.activation_fn), "\n")
         print("Learning_Rate: {}".format(self.learning_rate), "\n")
+        print("Decay_Rate: {}".format(self.decay_rate), "\n")
         print("Training_Steps: {}".format(self.steps), "\n")
         print("Batch_Size: {}".format(self.batch_size), "\n")
         print("Number_of_epochs: {}".format(self.nr_epochs), "\n")
@@ -643,7 +646,7 @@ class StartModTFCNN(StartModTF):
         model.add(Dense(units=self.output_units, kernel_initializer=hidden_initializer))
 
         # reset optimizer
-        sgd = SGD(lr=self.learning_rate, momentum=self.momentum)
+        sgd = SGD(lr=self.learning_rate, momentum=self.momentum, decay=self.decay_rate)
         self.optimizer = sgd
 
         # compile and train model with training_data

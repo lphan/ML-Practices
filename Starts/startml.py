@@ -17,9 +17,11 @@ import dask
 import dask.dataframe as dd
 import pandas as pd
 import numpy as np
+import fnmatch
 from Starts.start import *
 from sklearn.preprocessing import Imputer
 from sklearn.decomposition import TruncatedSVD
+from scipy.stats import pearsonr
 
 
 class StartML(Start):
@@ -119,7 +121,7 @@ class StartML(Start):
         return a list of pair key_value which contain the certain value
 
         :param data: dict_type
-        :param value:
+        :param value: 
         :return:
         """
         # return [l for l in list(dict) if l[1] == value]
@@ -294,6 +296,22 @@ class StartML(Start):
             return df1.corrwith(df2)
 
     @classmethod
+    def compute_correlation_columns(cls, x, y):
+        """
+        Description: 
+            Compute correlation between 2 columns x and y
+            First check whether x_column and y_column have the same type numpy ndarray and same size
+        :param x: numpy array
+        :param y: numpy array
+        """
+        if (type(x) == type(y) and len(x) == len(y) and type(y) is np.ndarray and type(x) is np.ndarray):            
+            corr, _ = pearsonr(x.reshape(-1),y)
+            print("Pearson correlation:%.3f" % corr)
+        else:
+            print(x.reshape(-1), y.reshape(-1))
+            print("Data not valid")
+
+    @classmethod
     def generate_correlation_matrix(cls, data):
         """
         Description: reduce the Dimension using Truncated SVD Singular Value Decomposition
@@ -449,7 +467,7 @@ class StartML(Start):
     def filterby_rows(cls, data, func):
         """
         Description:
-            filter out all the values (rows) which are considered "No need" for dataset
+            filter/ drop out all the values (rows) which are considered "No need" for dataset
             to reduce the unnecessary data processing (using DataFrame_apply)
 
         :param data:
@@ -580,6 +598,29 @@ class StartML(Start):
         return np.array(result)
 
     @classmethod
+    def searchByValue(cls, data, column, value):
+        """
+        Description:
+            filter out data from certain column with specific value
+
+        """
+        
+        return data[data[column]==value]
+
+    @classmethod
+    def searchByValue2(cls, data, column, value):
+        """
+        Description:
+            filter out data from certain column with specific value
+
+        """
+        pattern = '*'+value+'*'
+        filtered = fnmatch.filter(data, pattern)  
+        
+        return data[data[column]==value]
+        
+
+    @classmethod
     def mean_neighbors(cls, data, row_id, column):
         """
         Description:
@@ -643,7 +684,8 @@ class StartML(Start):
         :return: list of all possible NaN_column(s)
         """
         nan_bool = data.isnull().any()
-        if isinstance(data, dask.dataframe.core.DataFrame):
+        # if isinstance(data, dask.dataframe.core.DataFrame):
+        if isinstance(data, pd.core.frame.DataFrame):
             key_test = [key for key, value in nan_bool.iteritems() if value]
             return key_test
         else:

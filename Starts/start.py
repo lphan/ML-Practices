@@ -4,6 +4,7 @@ import dask
 import dask.dataframe as dd
 import pandas as pd
 import numpy as np
+import os
 
 from dask.delayed import delayed
 
@@ -51,6 +52,7 @@ class Start(object):
             return
 
         # pass data from config file to local var
+        folder_path = config['paths']['folder_path']
         data_path = config['paths']['data_path']
 
         exclude_obj_col = config.getboolean('Start', 'exclude_object_column')
@@ -59,16 +61,18 @@ class Start(object):
         nan_zero = config.getboolean('Start', 'nan_zero')
         nan_mean = config.getboolean('Start', 'nan_mean')
         nan_mean_neighbors = config.getboolean('Start', 'nan_mean_neighbors')
+        pandas_type = config.getboolean('Start', 'pandas_type')
 
-        Start.kwargs.update({"data_path": data_path,
+        Start.kwargs.update({"folder_path": folder_path,
+                               "data_path": data_path,
                                "drop_obj_col": exclude_obj_col,
                                "nan_drop_col": nan_drop_col,
                                "nan_drop_row": nan_drop_row,
                                "nan_zero": nan_zero,
                                "nan_mean": nan_mean,
-                               "nan_mean_neighbors": nan_mean_neighbors})
-        print("local_kwargs", Start.kwargs)
-    
+                               "nan_mean_neighbors": nan_mean_neighbors, 
+                               "pandas_type": pandas_type})
+            
     @classmethod
     def saveDependencies(cls, model, filename, joblib=False):
         # Find and export the Python version and Library version 
@@ -100,6 +104,8 @@ class Start(object):
                 yaml_file.write(model_yaml)
             # serialize weights to HDF5
             model.save_weights("model.h5")
+        else:
+            print("Data type is invalid")
 
     @classmethod
     def loadModels(cls, filename, type):
@@ -131,7 +137,7 @@ class Start(object):
         return loadedmodel, dependencies
 
     @staticmethod
-    def import_data(pandas=False):
+    def import_data(path):
         """
         Description: 
             read data from data_set .csv and convert them into Pandas/ Dask Data Frame and append them into a list
@@ -139,46 +145,38 @@ class Start(object):
         References:
             https://examples.dask.org/dataframes/01-data-access.html
         """
-        Start._arguments()
-        if not Start.kwargs:
-            return
+        # input configuration parameters  
+        # Start._arguments()
+        # if not Start.kwargs:
+        #     return
 
-        df = []
+        pandas = Start.kwargs['pandas_type']
+
         try:
-            if Start.kwargs['data_path']:
-                paths = Start.kwargs['data_path'].split(',')
-                for path in paths:
-
-                    # remove space before and after string
-                    path = path.strip()
-
-                    # Delimiter processing
-                    if path.endswith('.xlsx') or path.endswith('.xls'):
-                        if pandas:
-                            data_exl = pd.read_excel(path)
-                        else:
-                            parts = dask.delayed(pd.read_excel)(path)
-                            data_exl = dd.from_delayed(parts)
-                        df.append(data_exl)
-                    elif path.endswith('.json'):
-                        if pandas:
-                            data_json = pd.read_json(path)
-                        else:
-                            data_json = dd.read_json(path)
-                        df.append(data_json)
-                    elif path.endswith('.csv'):
-                        if pandas:
-                            data_csv = pd.read_csv(path, low_memory=False)
-                        else:
-                            data_csv = dd.read_csv(path)
-                        df.append(data_csv)
-                    else:
-                        print('Unknown format')
-                        return
+            # Delimiter processing
+            if path.endswith('.xlsx') or path.endswith('.xls'):
+                if pandas:
+                    df = pd.read_excel(path)
+                else:
+                    parts = dask.delayed(pd.read_excel)(path)
+                    df = dd.from_delayed(parts)
+        
+            elif path.endswith('.json'):
+                if pandas:
+                    df = pd.read_json(path)
+                else:
+                    df = dd.read_json(path)
+                
+            elif path.endswith('.csv'):
+                if pandas:
+                    df = pd.read_csv(path, low_memory=False)
+                else:
+                    df = dd.read_csv(path)
+                
             else:
-                print("Data is not given")
+                # print('Unknown format')
                 return
-
+        
         except (TypeError, OSError, FileNotFoundError):
             print("Wrong Type Format of imported data")
             import sys
@@ -186,13 +184,41 @@ class Start(object):
 
         return df
 
-# Pre-Initialized the object idata    
-idata = []
-for dat in Start.import_data():
-    # if isinstance(dat, pd.DataFrame):
-    if isinstance(dat, dd.DataFrame):
-        dat.columns = [col.strip() for col in dat.columns]        
-        idata.append(dat)
+    @staticmethod
+    def import_folder():
+        # input configuration parameters  
+        Start._arguments()        
+        folder = Start.kwargs['folder_path']
 
-# Persist data in memory to allow future computations faster
-idata = [dat.persist() for dat in idata]
+        if not folder:
+            return
+    
+        files = os.listdir(folder)
+        idata = []
+        print(files)
+        for fil in files:
+            pathfile = folder + fil            
+            df = Start.import_data(pathfile)
+            # df.columns = [col.strip() for col in df.columns]
+            if df is not None:
+                idata.append(df)
+            else:
+                print("None")
+
+        return idata          
+
+Start._arguments()
+
+if Start.kwargs['folder_path']:
+    print("Start importing folder")   
+    data = Start.import_folder()
+
+elif Start.kwargs['data_path']:
+    print("Start importing data")
+    data = Start.import_data(Start.kwargs['data_path'])
+else:
+    print("No Data_Path or Folder_Path is given")
+    
+# Persist data in memory to allow future computations faster (only apply for dask-object)
+if Start.kwargs['pandas_type'] is False:
+    data = [dat.persist() for dat in data]

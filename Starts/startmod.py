@@ -33,6 +33,8 @@ from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
+from sklearn.metrics import mean_squared_log_error
+
 # from sklearn.metrics import huber
 from sklearn.metrics import r2_score
 from sklearn.model_selection import train_test_split
@@ -45,6 +47,7 @@ from sklearn.linear_model import Ridge
 from sklearn.linear_model import Lasso
 from sklearn.linear_model import ElasticNet
 from scipy.stats import kurtosis, skew
+from math import sqrt
 # from sklearn.pipeline import make_pipeline
 # from sklearn.ensemble.partial_dependence import plot_partial_dependence
 
@@ -192,7 +195,7 @@ class StartMod(StartML):
         :param seed: random state seed (default is 0)
         :param type_pd: (default is Pandas Dataframe)
         :param split: (default is True)
-        :return: x_train, x_test, y_train, y_test (default type Pandas DataFrame)
+        :return: x_train, x_test, y_train, y_true (default type Pandas DataFrame)
         """
 
         # convert data into numpy-values (in case: the last column is dependent label)
@@ -220,14 +223,14 @@ class StartMod(StartML):
 
         try:
             # split data into training set and test set
-            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=t_size,
+            x_train, x_test, y_train, y_true = train_test_split(x, y, test_size=t_size,
                                                                 random_state=seed, shuffle=True)
 
         except ValueError:
             print("Data set is not valid yet, need to be preprocessed first, No splitting happen")
             return data
 
-        return x_train, x_test, y_train, y_test
+        return x_train, x_test, y_train, y_true
 
     @classmethod
     def split_data_validate(cls, data, dependent_label=None, test_size=0.2, random_state=0, type_pd=True, split=True, cv=False):
@@ -263,7 +266,7 @@ class StartMod(StartML):
             x = data.drop(dependent_label, axis=1).values
 
         # split data into training set, validation set and test set
-        x_data, x_test, y_data, y_test = train_test_split(x, y, test_size=test_size,
+        x_data, x_test, y_data, y_true = train_test_split(x, y, test_size=test_size,
                                                           random_state=random_state, shuffle=True)
 
         x_train, x_val, y_train, y_val = train_test_split(x_data, y_data, test_size=test_size,
@@ -280,7 +283,7 @@ class StartMod(StartML):
         #             skills.append(skill_estimate)
         #         skill = summarize(skills)
         
-        return x_train, x_val, x_test, y_train, y_val, y_test
+        return x_train, x_val, x_test, y_train, y_val, y_true
 
     @classmethod
     def backward_eliminate(cls, data, x_data, y_data):
@@ -521,23 +524,23 @@ class StartMod(StartML):
         :param dependent_label:
         :param tech: choose the technique to redude dimension (default is PCA)
         :param k_components: number of principal components (for PCA, default is 3)
-        :return: model, x_train, x_test, y_train, y_test
+        :return: model, x_train, x_test, y_train, y_true
         """
         # TODO: choose the most best variance to get max possible total percentages
-        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label)
+        x_train, x_test, y_train, y_true = StartMod.split_data(data, dependent_label)
         
         if tech: 
             pca = PCA(n_components = k_components)
             x_train = pca.fit_transform(x_train)
             x_test = pca.transform(x_test)
             print("Explained Variance: %s" % pca.explained_variance_ratio_)
-            return pca, x_train, x_test, y_train, y_test
+            return pca, x_train, x_test, y_train, y_true
         else:
             lda = LinearDiscriminantAnalysis(n_components = k_components)
             x_train = lda.fit_transform(x_train, y_train)
             x_test = lda.transform(x_test)
             print("Explained Variance: %s" % lda.explained_variance_ratio_)
-            return lda, x_train, x_test, y_train, y_test
+            return lda, x_train, x_test, y_train, y_true
 
     @classmethod
     def feature_engineering(cls, data, old_feature, new_feature, new_attributes, rm=False):
@@ -634,7 +637,7 @@ class StartMod(StartML):
         :return:
         """
         # split data into feature (independent) values and dependent values in type Numpy.array
-        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, type_pd=False)
+        x_train, x_test, y_train, y_true = StartMod.split_data(data, dependent_label, type_pd=False)
 
         # Ridge
         ridgeReg = Ridge(alpha=0.05, normalize=True)
@@ -642,7 +645,7 @@ class StartMod(StartML):
         y_pred_rr = ridgeReg.predict(x_test)
         print("\nRidge coef_attribute", ridgeReg.coef_)
         print("Ridge independent term", ridgeReg.intercept_)
-        print("Ridge evaluation using r-square: ", ridgeReg.score(x_test, y_test))
+        print("Ridge evaluation using r-square: ", ridgeReg.score(x_test, y_true))
 
         # Lasso
         lassoReg = Lasso(alpha=0.3, normalize=True)
@@ -650,7 +653,7 @@ class StartMod(StartML):
         y_pred_lr = lassoReg.predict(x_test)
         print("\nLasso coef_attribute", lassoReg.coef_)
         print("Lasso independent term", lassoReg.intercept_)
-        print("Lasso evaluation using r-square: ", lassoReg.score(x_test, y_test))
+        print("Lasso evaluation using r-square: ", lassoReg.score(x_test, y_true))
         
         # Elastic net
         enReg = ElasticNet(alpha=1, l1_ratio=0.5, normalize=False)
@@ -658,12 +661,12 @@ class StartMod(StartML):
         y_pred_er = enReg.predict(x_test)
         print("\nElastic net coef_attribute", enReg.coef_)
         print("Elastic net independent term", enReg.intercept_)
-        print("Elastic net evaluation using r-square: ", enReg.score(x_test, y_test))
+        print("Elastic net evaluation using r-square: ", enReg.score(x_test, y_true))
 
         print("\nMetrics report")
-        print("Ridge regression: ", StartMod.metrics_report(y_test, y_pred_rr))
-        print("Lasso regression: ", StartMod.metrics_report(y_test, y_pred_lr))
-        print("Elastic net regression: ", StartMod.metrics_report(y_test, y_pred_er))
+        print("Ridge regression: ", StartMod.metrics_report(y_true, y_pred_rr))
+        print("Lasso regression: ", StartMod.metrics_report(y_true, y_pred_lr))
+        print("Elastic net regression: ", StartMod.metrics_report(y_true, y_pred_er))
         print("\nValidation")
         print("Ridge: ", StartMod.validation(ridgeReg, x_train, y_train))
         print("\nLasso: ", StartMod.validation(lassoReg, x_train, y_train))
@@ -694,7 +697,7 @@ class StartMod(StartML):
             return -np.log(1 - yHat)
 
     @classmethod
-    def lossRegression(cls, y_pred, y_test, delta):
+    def lossRegression(cls, y_pred, y_true, delta):
         """
         Description: Regression Loss
             L1-Loss MAE, L2-Loss MSE, Huber Loss (Smooth Mean), Log cosh Loss, Quantile Loss
@@ -702,29 +705,41 @@ class StartMod(StartML):
             L1 loss MAE is more robust to outliers, but its derivatives are not continuous, making it inefficient to find the solution
             L2 loss MSE is sensitive to outliers, but gives a more stable and closed form solution
             
-            Huber Loss (smooth Mean for MAE and MSE) is less sensitive to outliers in data than the squared error loss, better choice than L1 loss and L2 loss.
+            Huber Loss (smooth Mean for MAE and MSE) is less sensitive to outliers in data than the squared error loss, 
+            better choice than L1 loss and L2 loss. Hyperparameter, 𝛿 (delta), which can be tuned. 
+            Huber loss approaches MAE when 𝛿 -> 0 and MSE when 𝛿 -> infinite
 
             Log-cosh Loss is the logarithm of the hyperbolic cosine of the prediction error, smoother than L2.
 
             Quantile loss functions turn out to be useful when predicting an interval instead of only point predictions.
 
+            Root Mean Squared Error (RMSE): the square root of MSE
+            Root Mean Squared Logarithmic Error (RMSLE): the square root of MSLE
+        
         Reference:
-            https://heartbeat.fritz.ai/5-regression-loss-functions-all-machine-learners-should-know-4fb140e9d4b0            
+            https://heartbeat.fritz.ai/5-regression-loss-functions-all-machine-learners-should-know-4fb140e9d4b0
+            https://scikit-learn.org/stable/modules/generated/sklearn.metrics.r2_score.html
+            https://en.wikipedia.org/wiki/Coefficient_of_determination#Adjusted_R2
         """
         # Regression Model Evaluation            
-        print("L1-Loss Mean Absolute Error: \n", mean_absolute_error(y_test, y_pred))
-        print("L2-Loss Mean Squared Error: \n", mean_squared_error(y_test, y_pred))
+        print("L1-Loss Mean Absolute Error (MAE): \n", mean_absolute_error(y_true, y_pred))
+        print("L2-Loss Mean Squared Error (MSE): \n", mean_squared_error(y_true, y_pred))
+        print("Root Mean Squared Error (RMSE): \n", sqrt(mean_squared_error(y_true, y_pred)))
 
-        huber_loss = np.sum(np.where(np.abs(y_test-y_pred) < delta , 1/2*((y_test-y_pred)**2), delta*np.abs(y_test - y_pred) - 1/2*(delta**2)))
-        log_cosh_loss = np.sum(np.log(np.cosh(y_pred - y_test)))
+        print("Mean Squared Logarithmic Error (MSLE): \n", mean_squared_log_error(y_true, y_pred))
+        print("Root Mean Squared Logarithmic Error (RMSLE): \n", sqrt(mean_squared_log_error(y_true, y_pred)))
+        
+        huber_loss = np.sum(np.where(np.abs(y_true-y_pred) < delta , 1/2*((y_true-y_pred)**2), delta*np.abs(y_true - y_pred) - 1/2*(delta**2)))
+        log_cosh_loss = np.sum(np.log(np.cosh(y_pred - y_true)))
 
         print("Huber Loss: \n ", huber_loss)
         print("Cosh Loss: \n ", log_cosh_loss)
         
-        print("R2 Score: \n", r2_score(y_test, y_pred)) 
+        print("R2 Score (coefficient of determination): \n", r2_score(y_true, y_pred))
+        print("Adjusted R2 Score: tbd. ")
 
     @classmethod
-    def classification_metrics_report(cls, y_test, y_pred, cat_lab):
+    def classification_metrics_report(cls, y_true, y_pred, cat_lab):
         """
         Description: measure the quality of the models (comparing results before and after running prediction)
 
@@ -746,25 +761,25 @@ class StartMod(StartML):
             http://scikit-learn.org/stable/modules/generated/sklearn.metrics.accuracy_score.html
             http://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_score.html
 
-        :param y_test: the truth values
+        :param y_true: the truth values
         :param y_pred: the predicted values
         :param cat_lab: categorical label name used for classification 
         :return:
         """
         
         # Classification Model Evaluation
-        print("Classification Report: \n", classification_report(y_test, y_pred, cat_lab=cat_lab))
-        print("Confusion Matrix: \n", confusion_matrix(y_test, y_pred, labels=np.unique(y_test)))        
-        print("\nAccuracy Score: \n", accuracy_score(y_test, y_pred))
+        print("Classification Report: \n", classification_report(y_true, y_pred, cat_lab=cat_lab))
+        print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred, labels=np.unique(y_true)))        
+        print("\nAccuracy Score: \n", accuracy_score(y_true, y_pred))
 
-        if len(np.unique(y_test))==2:
+        if len(np.unique(y_true))==2:
             print("binary")
-            prec = precision_score(y_test, y_pred)
-            rec = recall_score(y_test, y_pred)
+            prec = precision_score(y_true, y_pred)
+            rec = recall_score(y_true, y_pred)
         else:
             print("set average")
-            prec = precision_score(y_test, y_pred, average='micro')
-            rec = recall_score(y_test, y_pred, average='micro')
+            prec = precision_score(y_true, y_pred, average='micro')
+            rec = recall_score(y_true, y_pred, average='micro')
 
         print("\nPrecision Score: \n", prec)
         print("\nRecall Score: \n", rec)
