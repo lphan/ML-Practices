@@ -13,12 +13,13 @@ rcParams['figure.figsize'] = 20, 6
 # %matplotlib inline
 
 # CHINA: Processing NaN value
-y_dat = [StartML.searchByValue(data[i], column='Country/Region', value='Mainland China')['Confirmed'].values 
+y_dat_cn = [StartML.searchByValue(data[i], column='Country/Region', value='Mainland China')['Confirmed'].values 
          for i in range(len(data))]
 
-y_dat[0] = np.array([y for y in y_dat[1] if not np.isnan(y)])
-y_dat[1] = np.array([y for y in y_dat[1] if not np.isnan(y)])
-y_dat[2] = np.array([y for y in y_dat[2] if not np.isnan(y)])
+y_dat_cn[0] = np.array([y for y in y_dat_cn[0] if not np.isnan(y)])
+y_dat_cn[1] = np.array([y for y in y_dat_cn[1] if not np.isnan(y)])
+y_dat_cn[2] = np.array([y for y in y_dat_cn[2] if not np.isnan(y)])
+y_dat_cn = [sum(y) for y in y_dat_cn]
 
 # GERMANY: Processing empty value
 y_dat_de = [StartML.searchByValue(data[i], column='Country/Region', value='Germany')['Confirmed'].values

@@ -1,4 +1,10 @@
-### Reference:
-> https://github.com/CSSEGISandData/COVID-19
+### COVID-19 
 
-> https://systems.jhu.edu/research/public-health/ncov/
+Update by Day in the countries: CHINA, GERMANY, ITALY, KOREA, JAPAN 
+
+
+### Reference:
+
+https://github.com/CSSEGISandData/COVID-19
+
+https://systems.jhu.edu/research/public-health/ncov/
