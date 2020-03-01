@@ -1,4 +1,3 @@
-
 # setup absolute path to location of package Starts and config-file 
 from inspect import getsourcefile
 import os.path as path, sys
