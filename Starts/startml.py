@@ -603,8 +603,7 @@ class StartML(Start):
         Description:
             filter out data from certain column with specific value
 
-        """
-        
+        """        
         return data[data[column]==value]
 
     @classmethod
@@ -613,6 +612,7 @@ class StartML(Start):
         Description:
             filter out data from certain column with specific value
 
+        tbd.
         """
         pattern = '*'+value+'*'
         filtered = fnmatch.filter(data, pattern)  
