@@ -40,4 +40,9 @@ y_dat_jap = [StartML.searchByValue(data[i], column='Country/Region', value="Japa
              for i in range(len(data))]
 y_dat_jap = [y[0] for y in y_dat_jap]
 
+# US: Processing
+y_dat_us = [StartML.searchByValue(data[i], column='Country/Region', value="US")['Confirmed'].values
+             for i in range(len(data))]
+y_dat_us = [y[0] for y in y_dat_us]
+
 x_dat = np.arange(len(data))
