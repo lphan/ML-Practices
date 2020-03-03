@@ -15,6 +15,15 @@ data = [data[i].fillna(0) for i in range(len(data))]
 
 x_dat = np.arange(len(data))
 
+# number of all infected countries changed by day
+num_infected_countries = [len(data[i]['Country/Region'].unique()) for i in range(len(data))]
+
+# Total all recovered cases in all countries changed by day
+totalrecovered_by_day = [sum(data[i]['Recovered']) for i in range(len(data))] 
+
+# Total all confirmed cases in all countries changed by day
+totalconfirmed_by_day = [sum(data[i]['Confirmed']) for i in range(len(data))] 
+
 # CHINA: Pre-Processing NaN value confirmed_cases
 y_dat_cn = [StartML.searchByValue(data[i], column='Country/Region', value='Mainland China')['Confirmed'].values 
             for i in range(len(data))]
