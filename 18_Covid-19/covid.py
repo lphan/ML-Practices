@@ -106,7 +106,38 @@ y_dat_death_us = [StartML.searchByValue(data[i], column='Country/Region', value=
 y_dat_death_us = [0 if y.size == 0 else sum(y) for y in y_dat_death_us]
 
 # AUSTRALIA: Fatalities_cases
-y_dat_death_aus = [StartML.searchByValue(data[i], column='Country/Region', value='Australia')['Deaths'].values 
+y_dat_death_au = [StartML.searchByValue(data[i], column='Country/Region', value='Australia')['Deaths'].values 
 					for i in range(len(data))]
 
-y_dat_death_aus = [0 if y.size == 0 else sum(y) for y in y_dat_death_aus]
+y_dat_death_au = [0 if y.size == 0 else sum(y) for y in y_dat_death_au]
+
+# All Countries RECOVERED
+y_dat_all_recovered = [sum(data[i][data[i]['Recovered']>0]['Recovered'].values) for i in range(len(data))]
+
+y_dat_recovered_cn = [StartML.searchByValue(data[i], column='Country/Region', value='Mainland China')['Recovered'].values 
+					for i in range(len(data))]
+y_dat_recovered_cn = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_cn]
+
+y_dat_recovered_de = [StartML.searchByValue(data[i], column='Country/Region', value='Germany')['Recovered'].values 
+					for i in range(len(data))]
+y_dat_recovered_de = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_de]
+
+y_dat_recovered_it = [StartML.searchByValue(data[i], column='Country/Region', value='Italy')['Recovered'].values 
+					for i in range(len(data))]
+y_dat_recovered_it = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_it]
+
+y_dat_recovered_kr = [StartML.searchByValue(data[i], column='Country/Region', value='South Korea')['Recovered'].values 
+					for i in range(len(data))]
+y_dat_recovered_kr = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_kr]
+
+y_dat_recovered_jp = [StartML.searchByValue(data[i], column='Country/Region', value='Japan')['Recovered'].values 
+					for i in range(len(data))]
+y_dat_recovered_jp = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_jp]
+
+y_dat_recovered_us = [StartML.searchByValue(data[i], column='Country/Region', value='US')['Recovered'].values 
+					for i in range(len(data))]
+y_dat_recovered_us = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_us]
+
+y_dat_recovered_au = [StartML.searchByValue(data[i], column='Country/Region', value='Australia')['Recovered'].values 
+					for i in range(len(data))]
+y_dat_recovered_au = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_au]
