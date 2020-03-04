@@ -60,7 +60,11 @@ y_dat_us = [StartML.searchByValue(data[i], column='Country/Region', value="US")[
 
 y_dat_us = [0 if y.size == 0 else sum(y) for y in y_dat_us]
 
-x_dat = np.arange(len(data))
+# AUSTRALIA: Pre-Processing confirmed_cases
+y_dat_aus = [StartML.searchByValue(data[i], column='Country/Region', value="Australia")['Confirmed'].values
+            for i in range(len(data))]
+
+y_dat_aus = [0 if y.size == 0 else sum(y) for y in y_dat_aus]
 
 # ALL COUNTRIES: Fatalities_cases
 y_dat_all_fatal = [sum(data[i][data[i]['Deaths']>0]['Deaths'].values) for i in range(len(data))]
@@ -100,3 +104,9 @@ y_dat_death_us = [StartML.searchByValue(data[i], column='Country/Region', value=
 					for i in range(len(data))]
 
 y_dat_death_us = [0 if y.size == 0 else sum(y) for y in y_dat_death_us]
+
+# AUSTRALIA: Fatalities_cases
+y_dat_death_aus = [StartML.searchByValue(data[i], column='Country/Region', value='Australia')['Deaths'].values 
+					for i in range(len(data))]
+
+y_dat_death_aus = [0 if y.size == 0 else sum(y) for y in y_dat_death_aus]
