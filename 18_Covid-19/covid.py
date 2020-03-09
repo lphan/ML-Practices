@@ -66,12 +66,6 @@ y_dat_au = [StartML.searchByValue(data[i], column='Country/Region', value="Austr
 
 y_dat_au = [0 if y.size == 0 else sum(y) for y in y_dat_au]
 
-# VIETNAM: Pre-Processing confirmed_cases
-y_dat_vn = [StartML.searchByValue(data[i], column='Country/Region', value="Vietnam")['Confirmed'].values
-            for i in range(len(data))]
-
-y_dat_vn = [0 if y.size == 0 else sum(y) for y in y_dat_vn]
-
 # ALL COUNTRIES: Fatalities_cases
 y_dat_all_fatal = [sum(data[i][data[i]['Deaths']>0]['Deaths'].values) for i in range(len(data))]
 
@@ -117,12 +111,6 @@ y_dat_death_au = [StartML.searchByValue(data[i], column='Country/Region', value=
 
 y_dat_death_au = [0 if y.size == 0 else sum(y) for y in y_dat_death_au]
 
-# AUSTRALIA: Fatalities_cases
-y_dat_death_vn = [StartML.searchByValue(data[i], column='Country/Region', value='Vietnam')['Deaths'].values 
-					for i in range(len(data))]
-
-y_dat_death_vn = [0 if y.size == 0 else sum(y) for y in y_dat_death_vn]
-
 # All Countries RECOVERED
 y_dat_all_recovered = [sum(data[i][data[i]['Recovered']>0]['Recovered'].values) for i in range(len(data))]
 
@@ -153,7 +141,3 @@ y_dat_recovered_us = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_us]
 y_dat_recovered_au = [StartML.searchByValue(data[i], column='Country/Region', value='Australia')['Recovered'].values 
 					for i in range(len(data))]
 y_dat_recovered_au = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_au]
-
-y_dat_recovered_vn = [StartML.searchByValue(data[i], column='Country/Region', value='Vietnam')['Recovered'].values 
-					for i in range(len(data))]
-y_dat_recovered_vn = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_vn]
