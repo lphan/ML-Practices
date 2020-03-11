@@ -18,10 +18,14 @@ import dask.dataframe as dd
 import pandas as pd
 import numpy as np
 import fnmatch
+from Starts import *
 from Starts.start import *
 from sklearn.preprocessing import Imputer
 from sklearn.decomposition import TruncatedSVD
 from scipy.stats import pearsonr
+from scipy.stats import ttest_ind
+from scipy.stats import ttest_rel
+from numpy import cov
 
 
 class StartML(Start):
@@ -273,7 +277,7 @@ class StartML(Start):
         pass
 
     @classmethod
-    def compute_correlation_dataframe(cls, df1, df2=None):
+    def comp_corr_df(cls, df1, df2=None):
         """
         Description: 
             Compute pairwise-Correlation based on Pearson Correlation between 2 data frames or data frame itself, describe the relationship between two variables 
@@ -296,25 +300,59 @@ class StartML(Start):
             return df1.corrwith(df2)
 
     @classmethod
-    def compute_correlation_columns(cls, x, y):
+    def comp_corr_col(cls, x1, x2):
         """
         Description: 
-            Compute correlation between 2 columns x and y
+            Compute correlation between 2 columns x1 and x2
             First check whether x_column and y_column have the same type numpy ndarray and same size
         :param x: numpy array
         :param y: numpy array
         """
-        if (type(x) == type(y) and len(x) == len(y) and type(y) is np.ndarray and type(x) is np.ndarray):            
-            corr, _ = pearsonr(x.reshape(-1),y)
-            print("Pearson correlation:%.3f" % corr)
+        if (type(x1) == type(x2) and len(x1) == len(x2) and type(x2) is np.ndarray and type(x1) is np.ndarray):            
+            corr, p = pearsonr(x1.reshape(-1), x2)
+            print("Pearson correlation: %.3f" % corr)
+            # interpret the significance
+            alpha = 0.05
+            if p > alpha:
+                print('No correlation (fail to reject H0)')
+            else:
+                print('Some correlation (reject H0)')
         else:
-            print(x.reshape(-1), y.reshape(-1))
+            print(x1.reshape(-1), x2.reshape(-1))
             print("Data not valid")
 
     @classmethod
-    def generate_correlation_matrix(cls, data):
+    def comp_ttest(cls, x1, x2, ind=True):
         """
-        Description: reduce the Dimension using Truncated SVD Singular Value Decomposition
+        Description:
+            Compute t-test distribution (independent and related) between two data samples x1, x2
+        :param x1: numpy array 
+        :param x2: numpy array
+        :ind: independent parameter (default = True)
+        """
+        if ind:
+            # independent student's t-test
+            stat, p = ttest_ind(x1, x2)
+            print('Statistics=%.3f, p=%.3f' % (stat, p))
+        else:
+            # Paired student's t-test
+            stat, p = ttest_rel(x1, x2)
+            print('Statistics=%.3f, p=%.3f' % (stat, p))
+        
+        # Interpret p-value
+        alpha = 0.05
+        if p > alpha:
+            print('Same distributions (fail to reject H0)')
+        else:
+            print('Different distributions (reject H0)')
+        
+        return stat, p
+
+
+    @classmethod
+    def gen_corr_mx(cls, data):
+        """
+        Description: generate correlation matrix, reduce the Dimension using Truncated SVD Singular Value Decomposition
 
         References:
             https://en.wikipedia.org/wiki/Singular-value_decomposition
@@ -322,7 +360,7 @@ class StartML(Start):
             http://scikit-learn.org/stable/modules/generated/sklearn.decomposition.TruncatedSVD.html
             https://docs.scipy.org/doc/numpy-1.13.0/reference/generated/numpy.corrcoef.html
 
-        :param data: Pandas object
+        :param data: pandas.core.frame.DataFrame
         :return: Truncated SVD object
         """
         print(data.corr())
@@ -330,12 +368,18 @@ class StartML(Start):
         return svd.fit(data.values)
 
     @classmethod
-    def compute_covariance_matrix(cls, data):
+    def comp_cov_mx(cls, data1, data2=None):
         """
-        Description: compute covariance matrix for computing the PCA
+        Description: compute covariance matrix between two variables for computing the PCA
         Sigma = 1/m*data_transposed*data with m is number of training data
-        """        
-        pass
+        """
+        if data2:        
+            return cov(data1, data2)
+        else:
+            if isinstance(data1, np.ndarray):
+                return cov(data1.T)
+            else:
+                return
 
     @classmethod
     def detect_outliers(cls, data):
@@ -392,7 +436,7 @@ class StartML(Start):
         return total_outliers
 
     @classmethod
-    def density_anomaly_detection(cls, data, feature_column, eps):
+    def detect_density_anomaly(cls, data, feature_column, eps):
         """
         Description: detect anomaly features using K-NN and relative density of data
             setup a threshold epsilon for error (maximal error).
@@ -424,7 +468,7 @@ class StartML(Start):
         pass
 
     @classmethod
-    def clustering_anomaly_detection(cls, data, feature_column, eps):
+    def detect_cluster_anomaly(cls, data, feature_column, eps):
         """
         References:
             https://www.datascience.com/blog/python-anomaly-detection
@@ -432,7 +476,7 @@ class StartML(Start):
         pass
 
     @classmethod
-    def svm_anomaly_detection(cls, data, feature_column, eps):
+    def detect_svm_anomaly(cls, data, feature_column, eps):
         """
         References:
             https://www.datascience.com/blog/python-anomaly-detection
@@ -512,7 +556,7 @@ class StartML(Start):
         pass
 
     @classmethod
-    def intersectionby_dataset(cls, data1, data2):
+    def intersectby_dataset(cls, data1, data2):
         """
         Description: proceed operation intersect to get the common part between data1 and data2 (using DataFrame_merge)
 
@@ -602,22 +646,25 @@ class StartML(Start):
         """
         Description:
             filter out data from certain column with specific value
-
-        """        
-        return data[data[column]==value]
-
-    @classmethod
-    def searchByValue2(cls, data, column, value):
+        :param data: pandas.core.frame.DataFrame
+        :param column: column name
+        :param value: value in column need to be filtered
         """
-        Description:
-            filter out data from certain column with specific value
+        # return data[data[column]==value]
+        return data[data[column].str.contains(value)]
 
-        tbd.
-        """
-        pattern = '*'+value+'*'
-        filtered = fnmatch.filter(data, pattern)  
+    # @classmethod
+    # def searchByValue2(cls, data, column, value):
+    #     """
+    #     Description:
+    #         filter out data from certain column with specific value
+
+    #     tbd.
+    #     """
+    #     pattern = '*'+value+'*'
+    #     filtered = fnmatch.filter(data, pattern)  
         
-        return data[data[column]==value]
+    #     return data[data[column].str.contains(value)]
         
 
     @classmethod

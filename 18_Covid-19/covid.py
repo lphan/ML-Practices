@@ -42,8 +42,8 @@ y_dat_it = [StartML.searchByValue(data[i], column='Country/Region', value='Italy
 
 y_dat_it = [0 if y.size == 0 else sum(y) for y in y_dat_it]
 
-# SOUTH KOREA: Pre-Processing confirmed_cases
-y_dat_kr = [StartML.searchByValue(data[i], column='Country/Region', value='South Korea')['Confirmed'].values
+# Republic of Korea: Pre-Processing confirmed_cases
+y_dat_kr = [StartML.searchByValue(data[i], column='Country/Region', value='Korea')['Confirmed'].values
             for i in range(len(data))]
 
 y_dat_kr = [0 if y.size == 0 else sum(y) for y in y_dat_kr]
@@ -87,8 +87,8 @@ y_dat_death_it = [StartML.searchByValue(data[i], column='Country/Region', value=
 
 y_dat_death_it = [0 if y.size == 0 else sum(y) for y in y_dat_death_it]
 
-# SOUTH KOREA: Fatalities_cases					
-y_dat_death_kr = [StartML.searchByValue(data[i], column='Country/Region', value='South Korea')['Deaths'].values 
+# Republic of Korea: Fatalities_cases					
+y_dat_death_kr = [StartML.searchByValue(data[i], column='Country/Region', value='Korea')['Deaths'].values 
 					for i in range(len(data))]
 
 y_dat_death_kr = [0 if y.size == 0 else sum(y) for y in y_dat_death_kr]
@@ -126,7 +126,7 @@ y_dat_recovered_it = [StartML.searchByValue(data[i], column='Country/Region', va
 					for i in range(len(data))]
 y_dat_recovered_it = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_it]
 
-y_dat_recovered_kr = [StartML.searchByValue(data[i], column='Country/Region', value='South Korea')['Recovered'].values 
+y_dat_recovered_kr = [StartML.searchByValue(data[i], column='Country/Region', value='Korea')['Recovered'].values 
 					for i in range(len(data))]
 y_dat_recovered_kr = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_kr]
 
