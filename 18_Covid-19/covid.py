@@ -25,7 +25,7 @@ totalconfirmed_by_day = [sum(data[i]['Confirmed']) for i in range(len(data))]
 totalrecovered_by_day = [sum(data[i]['Recovered']) for i in range(len(data))]
 
 # CHINA: Pre-Processing NaN value confirmed_cases
-y_dat_cn = [StartML.searchByValue(data[i], column='Country/Region', value='Mainland China')['Confirmed'].values 
+y_dat_cn = [StartML.searchByValue(data[i], column='Country/Region', value='China')['Confirmed'].values 
             for i in range(len(data))]
 
 y_dat_cn = [0 if y.size == 0 else sum(y) for y in y_dat_cn]
@@ -70,7 +70,7 @@ y_dat_au = [0 if y.size == 0 else sum(y) for y in y_dat_au]
 y_dat_all_fatal = [sum(data[i][data[i]['Deaths']>0]['Deaths'].values) for i in range(len(data))]
 
 # CHINA: Fatalities_cases
-y_dat_death_cn = [StartML.searchByValue(data[i], column='Country/Region', value='Mainland China')['Deaths'].values 
+y_dat_death_cn = [StartML.searchByValue(data[i], column='Country/Region', value='China')['Deaths'].values 
 					for i in range(len(data))]
 
 y_dat_death_cn = [0 if y.size == 0 else sum(y) for y in y_dat_death_cn] 
@@ -114,7 +114,7 @@ y_dat_death_au = [0 if y.size == 0 else sum(y) for y in y_dat_death_au]
 # All Countries RECOVERED
 y_dat_all_recovered = [sum(data[i][data[i]['Recovered']>0]['Recovered'].values) for i in range(len(data))]
 
-y_dat_recovered_cn = [StartML.searchByValue(data[i], column='Country/Region', value='Mainland China')['Recovered'].values 
+y_dat_recovered_cn = [StartML.searchByValue(data[i], column='Country/Region', value='China')['Recovered'].values 
 					for i in range(len(data))]
 y_dat_recovered_cn = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_cn]
 
