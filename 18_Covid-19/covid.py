@@ -16,7 +16,8 @@ data = [data[i].fillna(0) for i in range(len(data))]
 x_dat = np.arange(len(data))
 
 # number of all infected countries changed by day
-num_infected_countries = [len(data[i]['Country/Region'].unique()) for i in range(len(data))]
+num_infected_countries = [len(data[i][data[i]['Confirmed']>0]['Country/Region'].unique()) for i in range(len(data))]
+# num_infected_countries = [len(data[i]['Country/Region'].unique()) for i in range(len(data))]
 
 # Total all confirmed cases in all countries changed by day
 totalconfirmed_by_day = [sum(data[i]['Confirmed']) for i in range(len(data))] 
