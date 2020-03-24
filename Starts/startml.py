@@ -25,8 +25,10 @@ from sklearn.decomposition import TruncatedSVD
 from scipy.stats import pearsonr
 from scipy.stats import ttest_ind
 from scipy.stats import ttest_rel
+from scipy.stats import spearmanr
+from scipy.stats import kendalltau
 from numpy import cov
-
+from numpy import percentile
 
 class StartML(Start):
     """
@@ -276,12 +278,39 @@ class StartML(Start):
         """
         pass
 
+    
+    @classmethod
+    def comp_corr_nonGaussian(cls, data1, data2, spearmanr=True):
+        """
+        Description:
+            quantifying the association between variables with a non-Gaussian distribution
+            by calculating the Spearmanr's (default) rank correlation coefficient or Kendall's rank 
+            between two variables (on an ordinal scale of measurement)
+        :param data1: Numpy array
+        :param data2: Numpy array
+        :return coef (range between -1, 1), p (range between 0,1: >0.05 or <0.05)
+        """
+        if spearmanr:
+            # calculate spearman's correlation and p-value
+            coef, p = spearmanr(data1, data2)
+        else:
+            # calculate Kendall's correlation and p-value
+            coef, p = kendalltau(data1, data2)
+        print('Correlation coefficient: %.3f' % coef)
+        # interpret the significance
+        alpha = 0.05
+        if p > alpha:
+            print('Samples are uncorrelated (fail to reject H0) p=%.3f' % p)
+        else:
+            print('Samples are correlated (reject H0) p=%.3f' % p)
+        return coef, p
+
     @classmethod
     def comp_corr_df(cls, df1, df2=None):
         """
         Description: 
-            Compute pairwise-Correlation based on Pearson Correlation between 2 data frames or data frame itself, describe the relationship between two variables 
-            and whether they might change together.
+            Compute pairwise-Correlation based on Pearson Correlation between 2 data frames or data frame itself, 
+            describe the relationship between two variables and whether they might change together.
 
         References:
             https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.corr.html
@@ -642,7 +671,7 @@ class StartML(Start):
         return np.array(result)
 
     @classmethod
-    def searchByValue(cls, data, column, value):
+    def searchByValue(cls, data, try_keys, value):
         """
         Description:
             filter out data from certain column with specific value
@@ -651,7 +680,16 @@ class StartML(Start):
         :param value: value in column need to be filtered
         """
         # return data[data[column]==value]
-        return data[data[column].str.contains(value)]
+        i=0
+        while (i<len(try_keys)):
+            if try_keys[i] in data:
+                return data[data[try_keys[i]].str.contains(value)]                
+            else:        
+                i=i+1
+
+        # return data[data[try_keys].str.contains(value)]
+        print("Nothing is found")
+        return
 
     # @classmethod
     # def searchByValue2(cls, data, column, value):
@@ -979,6 +1017,27 @@ class StartML(Start):
         """
         print("Nans_columns: \n{}".format(StartML.nan_columns(data)))
         print("Nans_rows: \n{}".format(len(StartML.nan_rows(data))))
+
+    @staticmethod
+    def fiveNumber_summary(data):
+        """
+        Description: 
+            The five-Number summary describes data sample with any distribution
+        Reference: 
+            https://en.wikipedia.org/wiki/Five-number_summary
+        """
+        # calculate quartiles from 25, 50 (median), 75
+        quartiles = percentile(data, [25, 50, 75])
+
+        # calculate min/max
+        data_min, data_max = data.min(), data.max()
+
+        # display 5-number summary
+        print('Min: %.3f' % data_min)
+        print('Q1: %.3f' % quartiles[0])
+        print('Median: %.3f' % quartiles[1])
+        print('Q3: %.3f' % quartiles[2])
+        print('Max: %.3f' % data_max)
 
     @staticmethod
     def summary(data):
