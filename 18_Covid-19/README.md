@@ -16,3 +16,7 @@ See files:
 https://github.com/CSSEGISandData/COVID-19
 
 https://systems.jhu.edu/research/public-health/ncov/
+
+https://interaktiv.morgenpost.de/corona-virus-karte-infektionen-deutschland-weltweit/
+
+https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Fallzahlen.html
