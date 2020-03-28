@@ -10,6 +10,9 @@ from Starts.startvis import *
 from matplotlib.pylab import rcParams
 rcParams['figure.figsize'] = 20, 6
 
+'''
+Data Preprocessing 
+'''
 # Pre-Processing: fill all NaN with 0
 data = [data[i].fillna(0) for i in range(len(data))]
 
@@ -68,7 +71,9 @@ y_dat_au = [StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/
 
 y_dat_au = [0 if y.size == 0 else sum(y) for y in y_dat_au]
 
-# ALL COUNTRIES: Fatalities_cases
+'''
+All Countries Fatalities_cases
+'''
 y_dat_all_fatal = [sum(data[i][data[i]['Deaths']>0]['Deaths'].values) for i in range(len(data))]
 
 # CHINA: Fatalities_cases
@@ -113,7 +118,9 @@ y_dat_death_au = [StartML.searchByValue(data[i], try_keys=['Country_Region', 'Co
 
 y_dat_death_au = [0 if y.size == 0 else sum(y) for y in y_dat_death_au]
 
-# All Countries RECOVERED
+'''
+All Countries RECOVERED
+'''
 y_dat_all_recovered = [sum(data[i][data[i]['Recovered']>0]['Recovered'].values) for i in range(len(data))]
 
 y_dat_recovered_cn = [StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='China')['Recovered'].values 
@@ -143,3 +150,52 @@ y_dat_recovered_us = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_us]
 y_dat_recovered_au = [StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='Australia')['Recovered'].values 
 					for i in range(len(data))]
 y_dat_recovered_au = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_au]
+
+'''
+Total comparison by day
+Western_culture (top 10 countries: US Germany Italy Spain France UK Swiss Netherland Austria Belgium) 
+vs 
+Estern_culture (top 10/ all countries:  Chian Korea Japan Malaysia Indonesia Thailand Philippine Singapore Taiwan Vietnam)
+
+Total increasing by day
+'''
+
+eu_10_countries = ['Italy', 'Germany', 'Spain', 'France', 'United Kingdom', 'Switzerland', 'Netherlands', 'Austria', 'Belgium', 'Norway']
+asia_10countries = ['China','Korea','Japan','Malaysia','Indonesia','Thailand','Philippines','Singapore','Taiwan','Vietnam']
+
+eu_byDay = []
+asia_byDay = []
+for i in range(len(data)):
+	eu_byDay.append([StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=ec)['Confirmed'].values 
+            			for ec in eu_10_countries])
+	asia_byDay.append([StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=ec)['Confirmed'].values 
+            			for ec in asia_10countries])
+
+# fill empty data by 0
+fill_eu_byday = []
+for eu in eu_byDay:
+    fill_eu_byday.append([np.array([0]) if eub.size == 0 else eub for eub in eu])
+
+fill_asia_byday = []
+for asia in asia_byDay:
+    fill_asia_byday.append([np.array([0]) if a.size == 0 else a for a in asia])
+
+# fill by summing all data by day
+fill_eu_byday_temp = []
+for i in range(len(data)):
+    fill_eu_byday_temp.append([sum(fill_eu) for fill_eu in fill_eu_byday[i]])
+    
+fill_asia_byday_temp = []
+for i in range(len(data)):
+    fill_asia_byday_temp.append([sum(fill_asia) for fill_asia in fill_asia_byday[i]])
+    
+# Example: Day 1, day 50
+# fill_eu_byday_temp[0], fill_eu_byday_temp[50]
+
+eu_total = []
+for i in range(len(data)):    
+    eu_total.append(sum(fill_eu_byday_temp[i]))
+    
+asia_total = []
+for i in range(len(data)):    
+    asia_total.append(sum(fill_asia_byday_temp[i]))
