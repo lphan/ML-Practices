@@ -270,10 +270,30 @@ for i in range(len(data)):
     eu_rec_total.append(sum(fill_eu_recovered_byday_temp[i]))
     asia_rec_total.append(sum(fill_asia_recovered_byday_temp[i]))
 
-# TODO: Statistic by Weeks
-# Total infected cases, total fatalities, total recovered
-# totalconfirmed_by_week = []
-# temp = []
-# while i < range(len(totalconfirmed_by_day)):
-# 	temp.append(totalconfirmed_by_day[i])
-# 	i = i+1
+'''
+Total of infected cases, fatalities, recovered in the world changed by week
+'''
+
+def numberByWeeks(keys):
+    for key in keys:
+        weeks = []
+        week = 1
+        for i in range(6, len(data), 7):
+            weeks.append((week, data[i][key].values))        
+            week = week + 1
+
+        sums = [(k, int(sum(v))) for k,v in weeks]
+        
+        # Add the last day of current week to sums
+        sums.append((week, sum(data[-1][key].values)))
+        
+        if key is 'Confirmed':
+            confirm = sums
+        elif key is 'Deaths':
+            deaths = sums
+        else:
+            recovered = sums
+    
+    return confirm, deaths, recovered
+        
+confirmedByWeek, deathsByWeek, recoveredByWeek = numberByWeeks(['Confirmed', 'Deaths', 'Recovered'])
