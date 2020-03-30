@@ -675,8 +675,9 @@ class StartML(Start):
         """
         Description:
             filter out data from certain column with specific value
+            (e.g. in case there are many different key_columns names
         :param data: pandas.core.frame.DataFrame
-        :param column: column name
+        :param try_keys: list of all possible key_columns to search 
         :param value: value in column need to be filtered
         """
         # return data[data[column]==value]
@@ -768,6 +769,7 @@ class StartML(Start):
         :param data: pandas.core.frame.DataFrame
         :return: list of all possible NaN_column(s)
         """
+        # others: return [col for col in data.columns if data[col].isnull().sum() > 0] 
         nan_bool = data.isnull().any()
         # if isinstance(data, dask.dataframe.core.DataFrame):
         if isinstance(data, pd.core.frame.DataFrame):
