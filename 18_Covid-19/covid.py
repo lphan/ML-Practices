@@ -23,14 +23,20 @@ x_dat = np.arange(len(data))
 # number of all infected countries changed by day
 # num_infected_countries = [len(data[i][data[i]['Confirmed']>0]['Country/Region'].unique()) for i in range(len(data))]
 # filter column by name and convert Pandas frame to Numpy Array
-num_infected_countries = [len(np.unique(data[i][data[i]['Confirmed'] > 0].filter(regex=("Country.*")).values)) for i in
-                          range(len(data))]
+infected_countries_earliest = np.unique(data[0][data[0]['Confirmed']>0].filter(regex=("Country.*")).values)
+infected_countries_latest = np.unique(data[-1][data[-1]['Confirmed']>0].filter(regex=("Country.*")).values)
+
+num_infected_countries = [len(infected_countries_latest) for i in range(len(data))]
+
 
 # Total all confirmed cases in all countries changed by day
 totalconfirmed_by_day = [sum(data[i]['Confirmed']) for i in range(len(data))]
 
 # Total all recovered cases in all countries changed by day
 totalrecovered_by_day = [sum(data[i]['Recovered']) for i in range(len(data))]
+
+# New Increasing/ changes cases in all countries changed by day
+newCasesByDay = [totalconfirmed_by_day[0]]+[totalconfirmed_by_day[i+1]-totalconfirmed_by_day[i] for i in range(len(totalconfirmed_by_day)-1)]
 
 # CHINA: Pre-Processing NaN value confirmed_cases
 y_dat_cn = [
@@ -86,6 +92,9 @@ All Countries Fatalities_cases
 '''
 y_dat_all_fatal = [sum(data[i][data[i]['Deaths'] > 0]['Deaths'].values) for i in range(len(data))]
 
+# New Increasing/ changes Fatalities in all countries changed by day
+newFatalitiesByDay = [y_dat_all_fatal[0]]+[y_dat_all_fatal[i+1]-y_dat_all_fatal[i] for i in range(len(y_dat_all_fatal)-1)]
+
 # CHINA: Fatalities_cases
 y_dat_death_cn = [
     StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='China')['Deaths'].values
@@ -139,6 +148,8 @@ y_dat_death_au = [0 if y.size == 0 else sum(y) for y in y_dat_death_au]
 All Countries RECOVERED
 '''
 y_dat_all_recovered = [sum(data[i][data[i]['Recovered'] > 0]['Recovered'].values) for i in range(len(data))]
+# New Increasing/ changes Fatalities in all countries changed by day
+newRecoveredByDay = [y_dat_all_recovered[0]]+[y_dat_all_recovered[i+1]-y_dat_all_recovered[i] for i in range(len(y_dat_all_recovered)-1)]
 
 y_dat_recovered_cn = [
     StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='China')['Recovered'].values
@@ -297,3 +308,23 @@ def numberByWeeks(keys):
     return confirm, deaths, recovered
         
 confirmedByWeek, deathsByWeek, recoveredByWeek = numberByWeeks(['Confirmed', 'Deaths', 'Recovered'])
+
+# Top 10 countries with highest cases (new cases, fatality, recovered) changed by day
+all_countries_conf = [(country, 
+                       int(sum(StartML.searchByValue(data[-1], try_keys=['Country_Region', 'Country/Region'], value=country)['Confirmed'].values))
+                       - int(sum(StartML.searchByValue(data[-2], try_keys=['Country_Region', 'Country/Region'], value=country)['Confirmed'].values))) 
+                     for country in infected_countries_latest]
+
+all_countries_fatal = [(country, 
+                        int(sum(StartML.searchByValue(data[-1], try_keys=['Country_Region', 'Country/Region'], value=country)['Deaths'].values))
+                        - int(sum(StartML.searchByValue(data[-2], try_keys=['Country_Region', 'Country/Region'], value=country)['Deaths'].values)))
+                     for country in infected_countries_latest]
+
+all_countries_rec = [(country, 
+                      int(sum(StartML.searchByValue(data[-1], try_keys=['Country_Region', 'Country/Region'], value=country)['Recovered'].values))
+                      - int(sum(StartML.searchByValue(data[-2], try_keys=['Country_Region', 'Country/Region'], value=country)['Recovered'].values)))
+                     for country in infected_countries_latest]
+
+countries_newConfByDay = sorted(all_countries_conf, key=lambda x: x[1], reverse=True)
+countries_newFatalByDay = sorted(all_countries_fatal, key=lambda x: x[1], reverse=True)
+countries_newRecByDay = sorted(all_countries_rec, key=lambda x: x[1], reverse=True)
