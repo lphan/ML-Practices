@@ -26,7 +26,7 @@ x_dat = np.arange(len(data))
 infected_countries_earliest = np.unique(data[0][data[0]['Confirmed']>0].filter(regex=("Country.*")).values)
 infected_countries_latest = np.unique(data[-1][data[-1]['Confirmed']>0].filter(regex=("Country.*")).values)
 
-num_infected_countries = [len(infected_countries_latest) for i in range(len(data))]
+num_infected_countries = [len(np.unique(data[i][data[i]['Confirmed']>0].filter(regex=("Country.*")).values)) for i in range(len(data))]
 
 
 # Total all confirmed cases in all countries changed by day
@@ -284,7 +284,6 @@ for i in range(len(data)):
 '''
 Total of infected cases, fatalities, recovered in the world changed by week
 '''
-
 def numberByWeeks(keys):
     for key in keys:
         weeks = []
@@ -304,7 +303,7 @@ def numberByWeeks(keys):
             deaths = sums
         else:
             recovered = sums
-    
+                
     return confirm, deaths, recovered
         
 confirmedByWeek, deathsByWeek, recoveredByWeek = numberByWeeks(['Confirmed', 'Deaths', 'Recovered'])
