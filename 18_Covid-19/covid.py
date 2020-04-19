@@ -327,3 +327,5 @@ all_countries_rec = [(country,
 countries_newConfByDay = sorted(all_countries_conf, key=lambda x: x[1], reverse=True)
 countries_newFatalByDay = sorted(all_countries_fatal, key=lambda x: x[1], reverse=True)
 countries_newRecByDay = sorted(all_countries_rec, key=lambda x: x[1], reverse=True)
+
+# TOP 10 countries with the cases comparing to population (see: file UID_ISO_FIPS_LookUp_Table.csv)
