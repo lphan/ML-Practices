@@ -1,7 +1,10 @@
 ### COVID-19 
 
-Update by Week in the World
-Update by Day in the countries: CHINA, GERMANY, ITALY, SOUTH KOREA, JAPAN, USA, AUSTRALIA
+ANSWERING THE AD-HOC QUESTIONS via DESCRIPTIVE DATA ANALYTICS
+"How many, when, where and what happened?"
+
+that keep tracking the COVID-19 events progress in the World 
+Update by Day, Weeks in the countries: CHINA, GERMANY, ITALY, SOUTH KOREA, JAPAN, USA, AUSTRALIA and in the World.
 
 See files: 
 > 18_Covid-19.ipynb: ipython notebook file contains information about the progress of covid-19 outbreak in the countries CHINA, GERMANY, ITALY, SOUTH KOREA, JAPAN, USA, AUSTRALIA updated by day
@@ -13,6 +16,8 @@ See files:
 > 18_Covid-19_eu_asia: ipython notebook file contains information about the progress of covid-19 outbreak (total infection, fatalities, recovered) as comparision between 10 EU countries, the USA, and 10 ASIA countries
 
 > 18_Covid-19_byWeek: ipython notebook file contains information about the progress of covid-19 outbreak in the World, started from official recorded day 1 (22.01.2020).
+
+> 18_Covid-19_top10: ipython notebook file contains information that observing 10 countries sorted by day the most cases (Confirmed, Fatalities, Recovered)
 
 > config.ini: configuration file
 
