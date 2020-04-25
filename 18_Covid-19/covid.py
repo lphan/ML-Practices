@@ -23,24 +23,6 @@ data = [data[i].fillna(0) for i in range(len(data))]
 
 x_dat = np.arange(len(data))
 
-# number of all infected countries changed by day
-# num_infected_countries = [len(data[i][data[i]['Confirmed']>0]['Country/Region'].unique()) for i in range(len(data))]
-# filter column by name and convert Pandas frame to Numpy Array
-infected_countries_earliest = np.unique(data[0][data[0]['Confirmed']>0].filter(regex=("Country.*")).values)
-infected_countries_latest = np.unique(data[-1][data[-1]['Confirmed']>0].filter(regex=("Country.*")).values)
-
-num_infected_countries = [len(np.unique(data[i][data[i]['Confirmed']>0].filter(regex=("Country.*")).values)) for i in range(len(data))]
-
-
-# Total all confirmed cases in all countries changed by day
-totalconfirmed_by_day = [sum(data[i]['Confirmed']) for i in range(len(data))]
-
-# Total all recovered cases in all countries changed by day
-totalrecovered_by_day = [sum(data[i]['Recovered']) for i in range(len(data))]
-
-# New Increasing/ changes cases in all countries changed by day
-newCasesByDay = [totalconfirmed_by_day[0]]+[totalconfirmed_by_day[i+1]-totalconfirmed_by_day[i] for i in range(len(totalconfirmed_by_day)-1)]
-
 # CHINA: Pre-Processing NaN value confirmed_cases
 y_dat_cn = [
     StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='China')['Confirmed'].values
@@ -89,6 +71,23 @@ y_dat_au = [
     for i in range(len(data))]
 
 y_dat_au = [0 if y.size == 0 else sum(y) for y in y_dat_au]
+
+''' number of all infected countries changed by day '''
+# num_infected_countries = [len(data[i][data[i]['Confirmed']>0]['Country/Region'].unique()) for i in range(len(data))]
+# filter column by name and convert Pandas frame to Numpy Array
+infected_countries_earliest = np.unique(data[0][data[0]['Confirmed']>0].filter(regex=("Country.*")).values)
+infected_countries_latest = np.unique(data[-1][data[-1]['Confirmed']>0].filter(regex=("Country.*")).values)
+
+num_infected_countries = [len(np.unique(data[i][data[i]['Confirmed']>0].filter(regex=("Country.*")).values)) for i in range(len(data))]
+
+# Total all confirmed cases in all countries changed by day
+totalconfirmed_by_day = [sum(data[i]['Confirmed']) for i in range(len(data))]
+
+# Total all recovered cases in all countries changed by day
+totalrecovered_by_day = [sum(data[i]['Recovered']) for i in range(len(data))]
+
+# New Increasing/ changes cases in all countries changed by day
+newCasesByDay = [totalconfirmed_by_day[0]]+[totalconfirmed_by_day[i+1]-totalconfirmed_by_day[i] for i in range(len(totalconfirmed_by_day)-1)]
 
 '''
 All Countries Fatalities_cases
@@ -150,9 +149,10 @@ y_dat_death_au = [0 if y.size == 0 else sum(y) for y in y_dat_death_au]
 '''
 All Countries RECOVERED
 '''
-y_dat_all_recovered = [sum(data[i][data[i]['Recovered'] > 0]['Recovered'].values) for i in range(len(data))]
 # New Increasing/ changes Fatalities in all countries changed by day
-newRecoveredByDay = [y_dat_all_recovered[0]]+[y_dat_all_recovered[i+1]-y_dat_all_recovered[i] for i in range(len(y_dat_all_recovered)-1)]
+y_dat_all_recovered = [sum(data[i][data[i]['Recovered'] > 0]['Recovered'].values) for i in range(len(data))]
+newRecoveredByDay = [y_dat_all_recovered[0]] + [y_dat_all_recovered[i+1]-y_dat_all_recovered[i] 
+                                                for i in range(len(y_dat_all_recovered)-1)]
 
 y_dat_recovered_cn = [
     StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='China')['Recovered'].values
@@ -264,7 +264,7 @@ for i in range(len(data)):
     fill_eu_recovered_byday_temp.append([sum(fill_eu) for fill_eu in eu_rec_byDay[i]])
     fill_asia_recovered_byday_temp.append([sum(fill_asia) for fill_asia in asia_rec_byDay[i]])
 
-# --------------- Computation the total cases in EU and ASIA (infected cases, fatalities, recovered)
+''' --------------- Computation the total cases in EU and ASIA (infected cases, fatalities, recovered) '''
 eu_total = []
 asia_total = []
 
@@ -311,7 +311,7 @@ def numberByWeeks(keys):
         
 confirmedByWeek, deathsByWeek, recoveredByWeek = numberByWeeks(['Confirmed', 'Deaths', 'Recovered'])
 
-# Top 10 countries with highest cases (new cases, fatality, recovered) changed by day
+''' Top 10 countries with highest cases (new cases, fatality, recovered) changed by day '''
 all_countries_conf = [(country, 
                        int(sum(StartML.searchByValue(data[-1], try_keys=['Country_Region', 'Country/Region'], value=country)['Confirmed'].values))
                        - int(sum(StartML.searchByValue(data[-2], try_keys=['Country_Region', 'Country/Region'], value=country)['Confirmed'].values))) 
@@ -327,8 +327,42 @@ all_countries_rec = [(country,
                       - int(sum(StartML.searchByValue(data[-2], try_keys=['Country_Region', 'Country/Region'], value=country)['Recovered'].values)))
                      for country in infected_countries_latest]
 
-countries_newConfByDay = sorted(all_countries_conf, key=lambda x: x[1], reverse=True)
-countries_newFatalByDay = sorted(all_countries_fatal, key=lambda x: x[1], reverse=True)
-countries_newRecByDay = sorted(all_countries_rec, key=lambda x: x[1], reverse=True)
+countries_highestConfByDay = sorted(all_countries_conf, key=lambda x: x[1], reverse=True)
+countries_highestFatalByDay = sorted(all_countries_fatal, key=lambda x: x[1], reverse=True)
+countries_highestRecByDay = sorted(all_countries_rec, key=lambda x: x[1], reverse=True)
 
-# TOP 10 countries with the cases comparing to population (see: file UID_ISO_FIPS_LookUp_Table.csv)
+topConf=countries_highestConfByDay[0:10]
+topFatal=countries_highestFatalByDay[0:10]
+topRec=countries_highestRecByDay[0:10]
+
+''' Top 10 countries with lowest cases (new cases, fatality, recovered) changed by day '''
+countries_lowestConfByDay = sorted(all_countries_conf, key=lambda x: x[1], reverse=False)
+countries_lowestFatalByDay = sorted(all_countries_fatal, key=lambda x: x[1], reverse=False)
+countries_lowestRecByDay = sorted(all_countries_rec, key=lambda x: x[1], reverse=False)
+
+''' Top 10 Countries with highest ratio (cases on population) (see: file UID_ISO_FIPS_LookUp_Table.csv) '''
+country_pop = [(country, sdata[sdata['Country_Region']==country]['Population'].values[0]) for country in sdata['Country_Region'].unique()]
+
+topConfPopulation = []
+for c in topConf:
+    for country in country_pop:
+        if country[0] == c[0]:
+            topConfPopulation.append((country[0], c[1]/int(country[1]), int(country[1])))
+topConfRatioPop = [(tcp[0], tcp[1]) for tcp in topConfPopulation]
+topConfPop = [(tcp[0], tcp[2]) for tcp in topConfPopulation]
+
+topFatalPopulation = []
+for c in topFatal:
+    for country in country_pop:
+        if country[0] == c[0]:
+            topFatalPopulation.append((country[0], c[1]/int(country[1]), int(country[1])))
+topFatalRatioPop = [(tfp[0], tfp[1]) for tfp in topFatalPopulation]
+topFatalPop = [(tfp[0], tfp[2]) for tfp in topFatalPopulation]
+            
+topRecPopulation = []
+for c in topRec:
+    for country in country_pop:
+        if country[0] == c[0]:
+            topRecPopulation.append((country[0], c[1]/int(country[1]), int(country[1])))
+topRecRatioPop = [(trp[0], trp[1]) for trp in topRecPopulation]
+topRecPop = [(trp[0], trp[2]) for trp in topRecPopulation]
