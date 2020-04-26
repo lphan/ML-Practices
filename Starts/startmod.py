@@ -14,6 +14,8 @@ __author__ = 'Long Phan'
 
 import dask
 import pandas as pd
+import numpy as np
+import statsmodels.formula.api as sm
 from Starts.startml import *
 from Starts.startvis import *
 from scipy.stats import uniform
@@ -34,6 +36,7 @@ from sklearn.metrics import recall_score
 from sklearn.metrics import mean_absolute_error
 from sklearn.metrics import mean_squared_error
 from sklearn.metrics import mean_squared_log_error
+from sklearn.utils import resample
 
 # from sklearn.metrics import huber
 from sklearn.metrics import r2_score
@@ -50,10 +53,9 @@ from scipy.stats import kurtosis, skew
 from math import sqrt
 # from sklearn.pipeline import make_pipeline
 # from sklearn.ensemble.partial_dependence import plot_partial_dependence
-
-import numpy as np
-import statsmodels.formula.api as sm
-
+from statsmodels.stats.proportion import proportion_confint
+from scipy.stats import chi2_contingency
+from scipy.stats import chi2
 
 class StartMod(StartML):
     """
@@ -475,7 +477,7 @@ class StartMod(StartML):
             return orig_data
 
     @classmethod
-    def feature_selection_chisquared(cls, data, k_features=4):
+    def feature_select_chi2(cls, data, k_features=4):
         array = data.values
         X = array[:, 0:len(array)]
         Y = array[:, len(array)]
@@ -490,6 +492,38 @@ class StartMod(StartML):
         features = fit.transform(X)
         print(features[0:k_features+1, :])
         return features
+
+    @classmethod
+    def feature_test_chi2(cls, data):
+        """
+        determine whether input_variable and categorical output_variable are independent.
+        data should exist 2 variables to create contigency table in format list of numpy_array
+        (list of list) for column (feature_values as input_variable) and row (record_values as output_variable)
+        """
+        contigency_table = data.values
+        print(contigency_table)
+        stat, p, dof, expected = chi2_contingency(contigency_table)
+
+        # Degree of freedom
+        print('dof=%d' % dof)
+        print(expected)
+
+        # interpret test-statistic
+        prob = 0.95
+        critical = chi2.ppf(prob, dof)
+        print('probability=%.3f, critical=%.3f, stat=%.3f' % (prob, critical, stat))
+        if abs(stat) >= critical:
+            print('Dependent (reject H0)')
+        else:
+            print('Independent (fail to reject H0)')
+        
+        # interpret p-value
+        alpha = 1.0 - prob
+        print('significance=%.3f, p=%.3f' % (alpha, p))
+        if p <= alpha:
+            print('Dependent (reject H0)')
+        else:
+            print('Independent (fail to reject H0)')
 
     @classmethod
     def feature_hashing(cls, data):
@@ -736,57 +770,10 @@ class StartMod(StartML):
         print("Cosh Loss: \n ", log_cosh_loss)
         
         print("R2 Score (coefficient of determination): \n", r2_score(y_true, y_pred))
-        print("Adjusted R2 Score: tbd. ")
-
-    @classmethod
-    def classification_metrics_report(cls, y_true, y_pred, cat_lab):
-        """
-        Description: measure the quality of the models (comparing results before and after running prediction)
-
-            Binary Classification:
-                Accuracy = (TP + TN) / (TP + TN + FP + FN)
-                Precision = TP / (TP + FP)
-                Recall = TP / (TP + FN)
-                F1 Score = (2 * Precision * Recall) / (Precision + Recall)
-            
-            Regression models: 
-                Mean absolute error, Mean Squared error and R2 score
-
-        References:
-            https://medium.com/acing-ai/how-to-evaluate-regression-models-d183b4f5853d
-            http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics
-            http://scikit-learn.org/stable/modules/model_evaluation.html#model-evaluation
-            http://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html
-            http://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html
-            http://scikit-learn.org/stable/modules/generated/sklearn.metrics.accuracy_score.html
-            http://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_score.html
-
-        :param y_true: the truth values
-        :param y_pred: the predicted values
-        :param cat_lab: categorical label name used for classification 
-        :return:
-        """
-        
-        # Classification Model Evaluation
-        print("Classification Report: \n", classification_report(y_true, y_pred, cat_lab=cat_lab))
-        print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred, labels=np.unique(y_true)))        
-        print("\nAccuracy Score: \n", accuracy_score(y_true, y_pred))
-
-        if len(np.unique(y_true))==2:
-            print("binary")
-            prec = precision_score(y_true, y_pred)
-            rec = recall_score(y_true, y_pred)
-        else:
-            print("set average")
-            prec = precision_score(y_true, y_pred, average='micro')
-            rec = recall_score(y_true, y_pred, average='micro')
-
-        print("\nPrecision Score: \n", prec)
-        print("\nRecall Score: \n", rec)
-        print("\nF-Score: \n", 2*prec*rec/ (prec+rec))
+        print("Adjusted R2 Score: tbd. ")   
         
     @classmethod
-    def classification_validation(cls, model, x_val, y_val, classification_metrics='accuracy', tune=False, vis=True):
+    def validate_classification(cls, model, x_val, y_val, classification_metrics='accuracy', tune=False, vis=True):
         """
         Description: apply K-Fold Cross_Validation to estimate the model (classification) Bias vs Variance
 
@@ -814,7 +801,7 @@ class StartMod(StartML):
         :param parameters (used for tuning hyperparameters) default is []
         :param tune (turn on grid search method to find the best parameters for model) default is False
         :return:
-        """
+        """        
         # Evaluate using Cross validation with k-parts with default n_splits = 10, random_state = 7
         kfold = KFold(n_splits=10, random_state=7)
 
@@ -872,7 +859,54 @@ class StartMod(StartML):
             print("Random Search Parameter - Best estimator alpha: ", rs.best_estimator_.alpha) 
 
     @classmethod
-    def regression_metrics_report(cls, model, x_val, y_val, regression_metrics):
+    def report_classification_metrics(cls, y_true, y_pred, cat_lab):
+        """
+        Description: measure the quality of the models (comparing results before and after running prediction)
+
+            Binary Classification:
+                Accuracy = (TP + TN) / (TP + TN + FP + FN)
+                Precision = TP / (TP + FP)
+                Recall = TP / (TP + FN)
+                F1 Score = (2 * Precision * Recall) / (Precision + Recall)
+            
+            Regression models: 
+                Mean absolute error, Mean Squared error and R2 score
+
+        References:
+            https://medium.com/acing-ai/how-to-evaluate-regression-models-d183b4f5853d
+            http://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics
+            http://scikit-learn.org/stable/modules/model_evaluation.html#model-evaluation
+            http://scikit-learn.org/stable/modules/generated/sklearn.metrics.classification_report.html
+            http://scikit-learn.org/stable/modules/generated/sklearn.metrics.confusion_matrix.html
+            http://scikit-learn.org/stable/modules/generated/sklearn.metrics.accuracy_score.html
+            http://scikit-learn.org/stable/modules/generated/sklearn.metrics.precision_score.html
+
+        :param y_true: the truth values
+        :param y_pred: the predicted values
+        :param cat_lab: categorical label name used for classification 
+        :return:
+        """
+        
+        # Classification Model Evaluation
+        print("Classification Report: \n", classification_report(y_true, y_pred, cat_lab=cat_lab))
+        print("Confusion Matrix: \n", confusion_matrix(y_true, y_pred, labels=np.unique(y_true)))        
+        print("\nAccuracy Score: \n", accuracy_score(y_true, y_pred))
+
+        if len(np.unique(y_true))==2:
+            print("binary")
+            prec = precision_score(y_true, y_pred)
+            rec = recall_score(y_true, y_pred)
+        else:
+            print("set average")
+            prec = precision_score(y_true, y_pred, average='micro')
+            rec = recall_score(y_true, y_pred, average='micro')
+
+        print("\nPrecision Score: \n", prec)
+        print("\nRecall Score: \n", rec)
+        print("\nF-Score: \n", 2*prec*rec/ (prec+rec))
+
+    @classmethod
+    def report_regression_metrics(cls, model, x_val, y_val, regression_metrics):
         """ Description: Metrics for evaluating predictions on regression machine learning problems """
         
         # Evaluate using Cross validation with k-parts with default n_splits = 10
@@ -895,10 +929,30 @@ class StartMod(StartML):
 
         print( 'skewness of normal distribution (should be 0): {}'.format(skew(y_val)))        
         print('Kurtosis for normal distribution (normal 0.0)', kurtosis(y_val, fisher = True))
-        print('Kurtosis for normal distribution Pearson’s definition is used (normal 3.0)', kurtosis(y_val, fisher = False)
+        print('Kurtosis for normal distribution Pearson’s definition is used (normal 3.0)', kurtosis(y_val, fisher = False))
 
-# info_mod = StartMod.info_help()
+    # @classmethod
+    # def bootstrap_eval(cls, model, data, number_repeats):
+    #     # prepare bootstrap sample
+    #     boot_train = resample(data, replace=True, n_samples=4, random_state=1)
+    #     print('Bootstrap Sample: %s' % boot_train)
+    #     # out of bag observations
+    #     oob_test = [x for x in data if x not in boot_train]
+    #     print('OOB Sample: %s' % oob_test)
 
-# update parameters
-# new_param={'dependent_label': self.dependent_label}
-# StartMod.update_parameters=new_param
+        # fit model to data
+        # model.fit(boot_train)        
+        # statistics = [evaluate(model, oob_test) for i in range(number_repeats)]
+    @classmethod
+    def compLowUpCI(cls, number_samples, number_correct, significant_level):
+        """
+        Description: 
+            lower and upper bounds on the model classification'S accuracy
+        :param number_samples: size of data
+        :param number_correct: the number of corrected prediction on total samples/ data
+        :param significant_level: 90%, 95%, 98%, 99%
+        :return lower, upper
+        """
+        lower, upper = proportion_confint(number_correct, number_samples, 1-significant_level)
+        print('lower=%.3f, upper=%.3f' % (lower, upper))
+        return lower, upper

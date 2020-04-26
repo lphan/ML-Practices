@@ -40,6 +40,7 @@ from sklearn.svm import SVR
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.tree import DecisionTreeRegressor
 
+from scipy.stats import linregress
 from xgboost import XGBClassifier
 from xgboost import plot_importance
 
@@ -64,9 +65,45 @@ class StartModSKL(StartMod):
         super().__init__()  # StartMod.__init__(self)  or super(StartModSKL, self).__init__()
 
     @classmethod
-    def regression_linear(cls, data, dependent_label, poly=False, ridge=False, vis=True, save=True, regularization=True):
+    def regress_linear_simple(cls, data, dependent_label, x_pred):
+                
+        # convert to type Numpy
+        y = data[dependent_label].values
+        # drop dependent value from data and save the independent values into x
+        x = data.drop(dependent_label, axis=1).values
+
+        # fit linear regression model and identify the coefficients b1, b0 of linear function
+        a, b, r_value, p_value, std_err = linregress(x, y)
+
+        # make predictions
+        yhat = b + a*x_pred
+
+        # define new input, expected value and prediction
+        # x_in = x[0]
+        # y_out = y[0]
+        # yhat_out = yhat[0]
+
+        # estimate stdev of yhat
+        sum_errs = arraysum((y - yhat)**2)
+        stdev = sqrt(1/(len(y)-2) * sum_errs)
+
+        # calculate prediction interval
+        interval = 1.96 * stdev
+        print('Prediction Interval: %.3f' % interval)
+        lower, upper = yhat - interval, yhat + interval
+        print('95%% likelihood that the true value is between %.3f and %.3f' % (lower, upper))
+        print('Predicted value: %.3f' % yhat)
+
+        # plot dataset and prediction with interval
+        pyplot.scatter(x, y)
+        pyplot.plot(x_pred, yhat, color='red')
+        pyplot.errorbar(x_pred, yhat, yerr=interval, color='black', fmt='o')
+        pyplot.show()
+
+    @classmethod
+    def regress_linear(cls, data, dependent_label, poly=False, ridge=False, vis=True, save=True, regularization=True):
         """
-        Description: apply method Linear regression y = ax + b (one independent variable, one dependent_label)
+        Description: apply method Linear regression e.g y = ax + b (one independent variable, one dependent_label)
 
         # References:
             http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LinearRegression.html
@@ -87,7 +124,7 @@ class StartModSKL(StartMod):
         sc_x = StandardScaler(copy=True, with_mean=True, with_std=True)
         x_train = sc_x.fit_transform(x_train)
         x_test = sc_x.transform(x_test)
-        filename = StartModSKL.regression_linear.__name__
+        filename = StartModSKL.regress_linear.__name__
 
         if poly:
             # setup default degree
@@ -175,7 +212,7 @@ class StartModSKL(StartMod):
             return lin_reg, y_test, y_predict
 
     @classmethod
-    def regression_knn(cls, data, dependent_label):
+    def regress_knn(cls, data, dependent_label):
         """
         """
         x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label, random_state=cls.__random_state,
@@ -267,7 +304,7 @@ class StartModSKL(StartMod):
         return reg, y_test, y_predict
 
     @classmethod
-    def regression_decision_tree(cls, data, dependent_label, vis=False, save=True):
+    def regress_decision_tree(cls, data, dependent_label, vis=False, save=True):
         """
         Description: apply method Decision Tree regression
 
@@ -305,7 +342,7 @@ class StartModSKL(StartMod):
         y_predict = reg_dt.predict(x_test)
 
         if save:
-            filename = StartModSKL.regression_decision_tree.__name__
+            filename = StartModSKL.regress_decision_tree.__name__
             joblib.dump(reg_dt, filename + '_model.sav')
 
         if vis:
@@ -322,7 +359,7 @@ class StartModSKL(StartMod):
         return reg_dt, y_test, y_predict
 
     @classmethod
-    def regression_random_forest(cls, data, dependent_label, n_trees=10, save=True):
+    def regress_random_forest(cls, data, dependent_label, n_trees=10, save=True):
         """
         Description: combine decision trees to form an ensemble random forest for regression in order to decrease the model’s variance. 
 
@@ -344,13 +381,13 @@ class StartModSKL(StartMod):
         y_predict = reg_rf.predict(x_test)
 
         if save:
-            filename = StartModSKL.regression_random_forest.__name__
+            filename = StartModSKL.regress_random_forest.__name__
             joblib.dump(reg_rf, filename + '_model.sav')
 
         return reg_rf, y_test, y_predict
 
     @classmethod
-    def regression_svr(cls, data, dependent_label, kn='rbf'):
+    def regress_svr(cls, data, dependent_label, kn='rbf'):
         """
         Description: apply Support Vector Regression (SVR) to predict the information as real number
         References: 
@@ -382,7 +419,7 @@ class StartModSKL(StartMod):
         return reg_svr, y_test, y_predict
 
     @classmethod
-    def regression_logistic(cls, data, dependent_label, solver='liblinear', k_features=3, max_iter=100, multi_class='warn', save=True, regularization=True):
+    def regress_logistic(cls, data, dependent_label, solver='liblinear', k_features=3, max_iter=100, multi_class='warn', save=True, regularization=True):
         """
         Description: apply method Regularized logistic regression
         apply multi_class = ('multinomial', 'ovr')
@@ -439,7 +476,7 @@ class StartModSKL(StartMod):
             StartMod.regularization(data, dependent_label)
 
         if save:
-            filename = StartModSKL.regression_random_forest.__name__
+            filename = StartModSKL.regress_random_forest.__name__
             joblib.dump(rfe_fit, filename + '_model.sav')
 
         return rfe_fit, y_test, y_predict
@@ -801,7 +838,7 @@ class StartModSKL(StartMod):
         return ensemble
 
     @classmethod
-    def clustering_k_mean_noc(cls, data, plot=False, save=True):
+    def cluster_k_mean_noc(cls, data, plot=False, save=True):
         """
         Description: find the number of clusters using the elbow method.
 
@@ -824,7 +861,7 @@ class StartModSKL(StartMod):
             cluster_errors.append(k_means.inertia_)
 
         if save:
-            filename = StartModSKL.clustering_k_mean_noc.__name__
+            filename = StartModSKL.cluster_k_mean_noc.__name__
             joblib.dump(k_means, filename + '_model.sav')
 
         # plot to see result
@@ -842,10 +879,10 @@ class StartModSKL(StartMod):
         return clusters_df
 
     @classmethod
-    def clustering_k_mean(cls, data, n_clusters, save=True):
+    def cluster_k_mean(cls, data, n_clusters, save=True):
         """
         Description:
-            Requirement: run clustering_k_mean_noc first to find 'noc' (number of possible clusters)
+            Requirement: run cluster_k_mean_noc first to find 'noc' (number of possible clusters)
             Apply method clustering k_means++ to cluster data with the given 'noc'
 
         # References:
@@ -860,7 +897,7 @@ class StartModSKL(StartMod):
         y_clusters = k_means.fit_predict(data.values)
 
         if save:
-            filename = StartModSKL.clustering_k_mean.__name__
+            filename = StartModSKL.cluster_k_mean.__name__
             joblib.dump(k_means, filename + '_model.sav')
 
         return k_means, y_clusters
@@ -869,7 +906,7 @@ class StartModSKL(StartMod):
     def info_help():
         info = {
             "info_help_StartModSKL": StartModSKL.__name__,
-            "StartModSKL.regression_linear": StartModSKL.regression_linear.__doc__,
+            "StartModSKL.regress_linear": StartModSKL.regress_linear.__doc__,
             }
         # info.update(StartML.info_help())
 

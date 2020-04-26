@@ -17,6 +17,7 @@ import tensorflow as tf
 from math import sqrt
 from Starts.startmod import *
 from Starts.startmod import StartMod
+from Keras.utils import plot_model
 from keras.models import Sequential
 from keras.wrappers.scikit_learn import KerasClassifier
 from keras.wrappers.scikit_learn import KerasRegressor
@@ -503,7 +504,7 @@ class StartModTFANN(StartModTF):
         :return: Keras-Sequential object, the actual (true) value, the predicted value
         """
         # split data
-        x_train, x_eval, y_train, y_eval = StartMod.split_data(data, dependent_label=self.dependent_label)
+        x_train, x_test, y_train, y_test = StartMod.split_data(data, dependent_label=self.dependent_label)
 
         # Initialising the ANN
         model = Sequential() # model = models.Sequential()
@@ -547,19 +548,19 @@ class StartModTFANN(StartModTF):
         model.fit(x_train, y_train, validation_split=0.3, batch_size=self.batch_size, epochs=self.nr_epochs)
 
         # Predictions and evaluating the model
-        y_pred = model.predict(x_eval)
+        y_pred = model.predict(x_test)
 
         # Evaluate the model
         scores, accuracy = model.evaluate(x_train, y_train)
         print("\nModel %s: Scores: %.2f%%, Accuracy: %.2f%%" % (model, scores*100, accuracy*100))
 
         # make class predictions with the model
-        predictions = model.predict_classes(x_eval)
+        predictions = model.predict_classes(x_test)
         # summarize the first 5 cases
         for i in range(5):
-            print('%s => %d (expected %d)' % (x_eval[i].tolist(), predictions[i], y_eval[i]))
+            print('%s => %d (expected %d)' % (x_test[i].tolist(), predictions[i], y_test[i]))
 
-        return model, y_eval, y_pred
+        return model, y_test, y_pred
 
 
 class StartModTFCNN(StartModTF):
@@ -606,7 +607,7 @@ class StartModTFCNN(StartModTF):
         X_data = pd.DataFrame(data=scaler.transform(X_data), columns=X_data.columns, index=X_data.index)
 
         # Split data into training_data and evaluation_data
-        x_train, x_eval, y_train, y_eval = train_test_split(X_data, Y_data, test_size=0.2, random_state=101)
+        x_train, x_test, y_train, y_test = train_test_split(X_data, Y_data, test_size=0.2, random_state=101)
 
         # Number of feature columns in training_data
         input_dimension = len(x_train.columns)  # input_dimension = self.input_units
@@ -652,20 +653,19 @@ class StartModTFCNN(StartModTF):
         # compile and train model with training_data
         model.compile(loss=self.loss, optimizer=self.optimizer, metrics=['accuracy'])
         model.fit(x_train, y_train, epochs=self.nr_epochs, batch_size=self.batch_size)
-
-        # Evaluate the model
-        # scores, accuracy = model.evaluate(x_train, y_train)
-        # print("\nModel %s: Scores: %.2f%%, Accuracy: %.2f%%" % (model.metrics_names[1], scores[1]*100, accuracy*100))
-
-        # Evaluate the model
-        scores = model.evaluate(x_train, y_train)
-        print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
+        
+        # Evaluate the model on the training and testing set
+        scores = model.evaluate(x_train, y_train, verbose=0)
+        print("\nTraining Accuracy: Model %s: Scores: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
+        
+        scores = model.evaluate(x_test, y_test, verbose=0)
+        print("\nTesting Accuracy: Model %s: Scores: %.2f%%" % (model.metrics_names[1], scores[1] * 100))
 
         # Predict value
-        y_pred = pd.DataFrame(data=model.predict(x_eval.values.reshape(x_eval.shape[0], x_eval.shape[1], 1)),
-                              columns=y_eval.columns)
+        y_pred = pd.DataFrame(data=model.predict(x_test.values.reshape(x_test.shape[0], x_test.shape[1], 1)),
+                              columns=y_test.columns)
 
-        return model, y_eval, y_pred
+        return model, y_test, y_pred
 
 
 class StartModTFRNN(StartModTF):
@@ -803,8 +803,8 @@ class StartModTFRNN(StartModTF):
                 print('At time point=%d, Predicted=%f, Expected=%f' % (i + 1, yhat, expected))
 
             # report performance by measuring RMSE from truth value in test_scaled and predicted value for every repeat
-            y_eval = raw_values[-len(test_scaled):]
-            rmse = sqrt(mean_squared_error(y_eval, y_pred))
+            y_test = raw_values[-len(test_scaled):]
+            rmse = sqrt(mean_squared_error(y_test, y_pred))
             print('%d) Test RMSE: %.3f' % (r + 1, rmse), '\n')
             # print(len(raw_values[len(train_scaled)+1:]), len(predictions), len(raw_values[-len(test_scaled):]))
             error_scores.append(rmse)

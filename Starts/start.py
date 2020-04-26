@@ -210,13 +210,14 @@ class Start(object):
 Start._arguments()
 
 if Start.kwargs['folder_path']:
-    print("Start importing folder")   
+    print("Start importing files in folder")   
     data = Start.import_folder()
 
-elif Start.kwargs['data_path']:
-    print("Start importing data")
-    data = Start.import_data(Start.kwargs['data_path'])
-else:
+if Start.kwargs['data_path']:
+    filename = Start.kwargs['data_path']
+    print("Start importing single data ", filename)
+    sdata = Start.import_data(filename)
+else: 
     print("No Data_Path or Folder_Path is given")
     
 # Persist data in memory to allow future computations faster (only apply for dask-object)

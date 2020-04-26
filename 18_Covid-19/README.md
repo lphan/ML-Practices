@@ -3,8 +3,9 @@
 ANSWERING THE AD-HOC QUESTIONS via DESCRIPTIVE DATA ANALYTICS
 "How many, when, where and what happened?"
 
-that keep tracking the COVID-19 Events Progress 
-Update by Day, Weeks in the countries: CHINA, GERMANY, ITALY, SOUTH KOREA, JAPAN, USA, AUSTRALIA and in the World.
+by tracking the COVID-19 Events Progress 
+
+Update by Day, Weeks, etc. in the countries: CHINA, GERMANY, ITALY, SOUTH KOREA, JAPAN, USA, AUSTRALIA and in the World.
 
 See files: 
 > 18_Covid-19.ipynb: ipython notebook file contains information about the progress of covid-19 outbreak in the countries CHINA, GERMANY, ITALY, SOUTH KOREA, JAPAN, USA, AUSTRALIA updated by day.
