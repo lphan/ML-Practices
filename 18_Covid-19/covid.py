@@ -1,5 +1,5 @@
-# TODO: ANSWERING AD-HOC QUESTIONS
-# REFACTORING the CODE
+# ANSWERING AD-HOC QUESTIONS
+# TODO: REFACTORING the CODE
 
 # setup absolute path to location of package Starts and config-file 
 from inspect import getsourcefile
@@ -21,59 +21,100 @@ Data Preprocessing
 # Pre-Processing: fill all NaN with 0
 data = [data[i].fillna(0) for i in range(len(data))]
 
+# x-axis for plot
 x_dat = np.arange(len(data))
 
-# CHINA: Pre-Processing NaN value confirmed_cases
-y_dat_cn = [
-    StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='China')['Confirmed'].values
-    for i in range(len(data))]
+# collect all data into list all countries of tuple (country, confirmed), (country, fatalities), (country, recovered)
+countries = sdata['Country_Region'].unique()
 
-y_dat_cn = [0 if y.size == 0 else sum(y) for y in y_dat_cn]
+all_countries = dict()
+all_countries_Confirmed = dict()
+all_countries_Deaths = dict()
+all_countries_Recovered = dict()
+all_countries_values = []
 
-# GERMANY: Pre-Processing empty value confirmed_cases
-y_dat_de = [
-    StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='Germany')['Confirmed'].values
-    for i in range(len(data))]
+# Total Confirmed in all countries
+for country in countries:
+    for i in range(len(data)):
+        # hard code for Korea
+        if country == "Korea, South":
+            tmp = StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='Korea')['Confirmed'].values
+        else:
+            tmp = StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=country)['Confirmed'].values
+        if tmp.size>0:
+            all_countries_values.append(tmp)
+        else:
+            # fill zero for the NaN value in data after computation of fillna
+            all_countries_values.append(np.array([0]))
+    all_countries_Confirmed[country] = all_countries_values
+    
+    # reset back to initial status
+    all_countries_values = []
+    
+# Total Deaths in all countries
+for country in countries:
+    for i in range(len(data)):
+        # hard code for Korea
+        if country == "Korea, South":
+            tmp = StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='Korea')['Deaths'].values
+        else:
+            tmp = StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=country)['Deaths'].values
+        if tmp.size>0:
+            all_countries_values.append(tmp)
+        else:
+            # fill zero for the NaN value in data after computation of fillna
+            all_countries_values.append(np.array([0]))
+    all_countries_Deaths[country] = all_countries_values
+    
+    # reset back to initial status
+    all_countries_values = []
+    
+# Total Recovered in all countries
+for country in countries:
+    for i in range(len(data)):
+        # hard code for Korea
+        if country == "Korea, South":
+            tmp = StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='Korea')['Recovered'].values
+        else:
+            tmp = StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=country)['Recovered'].values
+        if tmp.size>0:
+            all_countries_values.append(tmp)
+        else:
+            # fill zero for the NaN value in data after computation of fillna
+            all_countries_values.append(np.array([0]))
+    all_countries_Recovered[country] = all_countries_values
+    
+    # reset back to initial status
+    all_countries_values = []
+    
+all_countries['Confirmed'] = all_countries_Confirmed
+all_countries['Deaths'] = all_countries_Deaths
+all_countries['Recovered'] = all_countries_Recovered
 
-y_dat_de = [0 if y.size == 0 else sum(y) for y in y_dat_de]
+# EXAMPLES: 
+# last day increasing deaths in US: sum(all_countries['Deaths']['US'][-1]) - sum(all_countries['Deaths']['US'][-2])
 
-# ITALY: Pre-Processing empty value confirmed_cases
-y_dat_it = [
-    StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='Italy')['Confirmed'].values
-    for i in range(len(data))]
+# TODO: ------------ re-implement all below function using object all_countries 
+# TODO: ------------ re-write in modular function ------------
 
-y_dat_it = [0 if y.size == 0 else sum(y) for y in y_dat_it]
+# All countries CONFIRMED CASES
+y_dat_cn = [sum(all_countries['Confirmed']['China'][i]) for i in range(len(data))]
 
-# Republic of Korea: Pre-Processing confirmed_cases
-y_dat_kr = [
-    StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='Korea')['Confirmed'].values
-    for i in range(len(data))]
+y_dat_de = [sum(all_countries['Confirmed']['Germany'][i]) for i in range(len(data))]
 
-y_dat_kr = [0 if y.size == 0 else sum(y) for y in y_dat_kr]
+y_dat_it = [sum(all_countries['Confirmed']['Italy'][i]) for i in range(len(data))]
 
-# JAPAN: Pre-Processing confirmed_cases
-y_dat_jp = [
-    StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value="Japan")['Confirmed'].values
-    for i in range(len(data))]
+# Republic of Korea: Pre-Processing confirmed_cases (HAS TWO NAMES, first: republic .., then: Korea, South)
+y_dat_kr = [sum(all_countries['Confirmed']['Korea, South'][i]) for i in range(len(data))]
 
-y_dat_jp = [0 if y.size == 0 else sum(y) for y in y_dat_jp]
+y_dat_jp = [sum(all_countries['Confirmed']['Japan'][i]) for i in range(len(data))]
 
-# US: Pre-Processing confirmed_cases
-y_dat_us = [
-    StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value="US")['Confirmed'].values
-    for i in range(len(data))]
+y_dat_us = [sum(all_countries['Confirmed']['US'][i]) for i in range(len(data))]
 
-y_dat_us = [0 if y.size == 0 else sum(y) for y in y_dat_us]
+y_dat_au = [sum(all_countries['Confirmed']['Australia'][i]) for i in range(len(data))]
 
-# AUSTRALIA: Pre-Processing confirmed_cases
-y_dat_au = [
-    StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value="Australia")['Confirmed'].values
-    for i in range(len(data))]
+''' Number of all infected countries changed by day '''
 
-y_dat_au = [0 if y.size == 0 else sum(y) for y in y_dat_au]
-
-''' number of all infected countries changed by day '''
-# num_infected_countries = [len(data[i][data[i]['Confirmed']>0]['Country/Region'].unique()) for i in range(len(data))]
 # filter column by name and convert Pandas frame to Numpy Array
 infected_countries_earliest = np.unique(data[0][data[0]['Confirmed']>0].filter(regex=("Country.*")).values)
 infected_countries_latest = np.unique(data[-1][data[-1]['Confirmed']>0].filter(regex=("Country.*")).values)
@@ -97,97 +138,41 @@ y_dat_all_fatal = [sum(data[i][data[i]['Deaths'] > 0]['Deaths'].values) for i in
 # New Increasing/ changes Fatalities in all countries changed by day
 newFatalitiesByDay = [y_dat_all_fatal[0]]+[y_dat_all_fatal[i+1]-y_dat_all_fatal[i] for i in range(len(y_dat_all_fatal)-1)]
 
-# CHINA: Fatalities_cases
-y_dat_death_cn = [
-    StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='China')['Deaths'].values
-    for i in range(len(data))]
+y_dat_death_cn = [sum(all_countries['Deaths']['China'][i]) for i in range(len(data))]
 
-y_dat_death_cn = [0 if y.size == 0 else sum(y) for y in y_dat_death_cn]
+y_dat_death_de = [sum(all_countries['Deaths']['Germany'][i]) for i in range(len(data))]
 
-# GERMANY: Fatalities_cases
-y_dat_death_de = [
-    StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='Germany')['Deaths'].values
-    for i in range(len(data))]
+y_dat_death_it = [sum(all_countries['Deaths']['Italy'][i]) for i in range(len(data))]
 
-y_dat_death_de = [0 if y.size == 0 else sum(y) for y in y_dat_death_de]
+y_dat_death_kr = [sum(all_countries['Deaths']['Korea, South'][i]) for i in range(len(data))]
 
-# ITALY: Fatalities_cases
-y_dat_death_it = [
-    StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='Italy')['Deaths'].values
-    for i in range(len(data))]
+y_dat_death_jp = [sum(all_countries['Deaths']['Japan'][i]) for i in range(len(data))]
 
-y_dat_death_it = [0 if y.size == 0 else sum(y) for y in y_dat_death_it]
+y_dat_death_us = [sum(all_countries['Deaths']['US'][i]) for i in range(len(data))]
 
-# Republic of Korea: Fatalities_cases					
-y_dat_death_kr = [
-    StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='Korea')['Deaths'].values
-    for i in range(len(data))]
-
-y_dat_death_kr = [0 if y.size == 0 else sum(y) for y in y_dat_death_kr]
-
-# JAPAN: Fatalities_cases
-y_dat_death_jp = [
-    StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='Japan')['Deaths'].values
-    for i in range(len(data))]
-
-y_dat_death_jp = [0 if y.size == 0 else sum(y) for y in y_dat_death_jp]
-
-# USA: Fatalities_cases
-y_dat_death_us = [
-    StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='US')['Deaths'].values
-    for i in range(len(data))]
-
-y_dat_death_us = [0 if y.size == 0 else sum(y) for y in y_dat_death_us]
-
-# AUSTRALIA: Fatalities_cases
-y_dat_death_au = [
-    StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='Australia')['Deaths'].values
-    for i in range(len(data))]
-
-y_dat_death_au = [0 if y.size == 0 else sum(y) for y in y_dat_death_au]
+y_dat_death_au = [sum(all_countries['Deaths']['Australia'][i]) for i in range(len(data))]
 
 '''
 All Countries RECOVERED
 '''
-# New Increasing/ changes Fatalities in all countries changed by day
+# New Increasing/ changes recovered in all countries changed by day
 y_dat_all_recovered = [sum(data[i][data[i]['Recovered'] > 0]['Recovered'].values) for i in range(len(data))]
 newRecoveredByDay = [y_dat_all_recovered[0]] + [y_dat_all_recovered[i+1]-y_dat_all_recovered[i] 
                                                 for i in range(len(y_dat_all_recovered)-1)]
 
-y_dat_recovered_cn = [
-    StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='China')['Recovered'].values
-    for i in range(len(data))]
-y_dat_recovered_cn = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_cn]
+y_dat_recovered_cn = [sum(all_countries['Recovered']['China'][i]) for i in range(len(data))]
 
-y_dat_recovered_de = [
-    StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='Germany')['Recovered'].values
-    for i in range(len(data))]
-y_dat_recovered_de = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_de]
+y_dat_recovered_de = [sum(all_countries['Recovered']['Germany'][i]) for i in range(len(data))]
 
-y_dat_recovered_it = [
-    StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='Italy')['Recovered'].values
-    for i in range(len(data))]
-y_dat_recovered_it = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_it]
+y_dat_recovered_it = [sum(all_countries['Recovered']['Italy'][i]) for i in range(len(data))]
 
-y_dat_recovered_kr = [
-    StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='Korea')['Recovered'].values
-    for i in range(len(data))]
-y_dat_recovered_kr = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_kr]
+y_dat_recovered_kr = [sum(all_countries['Recovered']['Korea, South'][i]) for i in range(len(data))]
 
-y_dat_recovered_jp = [
-    StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='Japan')['Recovered'].values
-    for i in range(len(data))]
-y_dat_recovered_jp = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_jp]
+y_dat_recovered_jp = [sum(all_countries['Recovered']['Japan'][i]) for i in range(len(data))]
 
-y_dat_recovered_us = [
-    StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='US')['Recovered'].values
-    for i in range(len(data))]
-y_dat_recovered_us = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_us]
+y_dat_recovered_us = [sum(all_countries['Recovered']['US'][i]) for i in range(len(data))]
 
-y_dat_recovered_au = [
-    StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='Australia')['Recovered'].values
-    for i in range(len(data))]
-y_dat_recovered_au = [0 if y.size == 0 else sum(y) for y in y_dat_recovered_au]
+y_dat_recovered_au = [sum(all_countries['Recovered']['Australia'][i]) for i in range(len(data))]
 
 '''
 Total comparison increasing by day in 
@@ -195,6 +180,7 @@ Western_culture (top 10 countries: US Germany Italy Spain France UK Swiss Nether
 and
 Estern_culture (top 10/ all countries:  China Korea Japan Malaysia Indonesia Thailand Philippine Singapore Taiwan Vietnam)
 '''
+# TODO: add population
 
 eu_10_countries = ['Italy', 'Germany', 'Spain', 'France', 'United Kingdom', 'Switzerland', 'Netherlands', 'Austria',
                    'Belgium', 'Norway']
@@ -312,20 +298,15 @@ def numberByWeeks(keys):
 confirmedByWeek, deathsByWeek, recoveredByWeek = numberByWeeks(['Confirmed', 'Deaths', 'Recovered'])
 
 ''' Top 10 countries with highest cases (new cases, fatality, recovered) changed by day '''
-all_countries_conf = [(country, 
-                       int(sum(StartML.searchByValue(data[-1], try_keys=['Country_Region', 'Country/Region'], value=country)['Confirmed'].values))
-                       - int(sum(StartML.searchByValue(data[-2], try_keys=['Country_Region', 'Country/Region'], value=country)['Confirmed'].values))) 
-                     for country in infected_countries_latest]
 
-all_countries_fatal = [(country, 
-                        int(sum(StartML.searchByValue(data[-1], try_keys=['Country_Region', 'Country/Region'], value=country)['Deaths'].values))
-                        - int(sum(StartML.searchByValue(data[-2], try_keys=['Country_Region', 'Country/Region'], value=country)['Deaths'].values)))
-                     for country in infected_countries_latest]
+all_countries_conf = [(country, sum(all_countries['Confirmed'][country][-1]) - sum(all_countries['Confirmed'][country][-2])) 
+                       for country in infected_countries_latest]
 
-all_countries_rec = [(country, 
-                      int(sum(StartML.searchByValue(data[-1], try_keys=['Country_Region', 'Country/Region'], value=country)['Recovered'].values))
-                      - int(sum(StartML.searchByValue(data[-2], try_keys=['Country_Region', 'Country/Region'], value=country)['Recovered'].values)))
-                     for country in infected_countries_latest]
+all_countries_fatal = [(country, sum(all_countries['Deaths'][country][-1]) - sum(all_countries['Deaths'][country][-2])) 
+                       for country in infected_countries_latest]
+
+all_countries_rec = [(country, sum(all_countries['Recovered'][country][-1]) - sum(all_countries['Recovered'][country][-2])) 
+                       for country in infected_countries_latest]
 
 countries_highestConfByDay = sorted(all_countries_conf, key=lambda x: x[1], reverse=True)
 countries_highestFatalByDay = sorted(all_countries_fatal, key=lambda x: x[1], reverse=True)
@@ -341,7 +322,13 @@ countries_lowestFatalByDay = sorted(all_countries_fatal, key=lambda x: x[1], rev
 countries_lowestRecByDay = sorted(all_countries_rec, key=lambda x: x[1], reverse=False)
 
 ''' Top 10 Countries with highest ratio (cases on population) (see: file UID_ISO_FIPS_LookUp_Table.csv) '''
-country_pop = [(country, sdata[sdata['Country_Region']==country]['Population'].values[0]) for country in sdata['Country_Region'].unique()]
+# TODO: rewrite this
+country_pop = [(country, sdata[sdata['Country_Region']==country]['Population'].values[0]) for country in countries]
+
+# Idea is to use dictionary instead of using list of tuple
+# country_pop2 = dict()
+# for country in countries:
+#     country_pop2[country]=sdata[sdata['Country_Region']==country]['Population'].values[0]
 
 topConfPopulation = []
 for c in topConf:
