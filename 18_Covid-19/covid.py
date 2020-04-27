@@ -296,9 +296,9 @@ countries_lowestRecByDay = sorted(all_countries_rec_lastday, key=lambda x: x[1],
 country_pop = [(country, sdata[sdata['Country_Region']==country]['Population'].values[0]) for country in countries]
 
 # Idea is to use dictionary instead of using list of tuple
-# country_pop2 = dict()
-# for country in countries:
-#     country_pop2[country]=sdata[sdata['Country_Region']==country]['Population'].values[0]
+country_pop_dict = dict()
+for country in countries:
+    country_pop_dict[country]=sdata[sdata['Country_Region']==country]['Population'].values[0]
 
 topConfPopulation = []
 for c in topConf:
@@ -308,6 +308,7 @@ for c in topConf:
 topConfRatioPop = [(tcp[0], tcp[1]) for tcp in topConfPopulation]
 topConfPop = [(tcp[0], tcp[2]) for tcp in topConfPopulation]
 
+# Ratio of Deaths (last day)/ Population
 topFatalPopulation = []
 for c in topFatal:
     for country in country_pop:
@@ -315,7 +316,8 @@ for c in topFatal:
             topFatalPopulation.append((country[0], c[1]/int(country[1]), int(country[1])))
 topFatalRatioPop = [(tfp[0], tfp[1]) for tfp in topFatalPopulation]
 topFatalPop = [(tfp[0], tfp[2]) for tfp in topFatalPopulation]
-            
+
+# Ratio of Recovered (last day)/ Population            
 topRecPopulation = []
 for c in topRec:
     for country in country_pop:
@@ -326,9 +328,22 @@ topRecPop = [(trp[0], trp[2]) for trp in topRecPopulation]
 
 ''' Top 10 countries with highest cases (total Confirmed on population, total deaths on total confirmed) '''
 
-# total deaths on total confirmed
-y_dat_ratio = dict()
+# Ratio of Total Deaths/ Total Confirmed
+y_dat_ratioDeathConf = dict()
 for country in all_countries['Confirmed'].keys():
-    y_dat_ratio[country] = y_dat_deaths[country][-1]/y_dat_confirmed[country][-1]*100
+    y_dat_ratioDeathConf[country] = y_dat_deaths[country][-1]/y_dat_confirmed[country][-1]*100
     
-# TODO: total Confirmed on population, total recovered on total confirmed
+# Ratio of Total Recovered/ Total Confirmed
+y_dat_ratioRecPop = dict()
+for country in all_countries['Confirmed'].keys():
+    y_dat_ratioRecPop[country] = y_dat_recovered[country][-1]/y_dat_confirmed[country][-1]*100
+    
+# Ratio of Total Deaths/ Population
+y_dat_ratioDeathPop = dict()
+for country in all_countries['Confirmed'].keys():
+    y_dat_ratioDeathPop[country] = y_dat_deaths[country][-1]/country_pop_dict[country]*100
+    
+# Ratio of Total Confirmed/ Population
+y_dat_ratioConfPop = dict()
+for country in all_countries['Confirmed'].keys():
+    y_dat_ratioConfPop[country] = y_dat_confirmed[country][-1]/country_pop_dict[country]*100
