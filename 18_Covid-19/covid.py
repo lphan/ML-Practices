@@ -292,10 +292,9 @@ countries_lowestFatalByDay = sorted(all_countries_fatal_lastday, key=lambda x: x
 countries_lowestRecByDay = sorted(all_countries_rec_lastday, key=lambda x: x[1], reverse=False)
 
 ''' Top 10 Countries with highest ratio (cases on population) (see: file UID_ISO_FIPS_LookUp_Table.csv) '''
-# TODO: rewrite this
+# TODO: rewrite this use dictionary instead of using list of tuple
 country_pop = [(country, sdata[sdata['Country_Region']==country]['Population'].values[0]) for country in countries]
 
-# Idea is to use dictionary instead of using list of tuple
 country_pop_dict = dict()
 for country in countries:
     country_pop_dict[country]=sdata[sdata['Country_Region']==country]['Population'].values[0]
@@ -313,7 +312,7 @@ topFatalPopulation = []
 for c in topFatal:
     for country in country_pop:
         if country[0] == c[0]:
-            topFatalPopulation.append((country[0], c[1]/int(country[1]), int(country[1])))
+            topFatalPopulation.append((country[0], c[1]/int(country[1])*100, int(country[1])))
 topFatalRatioPop = [(tfp[0], tfp[1]) for tfp in topFatalPopulation]
 topFatalPop = [(tfp[0], tfp[2]) for tfp in topFatalPopulation]
 
@@ -322,7 +321,7 @@ topRecPopulation = []
 for c in topRec:
     for country in country_pop:
         if country[0] == c[0]:
-            topRecPopulation.append((country[0], c[1]/int(country[1]), int(country[1])))
+            topRecPopulation.append((country[0], c[1]/int(country[1])*100, int(country[1])))
 topRecRatioPop = [(trp[0], trp[1]) for trp in topRecPopulation]
 topRecPop = [(trp[0], trp[2]) for trp in topRecPopulation]
 
