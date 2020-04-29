@@ -1,5 +1,4 @@
-# ANSWERING AD-HOC QUESTIONS
-# TODO: REFACTORING the CODE
+# ANSWERING the AD-HOC QUESTIONS
 
 # setup absolute path to location of package Starts and config-file 
 from inspect import getsourcefile
@@ -40,7 +39,7 @@ for country in countries:
         if country == "Korea, South":
             tmp = StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='Korea')['Confirmed'].values
         else:
-            tmp = StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=country)['Confirmed'].values
+            tmp = StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=country)['Confirmed'].values        
         if tmp.size>0:
             all_countries_values.append(tmp)
         else:
@@ -86,11 +85,11 @@ for country in countries:
     
     # reset back to initial status
     all_countries_values = []
-    
+
 all_countries['Confirmed'] = all_countries_Confirmed
 all_countries['Deaths'] = all_countries_Deaths
 all_countries['Recovered'] = all_countries_Recovered
-
+  
 ''' Number of all infected countries changed by day '''
 
 # filter column by name and convert Pandas frame to Numpy Array
@@ -111,8 +110,7 @@ newCasesByDay = [totalconfirmed_by_day[0]]+[totalconfirmed_by_day[i+1]-totalconf
 # EXAMPLES: 
 # last day increasing deaths in US: sum(all_countries['Deaths']['US'][-1]) - sum(all_countries['Deaths']['US'][-2])
 
-# TODO: ------------ re-implement all below function using object all_countries 
-# TODO: ------------ re-write in modular function ------------
+# TODO: re-write in modular function
 
 ''' 
 All countries CONFIRMED CASES until last day
@@ -150,7 +148,7 @@ Western_culture (top 10 countries: US Germany Italy Spain France UK Swiss Nether
 and
 Estern_culture (top 10/ all countries:  China Korea Japan Malaysia Indonesia Thailand Philippine Singapore Taiwan Vietnam)
 '''
-# TODO: add population
+# TODO: add population in tuple
 
 eu_10_countries = ['Italy', 'Germany', 'Spain', 'France', 'United Kingdom', 'Switzerland', 'Netherlands', 'Austria',
                    'Belgium', 'Norway']
@@ -191,7 +189,7 @@ for i in range(len(data)):
         [StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=ec)['Recovered'].values
          for ec in asia_10countries])
 
-# --------------- fill empty data by 0
+# fill empty data by 0
 fill_eu_byday = []
 for eu in eu_byDay:
     fill_eu_byday.append([np.array([0]) if e.size == 0 else e for e in eu])
@@ -200,7 +198,7 @@ fill_asia_byday = []
 for asia in asia_byDay:
     fill_asia_byday.append([np.array([0]) if a.size == 0 else a for a in asia])
 
-# --------------- fill by summing all data by day
+# fill by summing all data by day
 fill_eu_byday_temp = []
 fill_asia_byday_temp = []
 
@@ -220,7 +218,7 @@ for i in range(len(data)):
     fill_eu_recovered_byday_temp.append([sum(fill_eu) for fill_eu in eu_rec_byDay[i]])
     fill_asia_recovered_byday_temp.append([sum(fill_asia) for fill_asia in asia_rec_byDay[i]])
 
-''' --------------- Computation the total cases in EU and ASIA (infected cases, fatalities, recovered) '''
+''' Computation the total cases in EU and ASIA (infected cases, fatalities, recovered) '''
 eu_total = []
 asia_total = []
 
@@ -293,39 +291,28 @@ countries_lowestRecByDay = sorted(all_countries_rec_lastday, key=lambda x: x[1],
 
 ''' Top 10 Countries with highest ratio (cases on population) (see: file UID_ISO_FIPS_LookUp_Table.csv) '''
 # TODO: rewrite this use dictionary instead of using list of tuple
-country_pop = [(country, sdata[sdata['Country_Region']==country]['Population'].values[0]) for country in countries]
+# country_pop = [(country, sdata[sdata['Country_Region']==country]['Population'].values[0]) for country in countries]
 
 country_pop_dict = dict()
 for country in countries:
     country_pop_dict[country]=sdata[sdata['Country_Region']==country]['Population'].values[0]
 
-topConfPopulation = []
-for c in topConf:
-    for country in country_pop:
-        if country[0] == c[0]:
-            topConfPopulation.append((country[0], c[1]/int(country[1]), int(country[1])))
+# Ratio of Confirmed (last day)/ Population
+topConfPopulation=[((c[0], c[1]/int(country_pop_dict[c[0]]), int(country_pop_dict[c[0]]))) for c in topConf]
 topConfRatioPop = [(tcp[0], tcp[1]) for tcp in topConfPopulation]
 topConfPop = [(tcp[0], tcp[2]) for tcp in topConfPopulation]
 
 # Ratio of Deaths (last day)/ Population
-topFatalPopulation = []
-for c in topFatal:
-    for country in country_pop:
-        if country[0] == c[0]:
-            topFatalPopulation.append((country[0], c[1]/int(country[1])*100, int(country[1])))
+topFatalPopulation = [((c[0], c[1]/int(country_pop_dict[c[0]]), int(country_pop_dict[c[0]]))) for c in topFatal] 
 topFatalRatioPop = [(tfp[0], tfp[1]) for tfp in topFatalPopulation]
 topFatalPop = [(tfp[0], tfp[2]) for tfp in topFatalPopulation]
 
-# Ratio of Recovered (last day)/ Population            
-topRecPopulation = []
-for c in topRec:
-    for country in country_pop:
-        if country[0] == c[0]:
-            topRecPopulation.append((country[0], c[1]/int(country[1])*100, int(country[1])))
+# Ratio of Recovered (last day)/ Population
+topRecPopulation = [(c[0], c[1]/int(country_pop_dict[c[0]]), int(country_pop_dict[c[0]])) for c in topRec]
 topRecRatioPop = [(trp[0], trp[1]) for trp in topRecPopulation]
 topRecPop = [(trp[0], trp[2]) for trp in topRecPopulation]
 
-''' Top 10 countries with highest cases (total Confirmed on population, total deaths on total confirmed) '''
+''' Top 10 countries with highest cases '''
 
 # Ratio of Total Deaths/ Total Confirmed
 y_dat_ratioDeathConf = dict()
