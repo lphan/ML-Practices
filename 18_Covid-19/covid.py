@@ -89,7 +89,11 @@ for country in countries:
 all_countries['Confirmed'] = all_countries_Confirmed
 all_countries['Deaths'] = all_countries_Deaths
 all_countries['Recovered'] = all_countries_Recovered
-  
+
+country_pop_dict = dict()
+for country in countries:
+    country_pop_dict[country]=sdata[sdata['Country_Region']==country]['Population'].values[0]
+      
 ''' Number of all infected countries changed by day '''
 
 # filter column by name and convert Pandas frame to Numpy Array
@@ -150,10 +154,13 @@ Estern_culture (top 10/ all countries:  China Korea Japan Malaysia Indonesia Tha
 '''
 # TODO: add population in tuple
 
-eu_10_countries = ['Italy', 'Germany', 'Spain', 'France', 'United Kingdom', 'Switzerland', 'Netherlands', 'Austria',
+eu10_countries = ['Italy', 'Germany', 'Spain', 'France', 'United Kingdom', 'Switzerland', 'Netherlands', 'Austria',
                    'Belgium', 'Norway']
-asia_10countries = ['China', 'Korea', 'Japan', 'Malaysia', 'Indonesia', 'Thailand', 'Philippines', 'Singapore',
-                    'Taiwan', 'Vietnam']
+asia10_countries = ['China', 'Korea, South', 'Japan', 'Malaysia', 'Indonesia', 'Thailand', 'Philippines', 'Singapore',
+                    'Taiwan*', 'Vietnam']
+
+eu10_population = [country_pop_dict[country] for country in eu10_countries]
+asia10_population = [country_pop_dict[country] for country in asia10_countries]
 
 # total cases by days in 10 EU countries and 10 ASIA countries
 eu_byDay = []
@@ -170,24 +177,24 @@ asia_rec_byDay = []
 for i in range(len(data)):
     eu_byDay.append(
         [StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=ec)['Confirmed'].values
-         for ec in eu_10_countries])
+         for ec in eu10_countries])
     asia_byDay.append(
-        [StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=ec)['Confirmed'].values
-         for ec in asia_10countries])
+        [StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=ac)['Confirmed'].values
+         for ac in asia10_countries])
 
     eu_deaths_byDay.append(
         [StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=ec)['Deaths'].values
-         for ec in eu_10_countries])
+         for ec in eu10_countries])
     asia_deaths_byDay.append(
-        [StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=ec)['Deaths'].values
-         for ec in asia_10countries])
+        [StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=ac)['Deaths'].values
+         for ac in asia10_countries])
 
     eu_rec_byDay.append(
         [StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=ec)['Recovered'].values
-         for ec in eu_10_countries])
+         for ec in eu10_countries])
     asia_rec_byDay.append(
-        [StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=ec)['Recovered'].values
-         for ec in asia_10countries])
+        [StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=ac)['Recovered'].values
+         for ac in asia10_countries])
 
 # fill empty data by 0
 fill_eu_byday = []
@@ -292,10 +299,6 @@ countries_lowestRecByDay = sorted(all_countries_rec_lastday, key=lambda x: x[1],
 ''' Top 10 Countries with highest ratio (cases on population) (see: file UID_ISO_FIPS_LookUp_Table.csv) '''
 # TODO: rewrite this use dictionary instead of using list of tuple
 # country_pop = [(country, sdata[sdata['Country_Region']==country]['Population'].values[0]) for country in countries]
-
-country_pop_dict = dict()
-for country in countries:
-    country_pop_dict[country]=sdata[sdata['Country_Region']==country]['Population'].values[0]
 
 # Ratio of Confirmed (last day)/ Population
 topConfPopulation=[((c[0], c[1]/int(country_pop_dict[c[0]]), int(country_pop_dict[c[0]]))) for c in topConf]
