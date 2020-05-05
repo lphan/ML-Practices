@@ -18,7 +18,7 @@ See files:
 
 > 18_Covid-19_byWeek: ipython notebook file contains information about the progress of covid-19 outbreak in the World, started from official recorded day 1 (22.01.2020).
 
-> 18_Covid-19_top10: ipython notebook file contains information that observing 10 countries sorted by day the most cases (Confirmed, Fatalities, Recovered) and their ratio with respect to the population.
+> 18_Covid-19_top10: ipython notebook file contains information that observing 10 countries sorted by day the most cases (Confirmed, Fatalities, Recovered) and their correlation, ratio with respect to the population.
 
 > config.ini: configuration file
 
