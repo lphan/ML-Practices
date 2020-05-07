@@ -20,7 +20,7 @@ import numpy as np
 import fnmatch
 from Starts import *
 from Starts.start import *
-from sklearn.preprocessing import Imputer
+from sklearn.impute import SimpleImputer
 from sklearn.decomposition import TruncatedSVD
 from scipy.stats import pearsonr
 from scipy.stats import ttest_ind
@@ -907,7 +907,7 @@ class StartML(Start):
                     # data[nan_col] = data[nan_col].replace(to_replace=np.NaN, value=0)
 
                     # compute the mean of neighbor-values, option: 'most_frequent', 'median'
-                    imputer = Imputer(missing_values='NaN', strategy='mean', axis=1)
+                    imputer = SimpleImputer(missing_values='NaN', strategy='mean', axis=1)
                     imputer = imputer.fit(data[nan_col].values.reshape(1, -1))
                     data[nan_col] = imputer.transform(data[nan_col].values.reshape(1, -1))[0]
             return data
