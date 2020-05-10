@@ -684,6 +684,7 @@ class StartML(Start):
         i=0
         while (i<len(try_keys)):
             if try_keys[i] in data:
+                # TODO: use str.extract to suppress the UserWarning
                 return data[data[try_keys[i]].str.contains(value)]                
             else:        
                 i=i+1

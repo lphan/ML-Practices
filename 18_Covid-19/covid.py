@@ -38,7 +38,7 @@ all_countries = dict()
 all_countries_Confirmed = dict()
 all_countries_Deaths = dict()
 all_countries_Recovered = dict()
-all_countries_values = []
+all_countries_values = []   
 
 # Total Confirmed in all countries
 for country in infected_countries_latest:
@@ -118,8 +118,6 @@ newCasesByDay = [totalconfirmed_by_day[0]]+[totalconfirmed_by_day[i+1]-totalconf
 # EXAMPLES: 
 # last day increasing deaths in US: sum(all_countries['Deaths']['US'][-1]) - sum(all_countries['Deaths']['US'][-2])
 
-# TODO: re-write in modular function
-
 ''' 
 All countries CONFIRMED CASES until last day
 '''
@@ -157,7 +155,6 @@ Western_culture (10 countries: US Germany Italy Spain France UK Swiss Netherland
 and
 Estern_culture (10 countries:  China Korea Japan Malaysia Indonesia Thailand Philippine Singapore Taiwan Vietnam)
 '''
-# TODO: add population in tuple
 
 eu10_countries = ['Italy', 'Germany', 'Spain', 'France', 'United Kingdom', 'Switzerland', 'Netherlands', 'Austria',
                    'Belgium', 'Norway']
@@ -333,19 +330,25 @@ Top 10 countries with highest cases
 # Ratio of Total Deaths/ Total Confirmed
 y_dat_ratioDeathConf = dict()
 for country in all_countries['Confirmed'].keys():
-    y_dat_ratioDeathConf[country] = np.round((y_dat_deaths[country][-1]/y_dat_confirmed[country][-1])*100, 3)
+    if y_dat_confirmed[country][-1] == 0:
+        y_dat_ratioDeathConf[country] = 0
+    else: 
+        y_dat_ratioDeathConf[country] = np.round((y_dat_deaths[country][-1]/y_dat_confirmed[country][-1])*100, 3)
     
 # Ratio of Total Recovered/ Total Confirmed
 y_dat_ratioRecPop = dict()
 for country in all_countries['Confirmed'].keys():
-    y_dat_ratioRecPop[country] = np.round((y_dat_recovered[country][-1]/y_dat_confirmed[country][-1])*100, 3)
+    if y_dat_confirmed[country][-1] == 0:
+        y_dat_ratioRecPop[country] = 0
+    else: 
+        y_dat_ratioRecPop[country] = np.round((y_dat_recovered[country][-1]/y_dat_confirmed[country][-1])*100, 3)
     
-# Ratio of Total Deaths/ Population
+# Ratio of Total Deaths/ Population (certainly >0)
 y_dat_ratioDeathPop = dict()
-for country in all_countries['Confirmed'].keys():
+for country in all_countries['Deaths'].keys():
     y_dat_ratioDeathPop[country] = np.round((y_dat_deaths[country][-1]/np.double(country_pop_dict[country]))*100, 3)
     
-# Ratio of Total Confirmed/ Population
+# Ratio of Total Confirmed/ Population (certainly >0)
 y_dat_ratioConfPop = dict()
 for country in all_countries['Confirmed'].keys():
     y_dat_ratioConfPop[country] = np.round((y_dat_confirmed[country][-1]/np.double(country_pop_dict[country]))*100, 3)
