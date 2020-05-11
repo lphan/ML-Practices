@@ -176,6 +176,7 @@ asia_deaths_byDay = []
 eu_rec_byDay = []
 asia_rec_byDay = []
 
+# iterate all days
 for i in range(len(data)):
     eu_byDay.append(
         [StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=ec)['Confirmed'].values
@@ -217,6 +218,7 @@ fill_asia_fatal_byday_temp = []
 fill_eu_recovered_byday_temp= []
 fill_asia_recovered_byday_temp = []
 
+# iterate all days
 for i in range(len(data)):
     fill_eu_byday_temp.append([sum(fill_eu) for fill_eu in fill_eu_byday[i]])
     fill_asia_byday_temp.append([sum(fill_asia) for fill_asia in fill_asia_byday[i]])
