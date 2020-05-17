@@ -1,0 +1,56 @@
+# ANSWERING the AD-HOC QUESTIONS
+# REWRITE COVID in pandas-DataFrame format
+# setup absolute path to location of package Starts and config-file 
+from inspect import getsourcefile
+import os.path as path, sys
+
+current_dir = path.dirname(path.abspath(getsourcefile(lambda: 0)))
+sys.path.insert(0, current_dir[:current_dir.rfind(path.sep)])
+
+from Starts.start import *
+from Starts.startml import *
+from Starts.startvis import *
+from matplotlib.pylab import rcParams
+
+rcParams['figure.figsize'] = 20, 6
+
+'''
+Data Preprocessing 
+'''
+# Pre-Processing: fill all NaN with 0
+data = [data[i].fillna(0) for i in range(len(data))]
+
+# x-axis for plot
+x_dat = np.arange(len(data))
+
+# collect all data into list all countries of tuple (country, confirmed), (country, fatalities), (country, recovered)
+countries = sdata['Country_Region'].unique()
+
+''' Number of all infected countries changed by day '''
+
+# filter column by name and convert Pandas frame to Numpy Array
+infected_countries_earliest = np.unique(data[0][data[0]['Confirmed']>0].filter(regex=("Country.*")).values)
+infected_countries_latest = np.unique(data[-1][data[-1]['Confirmed']>0].filter(regex=("Country.*")).values)
+
+num_infected_countries = [len(np.unique(data[i][data[i]['Confirmed']>0].filter(regex=("Country.*")).values)) for i in range(len(data))]
+
+pdConfirm = pd.DataFrame(columns=infected_countries_latest)
+pdDeaths = pd.DataFrame(columns=infected_countries_latest)
+pdRecovered = pd.DataFrame(columns=infected_countries_latest)
+
+dataconfirmed = dict()
+datafatal = dict()
+datarecovered = dict()
+
+for i in range(len(data)):
+    # print("Day: ", i)
+    col = data[i].filter(like='Country').columns[0]
+    
+    dataconfirmed[i]=[data[i].loc[data[i][col]==country]['Confirmed'].sum() for country in infected_countries_latest]    
+    datafatal[i]=[data[i].loc[data[i][col]==country]['Deaths'].sum() for country in infected_countries_latest]
+    datarecovered[i]=[data[i].loc[data[i][col]==country]['Recovered'].sum() for country in infected_countries_latest]
+
+pdConfirm=pdConfirm.from_dict(dataconfirmed, orient='index', columns=infected_countries_latest)
+pdDeaths=pdDeaths.from_dict(datafatal, orient='index', columns=infected_countries_latest)
+pdRecovered=pdRecovered.from_dict(datarecovered, orient='index', columns=infected_countries_latest)
+    
