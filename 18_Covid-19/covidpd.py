@@ -53,4 +53,17 @@ for i in range(len(data)):
 pdConfirm=pdConfirm.from_dict(dataconfirmed, orient='index', columns=infected_countries_latest)
 pdDeaths=pdDeaths.from_dict(datafatal, orient='index', columns=infected_countries_latest)
 pdRecovered=pdRecovered.from_dict(datarecovered, orient='index', columns=infected_countries_latest)
-    
+
+totalConfirmed = pdConfirm.tail(1).values.sum()
+totalFatal = pdDeaths.tail(1).values.sum()
+totalRecovered = pdRecovered.tail(1).values.sum()
+
+lastday=len(data)-1
+top10confirmed = pdConfirm.tail(1).transpose().sort_values(by=[lastday], ascending=False).head(10)
+top10confirmed['RatioByTotal']=[top10confirmed.loc[country].values[0]/totalConfirmed for country in top10confirmed.index]
+
+top10fatal = pdDeaths.tail(1).transpose().sort_values(by=[lastday], ascending=False).head(10)
+top10fatal['RatioByTotal']=[top10fatal.loc[country].values[0]/totalFatal for country in top10fatal.index]
+
+top10recovered = pdRecovered.tail(1).transpose().sort_values(by=[lastday], ascending=False).head(10)
+top10recovered['RatioByTotal']=[top10recovered.loc[country].values[0]/totalRecovered for country in top10recovered.index]
