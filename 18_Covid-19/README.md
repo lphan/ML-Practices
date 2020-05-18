@@ -20,9 +20,13 @@ See files:
 
 > 18_Covid-19_top10: ipython notebook file contains information that observing 10 countries sorted by day the most cases (Confirmed, Fatalities, Recovered) and their correlation, ratio with respect to the population.
 
+> 18_Covid-19_top10sorted: ipython notebook file contains information that observing 10 countries sorted the most total cases (Confirmed, Fatalities, Recovered).
+
 > config.ini: configuration file
 
 > covid.py: python code file
+
+> covidpd.py: python code file, stores data in pandas data frame.
 
 ### References:
 

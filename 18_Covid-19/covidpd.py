@@ -60,10 +60,10 @@ totalRecovered = pdRecovered.tail(1).values.sum()
 
 lastday=len(data)-1
 top10confirmed = pdConfirm.tail(1).transpose().sort_values(by=[lastday], ascending=False).head(10)
-top10confirmed['RatioByTotal']=[top10confirmed.loc[country].values[0]/totalConfirmed for country in top10confirmed.index]
+top10confirmed['RatioByTotal_in_%']=[np.round(top10confirmed.loc[country].values[0]/totalConfirmed*100, 2) for country in top10confirmed.index]
 
 top10fatal = pdDeaths.tail(1).transpose().sort_values(by=[lastday], ascending=False).head(10)
-top10fatal['RatioByTotal']=[top10fatal.loc[country].values[0]/totalFatal for country in top10fatal.index]
+top10fatal['RatioByTotal_in_%']=[np.round(top10fatal.loc[country].values[0]/totalFatal*100, 2) for country in top10fatal.index]
 
 top10recovered = pdRecovered.tail(1).transpose().sort_values(by=[lastday], ascending=False).head(10)
-top10recovered['RatioByTotal']=[top10recovered.loc[country].values[0]/totalRecovered for country in top10recovered.index]
+top10recovered['RatioByTotal_in_%']=[np.round(top10recovered.loc[country].values[0]/totalRecovered*100, 2) for country in top10recovered.index]
