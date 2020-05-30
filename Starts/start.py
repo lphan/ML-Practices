@@ -193,7 +193,7 @@ class Start(object):
         if not folder:
             return
     
-        files = os.listdir(folder)
+        files = sorted(os.listdir(folder))
         idata = []
         print(files)
         for fil in files:

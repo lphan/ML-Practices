@@ -6,6 +6,8 @@ reports/
 .env
 .vscode/
 .idea/
-Starts/__pycache__/
+__pycache__/
+Starts/__pycache__/*
+COVID-19/
 */data/
 .ipynb_checkpoints/
