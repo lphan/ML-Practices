@@ -114,8 +114,12 @@ totalconfirmed_by_day = [sum(data[i]['Confirmed']) for i in x_dat]
 # Total all recovered cases in all countries changed by day
 totalrecovered_by_day = [sum(data[i]['Recovered']) for i in x_dat]
 
+# Total all recovered cases in all countries changed by day
+totalfatalities_by_day = [sum(data[i]['Deaths']) for i in x_dat]
+# y_dat_all_fatal = [sum(data[i][data[i]['Deaths'] > 0]['Deaths'].values) for i in x_dat]
+
 # New Increasing/ changes cases in all countries changed by day
-newCasesByDay = [totalconfirmed_by_day[0]]+[totalconfirmed_by_day[i+1]-totalconfirmed_by_day[i] for i in range(len(totalconfirmed_by_day)-1)]
+newCasesByDay = [totalconfirmed_by_day[0]]+[totalconfirmed_by_day[i+1]-totalconfirmed_by_day[i] for i in range(len(x_dat)-1)]
 
 # EXAMPLES: 
 # last day increasing deaths in US: sum(all_countries['Deaths']['US'][-1]) - sum(all_countries['Deaths']['US'][-2])
@@ -134,10 +138,9 @@ y_dat_deaths = dict()
 for country in all_countries['Deaths'].keys():
     y_dat_deaths[country] = [sum(all_countries['Deaths'][country][i]) for i in x_dat]
         
-y_dat_all_fatal = [sum(data[i][data[i]['Deaths'] > 0]['Deaths'].values) for i in x_dat]
 
 # New Increasing/ changes Fatalities in all countries changed by day
-newFatalitiesByDay = [y_dat_all_fatal[0]]+[y_dat_all_fatal[i+1]-y_dat_all_fatal[i] for i in range(len(y_dat_all_fatal)-1)]
+newFatalitiesByDay = [totalfatalities_by_day[0]]+[totalfatalities_by_day[i+1]-totalfatalities_by_day[i] for i in range(len(x_dat)-1)]
 
 '''
 All Countries RECOVERED_cases until last day
