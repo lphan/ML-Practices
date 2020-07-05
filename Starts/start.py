@@ -11,8 +11,10 @@ from dask.delayed import delayed
 from pickle import dump
 from pickle import load
 
-from sklearn.externals.joblib import dump as joblib_dump
-from sklearn.externals.joblib import load as joblib_load
+# from sklearn.externals.joblib import dump as joblib_dump
+# from sklearn.externals.joblib import load as joblib_load
+from joblib import dump as joblib_dump
+from joblib import load as joblib_load
 from sklearn.utils import shuffle
 
 from pip._internal.operations.freeze import freeze

@@ -363,3 +363,9 @@ for country in all_countries['Deaths'].keys():
 y_dat_ratioConfPop = dict()
 for country in all_countries['Confirmed'].keys():
     y_dat_ratioConfPop[country] = np.round((y_dat_confirmed[country][-1]/np.double(country_pop_dict[country]))*100, 3)
+    
+# Ratio Total_Recovered over Total_Confirmed changed by Day
+ratioRecByDay = [np.round(totalrecovered_by_day[i]/totalconfirmed_by_day[i]*100, 3) for i in range(len(x_dat))]
+
+# Ratio Total_Fatalities over Total_Confirmed changed by Day
+ratioFatalByDay = [np.round(totalfatalities_by_day[i]/totalconfirmed_by_day[i]*100, 3) for i in range(len(x_dat))]
