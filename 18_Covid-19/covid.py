@@ -315,29 +315,34 @@ countries_highestFatalByDay = top10countrieshighest(keyword='Deaths', infected_c
 countries_highestRecByDay = top10countrieshighest(keyword='Recovered', infected_countries=infected_countries_latest, reverse=False)
 
 ''' 
-Top 10 Countries with highest ratio (cases on population) (see: file UID_ISO_FIPS_LookUp_Table.csv) 
+Top 10 Countries with highest ratio (cases on population) last DAY (see: file UID_ISO_FIPS_LookUp_Table.csv) 
 '''
 # @jit(nopython=True)
-def getTopConf(topCountries, country_population):
-    topConfPopulation = [((c[0], c[1]/int(country_population[c[0]]), int(country_population[c[0]]))) for c in topCountries]
-    topConfRatioPop = [(tcp[0], tcp[1]) for tcp in topConfPopulation]
-    topConfPop = [(tcp[0], tcp[2]) for tcp in topConfPopulation]
-    return topConfPopulation, topConfRatioPop, topConfPop
+def getTopConfLastDay(topCountries, country_population):
+    topCasesPopulation = [((country[0], country[1]/int(country_population[country[0]]), int(country_population[country[0]]))) for country in topCountries]
+    topCasesRatioPop = [(tcp[0], tcp[1]) for tcp in topCasesPopulation]
+    topCasesPop = [(tcp[0], tcp[2]) for tcp in topCasesPopulation]
+    return topCasesPopulation, topCasesRatioPop, topCasesPop
 
 # country_pop = [(country, sdata[sdata['Country_Region']==country]['Population'].values[0]) for country in countries]
 
-# Ratio of Confirmed (last day)/ Population
-topConfPopulation, topConfRatioPop, topConfPop = getTopConf(topCountries=countries_highestConfByDay[0:10], country_population=country_pop_dict)
+# Ratio of Confirmed (last day)/ Population (Take the first 10 countries from the list)
+topConfPopulation, topConfLastDayRatioPop, topConfCountryPop = getTopConfLastDay(topCountries=countries_highestConfByDay[0:10], country_population=country_pop_dict)
 
-# Ratio of Deaths (last day)/ Population
-topFatalPopulation, topFatalRatioPop, topFatalPop = getTopConf(topCountries=countries_highestFatalByDay[0:10], country_population=country_pop_dict)
+# Ratio of Deaths (last day)/ Population (Take the first 10 countries from the list)
+topFatalPopulation, topFatalLastDayRatioPop, topFatalCountryPop = getTopConfLastDay(topCountries=countries_highestFatalByDay[0:10], country_population=country_pop_dict)
 
-# Ratio of Recovered (last day)/ Population
-topRecPopulation, topRecRatioPop, topRecPop = getTopConf(topCountries=countries_highestRecByDay[0:10], country_population=country_pop_dict)
+# Ratio of Recovered (last day)/ Population (Take the first 10 countries from the list)
+topRecPopulation, topRecLastDayRatioPop, topRecCountryPop = getTopConfLastDay(topCountries=countries_highestRecByDay[0:10], country_population=country_pop_dict)
 
 ''' 
-Top 10 countries with highest cases 
+The different Ratio of the Top 10 countries with highest cases 
 '''
+# Ratio of Total Confirmed/ Population (certainly >0)
+y_dat_ratioConfPop = dict()
+for country in all_countries['Confirmed'].keys():
+    y_dat_ratioConfPop[country] = np.round((y_dat_confirmed[country][-1]/np.double(country_pop_dict[country]))*100, 3)
+
 # Ratio of Total Deaths/ Total Confirmed
 y_dat_ratioDeathConf = dict()
 for country in all_countries['Confirmed'].keys():
@@ -345,25 +350,25 @@ for country in all_countries['Confirmed'].keys():
         y_dat_ratioDeathConf[country] = 0
     else: 
         y_dat_ratioDeathConf[country] = np.round((y_dat_deaths[country][-1]/y_dat_confirmed[country][-1])*100, 3)
-    
-# Ratio of Total Recovered/ Total Confirmed
-y_dat_ratioRecPop = dict()
-for country in all_countries['Confirmed'].keys():
-    if y_dat_confirmed[country][-1] == 0:
-        y_dat_ratioRecPop[country] = 0
-    else: 
-        y_dat_ratioRecPop[country] = np.round((y_dat_recovered[country][-1]/y_dat_confirmed[country][-1])*100, 3)
-    
+
 # Ratio of Total Deaths/ Population (certainly >0)
 y_dat_ratioDeathPop = dict()
 for country in all_countries['Deaths'].keys():
     y_dat_ratioDeathPop[country] = np.round((y_dat_deaths[country][-1]/np.double(country_pop_dict[country]))*100, 3)
-    
-# Ratio of Total Confirmed/ Population (certainly >0)
-y_dat_ratioConfPop = dict()
+
+# Ratio of Total Recovered/ Total Confirmed 
+y_dat_ratioRecConf = dict()
 for country in all_countries['Confirmed'].keys():
-    y_dat_ratioConfPop[country] = np.round((y_dat_confirmed[country][-1]/np.double(country_pop_dict[country]))*100, 3)
-    
+    if y_dat_confirmed[country][-1] == 0:
+        y_dat_ratioRecConf[country] = 0
+    else: 
+        y_dat_ratioRecConf[country] = np.round((y_dat_recovered[country][-1]/y_dat_confirmed[country][-1])*100, 3)
+
+# Ratio of Total Recovered/ Population (certainly >0)
+y_dat_ratioRecPop = dict()
+for country in all_countries['Deaths'].keys():
+    y_dat_ratioRecPop[country] = np.round((y_dat_recovered[country][-1]/np.double(country_pop_dict[country]))*100, 3)
+
 # Ratio Total_Recovered over Total_Confirmed changed by Day
 ratioRecByDay = [np.round(totalrecovered_by_day[i]/totalconfirmed_by_day[i]*100, 3) for i in range(len(x_dat))]
 
