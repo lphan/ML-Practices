@@ -1,6 +1,7 @@
 # ANSWERING the AD-HOC QUESTIONS
 
-# setup absolute path to location of package Starts and config-file 
+# setup absolute path to location of package Starts and config-file
+import seaborn as sns
 from inspect import getsourcefile
 import os.path as path, sys
 
