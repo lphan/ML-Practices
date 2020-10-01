@@ -78,6 +78,8 @@ Loop_of_the_path_to_DataScience_and_MachineLearning:
 
 > 14_NSIDC: analyse data daily-sea-ice-extent NSIDC National Snow & Ice Data Center
 
+> 18_Covid-19: analyse data COVID-19 shared by John Hopkins institute
+
 ### How-To: run the script .ipynb with jupyter notebook
 data need to be downloaded from the reference link in x_foldername 
 
@@ -98,6 +100,10 @@ More information: please check out package Starts
 
 ### E-Books (Data Science, Machine Learning, Deep Learning) Sources 
 (Shared by author on homepage, education and university page for personal uses, study, research and development)
+> AI 
+- Ethical Artificial Intelligence: https://bit.ly/2SfC8tL
+- The essential AI handbook for leaders: https://bit.ly/3ils8tu
+
 > Data Science
 - A Modern Introduction to Probability and Statistics (Temple Education): https://bit.ly/2njM3Pc
 - Probabilistic and Statistics for Python (Thinkstat): https://bit.ly/16mWasx
@@ -109,6 +115,8 @@ More information: please check out package Starts
 - Element of statistical Learning (Stanford Education): https://stanford.io/2voWjra
 - Understand Machine Learning from Theory to Algorithm: https://bit.ly/2IqLZsn
 - Machine Learning yearning (Andrew Ng): https://bit.ly/2xXLXTl
+- Machine-learning-systems-design (Chip Huyen): https://bit.ly/36mKqIt
+- AutoML: Methods, Systems and Challenges: https://bit.ly/36lKg46
 
 > Deep Learning book (Ian Goodfellow): https://bit.ly/2ol3T8P
 
