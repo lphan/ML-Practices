@@ -89,66 +89,69 @@ jupyter notebook x_foldername/x_filename.ipynb
 
 More information: please check out package Starts
 
+# Study Source (Most of them are pdf-books legally and shared by authors, research institute and universities on their website. Please use Google and copy paste keywords below to find the book)
 ### Data Sources:
-> Open Data Science Community Kaggle: https://bit.ly/1l9yjm9
+> Open Data Science Community Kaggle
 
-> Data Set Repository for study and research UCI: https://bit.ly/2uZ9Zfp
+> Data Set Repository for study and research UCI
 
-> Microsoft Research Open Data: https://bit.ly/2C6jIn6
+> Microsoft Research Open Data
 
-> Some small datasets hosted by library scikit-learn: https://bit.ly/2OortfC
+> Datasets hosted by library scikit-learn
 
 ### E-Books (Data Science, Machine Learning, Deep Learning) Sources 
 (Shared by author on homepage, education and university page for personal uses, study, research and development)
 > AI 
-- Ethical Artificial Intelligence: https://bit.ly/2SfC8tL
-- The essential AI handbook for leaders: https://bit.ly/3ils8tu
+- Ethical Artificial Intelligence (by Bill Hibbard)
+- The essential AI handbook for leaders (by Peltarion)
 
 > Data Science
-- A Modern Introduction to Probability and Statistics (Temple Education): https://bit.ly/2njM3Pc
-- Probabilistic and Statistics for Python (Thinkstat): https://bit.ly/16mWasx
-- Python_Data_Science_Handbook (Academia Education): https://bit.ly/2Omihbw
-- Computer Age Statistical Inference (Stanford Education): https://stanford.io/2KnQbIH
-- Foundations of Data Science (Cornell Education): https://bit.ly/2Jqz2x8
+- A Modern Introduction to Probability and Statistics (Temple Education)
+- Think Collection (Probabilistic and Statistics for Python, Bayes, etc.) (Green Tea Press by Allen B. Downey)
+- Python_Data_Science_Handbook (Academia Education)
+- Computer Age Statistical Inference (Stanford Education)
+- Foundations of Data Science (Cornell Education)
 
 > Machine Learning:
-- Element of statistical Learning (Stanford Education): https://stanford.io/2voWjra
-- Understand Machine Learning from Theory to Algorithm: https://bit.ly/2IqLZsn
-- Machine Learning yearning (Andrew Ng): https://bit.ly/2xXLXTl
-- Machine-learning-systems-design (Chip Huyen): https://bit.ly/36mKqIt
-- AutoML: Methods, Systems and Challenges: https://bit.ly/36lKg46
+- Element of statistical Learning (Stanford Education)
+- Understand Machine Learning from Theory to Algorithm (Textbook by Shai Ben-David and Shai Shalev-Shwartz)
+- Machine Learning yearning (Andrew Ng)
+- Machine-learning-systems-design (Chip Huyen)
+- AutoML: Methods, Systems and Challenges
 
-> Deep Learning book (Ian Goodfellow): https://bit.ly/2ol3T8P
+> Deep Learning book (Ian Goodfellow)
 
-> Neural Network Design (Okstate Education): https://bit.ly/31Rjsnp
+> Neural Network Design (Okstate Education)
 
 > Natural Language Processing: 
-- Analyzing text with the natural language toolkit (with Python): https://bit.ly/2aJzlnO
+- Analyzing text with the natural language toolkit (NLTK book with Python)
 
-> Reinforcement Learning (Stanford Education) (draft): https://stanford.io/2ojBKPE
+> An Introduction Reinforcement Learning (Stanford Education Richard S. Sutton and Andrew G. Barto) (draft)
 
 > Computer Vision: 
-- Models, Learning and Inference: https://bit.ly/2M9uhf9
-- Algorithms and Applications: https://bit.ly/2dnAjKb
-- Digital Image Processing (Caltech Education): https://bit.ly/2QCBBmx
+- Computer Vision:  Models, Learning, and Inference (Simon J.D. Prince)
+- Computer Vision: Algorithms and Applications, 2nd ed (2020 Richard Szeliski)
+- Digital Image Processing (Caltech Education)
 
 > Mathematics (Linear Algebra, Calculus, Probability, Optimization) for Machine Learning: 
-- University of California, Berkeley, Garrett Thomas: https://bit.ly/2oV33Qk
-- Youtube Channel: https://bit.ly/2LQhBcL
-- Khan Academy: https://bit.ly/1JpFTUd
+- Mathematics for Machine Learning (by Garrett Thomas at University of California, Berkeley, )
+- Mathematics for Machine Learning Full Course Youtube Channel
+- Khan Academy Math
 
 ### Online updated Information Technologies Sources 
 > KDnuggets: Machine Learning, Data Science, Big Data Analytics includes news, tutorials
 
 > TowardDataScience (membership): Sharing concepts, ideas, coding technical tutorials
 
-> DataScienceDojo: Learn data science, data engineer, blog articles
+> DataScienceDojo, DataScienCentral: Learn data science, data engineer, blog articles
 
 > DZone: All Techs forum from Open Source Software Engineer to AI, IoT, Agile
 
 > DeepMind: Research blog, great ideas
 
 > MachineLearningMastery: Many great tutorials
+
+> Blogs Tech-Companies: Google, NVIDIA, Microsoft, Facebook, Amazon
 
 ### Disclaimer
 The information contained within this Github-page is strictly for educational purposes. If you wish to apply
