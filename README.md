@@ -89,7 +89,6 @@ jupyter notebook x_foldername/x_filename.ipynb
 
 More information: please check out package Starts
 
-# Study Source (Most of them are pdf-books legally and shared by authors, research institute and universities on their website. Please use Google and copy paste keywords below to find the book)
 ### Data Sources:
 > Open Data Science Community Kaggle
 
@@ -99,8 +98,8 @@ More information: please check out package Starts
 
 > Datasets hosted by library scikit-learn
 
-### E-Books (Data Science, Machine Learning, Deep Learning) Sources 
-(Shared by author on homepage, education and university page for personal uses, study, research and development)
+### Study Sources E-Books (Data Science, Machine Learning, Deep Learning) Sources 
+(Shared by author on homepage, education and university page for personal uses, study, research and development. Please use Google and copy paste keywords below to find the book)
 > AI 
 - Ethical Artificial Intelligence (by Bill Hibbard)
 - The essential AI handbook for leaders (by Peltarion)
