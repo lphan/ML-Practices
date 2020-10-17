@@ -20,11 +20,11 @@ rcParams['figure.figsize'] = 20, 6
 '''
 Data Preprocessing 
 '''
-# x-axis for plot
+# x-axis (days) for plot
 x_dat = np.arange(len(data))
 
 # Pre-Processing: fill all NaN with 0
-data = [data[i].fillna(0) for i in x_dat]
+data = [data[day].fillna(0) for day in x_dat]
 
 # collect all data into list all countries of tuple (country, confirmed), (country, fatalities), (country, recovered)
 countries = sdata['Country_Region'].unique()
@@ -35,7 +35,7 @@ countries = sdata['Country_Region'].unique()
 infected_countries_earliest = np.unique(data[0][data[0]['Confirmed']>0].filter(regex=("Country.*")).values)
 infected_countries_latest = np.unique(data[-1][data[-1]['Confirmed']>0].filter(regex=("Country.*")).values)
 
-num_infected_countries = [len(np.unique(data[i][data[i]['Confirmed']>0].filter(regex=("Country.*")).values)) for i in x_dat]
+num_infected_countries = [len(np.unique(data[day][data[day]['Confirmed']>0].filter(regex=("Country.*")).values)) for day in x_dat]
 
 all_countries = dict()
 all_countries_Confirmed = dict()
@@ -45,12 +45,12 @@ all_countries_values = []
 
 # Total Confirmed in all countries
 for country in infected_countries_latest:
-    for i in x_dat:
+    for day in x_dat:
         # hard code for Korea
         if country == "Korea, South":
-            tmp = StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='Korea')['Confirmed'].values
+            tmp = StartML.searchByValue(data[day], try_keys=['Country_Region', 'Country/Region'], value='Korea')['Confirmed'].values
         else:
-            tmp = StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=country)['Confirmed'].values        
+            tmp = StartML.searchByValue(data[day], try_keys=['Country_Region', 'Country/Region'], value=country)['Confirmed'].values        
         if tmp.size>0:
             all_countries_values.append(tmp)
         else:
@@ -63,12 +63,12 @@ for country in infected_countries_latest:
     
 # Total Deaths in all countries
 for country in infected_countries_latest:
-    for i in x_dat:
+    for day in x_dat:
         # hard code for Korea
         if country == "Korea, South":
-            tmp = StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='Korea')['Deaths'].values
+            tmp = StartML.searchByValue(data[day], try_keys=['Country_Region', 'Country/Region'], value='Korea')['Deaths'].values
         else:
-            tmp = StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=country)['Deaths'].values
+            tmp = StartML.searchByValue(data[day], try_keys=['Country_Region', 'Country/Region'], value=country)['Deaths'].values
         if tmp.size>0:
             all_countries_values.append(tmp)
         else:
@@ -81,12 +81,12 @@ for country in infected_countries_latest:
     
 # Total Recovered in all countries
 for country in infected_countries_latest:
-    for i in x_dat:
+    for day in x_dat:
         # hard code for Korea
         if country == "Korea, South":
-            tmp = StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value='Korea')['Recovered'].values
+            tmp = StartML.searchByValue(data[day], try_keys=['Country_Region', 'Country/Region'], value='Korea')['Recovered'].values
         else:
-            tmp = StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=country)['Recovered'].values
+            tmp = StartML.searchByValue(data[day], try_keys=['Country_Region', 'Country/Region'], value=country)['Recovered'].values
         if tmp.size>0:
             all_countries_values.append(tmp)
         else:
@@ -110,50 +110,70 @@ for country in infected_countries_latest:
         country_pop_dict[country]='NaN'
 
 # Total all confirmed cases in all countries changed by day
-totalconfirmed_by_day = [sum(data[i]['Confirmed']) for i in x_dat]
+totalconfirmed_by_day = [sum(data[day]['Confirmed']) for day in x_dat]
 
 # Total all recovered cases in all countries changed by day
-totalrecovered_by_day = [sum(data[i]['Recovered']) for i in x_dat]
+totalrecovered_by_day = [sum(data[day]['Recovered']) for day in x_dat]
 
 # Total all recovered cases in all countries changed by day
-totalfatalities_by_day = [sum(data[i]['Deaths']) for i in x_dat]
-# y_dat_all_fatal = [sum(data[i][data[i]['Deaths'] > 0]['Deaths'].values) for i in x_dat]
+totalfatalities_by_day = [sum(data[day]['Deaths']) for day in x_dat]
 
 # New Increasing/ changes cases in all countries changed by day
-newCasesByDay = [totalconfirmed_by_day[0]]+[totalconfirmed_by_day[i+1]-totalconfirmed_by_day[i] for i in range(len(x_dat)-1)]
+newCasesByDay = [totalconfirmed_by_day[0]]+[totalconfirmed_by_day[day+1]-totalconfirmed_by_day[day] for day in x_dat[:-1]]
 
 # EXAMPLES: 
 # last day increasing deaths in US: sum(all_countries['Deaths']['US'][-1]) - sum(all_countries['Deaths']['US'][-2])
 
 ''' 
-All countries CONFIRMED CASES until last day
+All countries CONFIRMED_cases until last day
 '''
 y_dat_confirmed = dict()
 for country in all_countries['Confirmed'].keys():
-    y_dat_confirmed[country] = [sum(all_countries['Confirmed'][country][i]) for i in x_dat]
+    y_dat_confirmed[country] = [sum(all_countries['Confirmed'][country][day]) for day in x_dat]
 
 '''
-All Countries Fatalities_cases until last day
+All Countries FATALITIES_cases until last day
 '''
 y_dat_deaths = dict()
 for country in all_countries['Deaths'].keys():
-    y_dat_deaths[country] = [sum(all_countries['Deaths'][country][i]) for i in x_dat]
-        
+    y_dat_deaths[country] = [sum(all_countries['Deaths'][country][day]) for day in x_dat]
 
-# New Increasing/ changes Fatalities in all countries changed by day
-newFatalitiesByDay = [totalfatalities_by_day[0]]+[totalfatalities_by_day[i+1]-totalfatalities_by_day[i] for i in range(len(x_dat)-1)]
+# Death by Day in every country
+y_dat_deaths_ByDay = dict()
+
+for country in infected_countries_latest:
+    # add data of first day with data from day 2 = total present day - total yesterday
+    tmp = [(0, y_dat_deaths[country][0])] + [(day+1, y_dat_deaths[country][day+1] - y_dat_deaths[country][day]) for day in x_dat[:-1]]    
+    y_dat_deaths_ByDay.update([(country, tmp)])
+    
+# New Increasing/ changes fatalities in all countries changed by day
+# y_dat_all_fatal = [sum(data[i][data[i]['Deaths'] > 0]['Deaths'].values) for i in x_dat]
+
+# New Increasing/ changes Fatalities in ALL COUNTRIES changed by day
+# newFatalitiesByDay = [totalfatalities_by_day[0]] + [totalfatalities_by_day[i+1] - totalfatalities_by_day[i] for i in range(len(x_dat)-1)]
+newFatalitiesByDay = [totalfatalities_by_day[0]] + [totalfatalities_by_day[day+1] - totalfatalities_by_day[day] for day in x_dat[:-1]]
 
 '''
 All Countries RECOVERED_cases until last day
 '''
 y_dat_recovered = dict()
 for country in all_countries['Recovered'].keys():
-    y_dat_recovered[country] = [sum(all_countries['Recovered'][country][i]) for i in x_dat]
+    y_dat_recovered[country] = [sum(all_countries['Recovered'][country][day]) for day in x_dat]
+
+# Recovered by Day in every country
+y_dat_recovered_ByDay = dict()
+
+for country in infected_countries_latest:
+    # add data of first day with data from day 2 = total present day - total yesterday
+    tmp = [(0,y_dat_recovered[country][0])] + [(day+1, y_dat_recovered[country][day+1] - y_dat_recovered[country][day]) for day in x_dat[:-1]]    
+    y_dat_recovered_ByDay.update([(country, tmp)])
     
 # New Increasing/ changes recovered in all countries changed by day
-y_dat_all_recovered = [sum(data[i][data[i]['Recovered'] > 0]['Recovered'].values) for i in x_dat]
+# y_dat_all_recovered = [sum(data[i][data[i]['Recovered'] > 0]['Recovered'].values) for i in x_dat]
 
-newRecoveredByDay = [y_dat_all_recovered[0]] + [y_dat_all_recovered[i+1]-y_dat_all_recovered[i] for i in range(len(y_dat_all_recovered)-1)]
+# New Increasing/ changes Recovered in ALL COUNTRIES changed by day
+newRecoveredByDay = [totalrecovered_by_day[0]] + [totalrecovered_by_day[day+1] - totalrecovered_by_day[day] for day in x_dat[:-1]]
+
 '''
 Total comparison increasing by day in 
 Western_culture (10 countries: US Germany Italy Spain France UK Swiss Netherland Austria Belgium) 
@@ -371,7 +391,8 @@ for country in all_countries['Deaths'].keys():
     y_dat_ratioRecPop[country] = np.round((y_dat_recovered[country][-1]/np.double(country_pop_dict[country]))*100, 3)
 
 # Ratio Total_Recovered over Total_Confirmed changed by Day
-ratioRecByDay = [np.round(totalrecovered_by_day[i]/totalconfirmed_by_day[i]*100, 3) for i in range(len(x_dat))]
+ratioRecByDay = [np.round(totalrecovered_by_day[day]/totalconfirmed_by_day[day]*100, 3) for day in x_dat]
 
 # Ratio Total_Fatalities over Total_Confirmed changed by Day
-ratioFatalByDay = [np.round(totalfatalities_by_day[i]/totalconfirmed_by_day[i]*100, 3) for i in range(len(x_dat))]
+# ratioFatalByDay = [np.round(totalfatalities_by_day[i]/totalconfirmed_by_day[i]*100, 3) for i in range(len(x_dat))]
+ratioFatalByDay = [np.round(totalfatalities_by_day[day]/totalconfirmed_by_day[i]*100, 3) for day in x_dat]
