@@ -394,5 +394,4 @@ for country in all_countries['Deaths'].keys():
 ratioRecByDay = [np.round(totalrecovered_by_day[day]/totalconfirmed_by_day[day]*100, 3) for day in x_dat]
 
 # Ratio Total_Fatalities over Total_Confirmed changed by Day
-# ratioFatalByDay = [np.round(totalfatalities_by_day[i]/totalconfirmed_by_day[i]*100, 3) for i in range(len(x_dat))]
 ratioFatalByDay = [np.round(totalfatalities_by_day[day]/totalconfirmed_by_day[i]*100, 3) for day in x_dat]
