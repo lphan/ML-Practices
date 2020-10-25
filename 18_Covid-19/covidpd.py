@@ -59,11 +59,26 @@ totalFatal = pdDeaths.tail(1).values.sum()
 totalRecovered = pdRecovered.tail(1).values.sum()
 
 lastday=len(data)-1
+
+# Top 10 highest
 top10confirmed = pdConfirm.tail(1).transpose().sort_values(by=[lastday], ascending=False).head(10)
-top10confirmed['RatioByTotal_in_%']=[np.round(top10confirmed.loc[country].values[0]/totalConfirmed*100, 2) for country in top10confirmed.index]
+top10confirmed['RatioByTotal_in_%']=[np.round(top10confirmed.loc[country].values[0]/totalConfirmed*100, 4) for country in top10confirmed.index]
 
 top10fatal = pdDeaths.tail(1).transpose().sort_values(by=[lastday], ascending=False).head(10)
-top10fatal['RatioByTotal_in_%']=[np.round(top10fatal.loc[country].values[0]/totalFatal*100, 2) for country in top10fatal.index]
+top10fatal['RatioByTotal_in_%']=[np.round(top10fatal.loc[country].values[0]/totalFatal*100, 4) for country in top10fatal.index]
 
 top10recovered = pdRecovered.tail(1).transpose().sort_values(by=[lastday], ascending=False).head(10)
-top10recovered['RatioByTotal_in_%']=[np.round(top10recovered.loc[country].values[0]/totalRecovered*100, 2) for country in top10recovered.index]
+top10recovered['RatioByTotal_in_%']=[np.round(top10recovered.loc[country].values[0]/totalRecovered*100, 4) for country in top10recovered.index]
+
+# Top 10 lowest
+top10confirmed_lowest = pdConfirm.tail(1).transpose().sort_values(by=[lastday], ascending=True)
+top10confirmed_lowest['RatioConfirmedByPopulation_in_%']=[np.round(top10confirmed_lowest.loc[country].values[0]/sdata[sdata['Country_Region']==country]['Population'].values[0] *100, 4) for country in top10confirmed_lowest.index]
+top10confirmed_lowest['population']= [sdata[sdata['Country_Region']==country]['Population'].values[0] for country in top10confirmed_lowest.index]
+
+top10fatal_lowest = pdDeaths.tail(1).transpose().sort_values(by=[lastday], ascending=True)
+top10fatal_lowest['RatioFatalByConfirmed_in_%']=[np.round(top10fatal_lowest.loc[country].values[0]/ pdConfirm[country].tail(1).values[0] *100, 4) for country in top10fatal_lowest.index]
+top10fatal_lowest['Confirmed']= [pdConfirm[country].tail(1).values[0] for country in top10fatal_lowest.index]
+
+top10recovered_lowest = pdRecovered.tail(1).transpose().sort_values(by=[lastday], ascending=True)
+top10recovered_lowest['RatioRecoveredByConfirmed_in_%']=[np.round(top10recovered_lowest.loc[country].values[0]/ pdConfirm[country].tail(1).values[0] *100, 4) for country in top10recovered_lowest.index]
+top10recovered_lowest['Confirmed']= [pdConfirm[country].tail(1).values[0] for country in top10recovered_lowest.index]
