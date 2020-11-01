@@ -207,13 +207,13 @@ class Start(object):
             else:
                 print("None")
 
-        return idata          
+        return idata, files          
 
 Start._arguments()
 
 if Start.kwargs['folder_path']:
     print("Start importing files in folder")   
-    data = Start.import_folder()
+    data, files = Start.import_folder()
 
 if Start.kwargs['data_path']:
     filename = Start.kwargs['data_path']
