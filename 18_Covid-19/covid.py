@@ -50,7 +50,7 @@ for country in infected_countries_latest:
         if country == "Korea, South":
             tmp = StartML.searchByValue(data[day], try_keys=['Country_Region', 'Country/Region'], value='Korea')['Confirmed'].values
         else:
-            tmp = StartML.searchByValue(data[day], try_keys=['Country_Region', 'Country/Region'], value=country)['Confirmed'].values        
+            tmp = StartML.searchByValue(data[day], try_keys=['Country_Region', 'Country/Region'], value=country)['Confirmed'].values            
         if tmp.size>0:
             all_countries_values.append(tmp)
         else:
