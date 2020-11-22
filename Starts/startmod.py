@@ -304,7 +304,7 @@ class StartMod(StartML):
         """
 
         # Start Method Backward Elimination for feature selection
-        # Step 1: init a significance level to stay
+        # Step 1: init a significance level (alpha) to stay
         sl = 0.05
 
         # initiate data for x with full columns

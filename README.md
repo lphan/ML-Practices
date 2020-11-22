@@ -89,6 +89,8 @@ jupyter notebook x_foldername/x_filename.ipynb
 
 More information: please check out package Starts
 
+View All Notebooks at https://nbviewer.jupyter.org/github/lphan/ML-Practices/
+
 ### Data Sources:
 > Open Data Science Community Kaggle
 

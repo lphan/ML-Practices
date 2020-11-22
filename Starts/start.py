@@ -18,8 +18,8 @@ from joblib import load as joblib_load
 from sklearn.utils import shuffle
 
 from pip._internal.operations.freeze import freeze
-from keras.models import model_from_json
-from keras.models import model_from_yaml
+from tensorflow.keras.models import model_from_json
+from tensorflow.keras.models import model_from_yaml
 
 
 class Start(object):
