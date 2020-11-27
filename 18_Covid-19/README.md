@@ -30,8 +30,8 @@ See files:
 
 ### Download Data:
 Go to github of https://github.com/CSSEGISandData/COVID-19 and clone the data repository using 'git clone https://github.com/CSSEGISandData/COVID-19.git'. 
-Also available at Google Colab: https://colab.research.google.com/github/lphan/ML-Practices/blob/master/18_Covid-19/file_name.ipynb
-, and replace file_name.ipynb with above jupyter notebook name.
+
+Jupyter Viewer: https://nbviewer.jupyter.org/github/lphan/ML-Practices/tree/master/18_Covid-19/.
 
 ### References:
 
