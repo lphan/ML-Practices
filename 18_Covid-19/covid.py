@@ -38,9 +38,6 @@ infected_countries_latest = np.unique(data[-1][data[-1]['Confirmed']>0].filter(r
 num_infected_countries = [len(np.unique(data[day][data[day]['Confirmed']>0].filter(regex=("Country.*")).values)) for day in x_dat]
 
 all_countries = dict()
-# all_countries_Confirmed = dict()
-# all_countries_Deaths = dict()
-# all_countries_Recovered = dict()
 all_countries['Confirmed'] = {}
 all_countries['Deaths'] = {}
 all_countries['Recovered'] = {}
@@ -59,7 +56,6 @@ for country in infected_countries_latest:
         else:
             # fill zero for the NaN value in data after computation of fillna
             all_countries_values.append(np.array([0]))
-    # all_countries_Confirmed[country] = all_countries_values
     all_countries['Confirmed'][country] = all_countries_values
     
     # reset back to initial status
@@ -78,7 +74,6 @@ for country in infected_countries_latest:
         else:
             # fill zero for the NaN value in data after computation of fillna
             all_countries_values.append(np.array([0]))
-    # all_countries_Deaths[country] = all_countries_values
     all_countries['Deaths'][country] = all_countries_values
     
     # reset back to initial status
@@ -97,15 +92,10 @@ for country in infected_countries_latest:
         else:
             # fill zero for the NaN value in data after computation of fillna
             all_countries_values.append(np.array([0]))
-    # all_countries_Recovered[country] = all_countries_values
     all_countries['Recovered'][country] = all_countries_values
     
     # reset back to initial status
     all_countries_values = []
-
-# all_countries['Confirmed'] = all_countries_Confirmed
-# all_countries['Deaths'] = all_countries_Deaths
-# all_countries['Recovered'] = all_countries_Recovered
 
 country_pop_dict = dict()
 for country in infected_countries_latest:
