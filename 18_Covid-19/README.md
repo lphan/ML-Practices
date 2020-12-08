@@ -39,10 +39,12 @@ https://github.com/CSSEGISandData/COVID-19
 
 https://systems.jhu.edu/research/public-health/ncov/
 
-https://interaktiv.morgenpost.de/corona-virus-karte-infektionen-deutschland-weltweit/
-
-https://data.worldbank.org/indicator/sp.pop.totl
+https://experience.arcgis.com/experience/478220a4c454480e823b17327b2bf1d4/page/page_0/
 
 https://www.rki.de/DE/Content/InfAZ/N/Neuartiges_Coronavirus/Fallzahlen.html
 
-https://experience.arcgis.com/experience/478220a4c454480e823b17327b2bf1d4/page/page_0/
+https://data.worldbank.org/indicator/sp.pop.totl
+
+
+
+
