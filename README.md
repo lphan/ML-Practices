@@ -113,7 +113,7 @@ View All Notebooks at https://nbviewer.jupyter.org/github/lphan/ML-Practices/
 - Computer Age Statistical Inference (Stanford Education)
 - Foundations of Data Science (Cornell Education)
 
-> Machine Learning:
+> Machine Learning
 - Element of statistical Learning (Stanford Education)
 - Understand Machine Learning from Theory to Algorithm (Textbook by Shai Ben-David and Shai Shalev-Shwartz)
 - Machine Learning yearning (Andrew Ng)
