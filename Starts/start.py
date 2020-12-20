@@ -187,10 +187,10 @@ class Start(object):
         return df
 
     @staticmethod
-    def import_folder():
+    def import_folder(folder):
         # input configuration parameters  
-        Start._arguments()        
-        folder = Start.kwargs['folder_path']
+        # Start._arguments()        
+        # folder = Start.kwargs['folder_path']
 
         if not folder:
             return
@@ -209,19 +209,21 @@ class Start(object):
 
         return idata, files          
 
+ 
 Start._arguments()
-
-if Start.kwargs['folder_path']:
-    print("Start importing files in folder")   
-    data, files = Start.import_folder()
-
-if Start.kwargs['data_path']:
-    filename = Start.kwargs['data_path']
-    print("Start importing single data ", filename)
-    sdata = Start.import_data(filename)
-else: 
-    print("No Data_Path or Folder_Path is given")
-    
 # Persist data in memory to allow future computations faster (only apply for dask-object)
 if Start.kwargs['pandas_type'] is False:
     data = [dat.persist() for dat in data]
+    
+# folder_path = Start.kwargs['folder_path']
+
+# if Start.kwargs['folder_path']:
+#     print("Start importing files in folder")   
+#     data, files = Start.import_folder(folder_path)
+
+# if Start.kwargs['data_path']:
+#     filename = Start.kwargs['data_path']
+#     print("Start importing single data ", filename)
+#     sdata = Start.import_data(filename)
+# else: 
+#     print("No Data_Path or Folder_Path is given")
