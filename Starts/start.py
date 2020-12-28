@@ -197,7 +197,7 @@ class Start(object):
     
         files = sorted(os.listdir(folder))
         idata = []
-        print(files)
+        # print(files)
         for fil in files:
             pathfile = folder + fil            
             df = Start.import_data(pathfile)
@@ -210,10 +210,7 @@ class Start(object):
         return idata, files          
 
  
-Start._arguments()
-# Persist data in memory to allow future computations faster (only apply for dask-object)
-if Start.kwargs['pandas_type'] is False:
-    data = [dat.persist() for dat in data]
+# Start._arguments()
     
 # folder_path = Start.kwargs['folder_path']
 
@@ -227,3 +224,7 @@ if Start.kwargs['pandas_type'] is False:
 #     sdata = Start.import_data(filename)
 # else: 
 #     print("No Data_Path or Folder_Path is given")
+#
+# Persist data in memory to allow future computations faster (only apply for dask-object)
+# if Start.kwargs['pandas_type'] is False:
+#     data = [dat.persist() for dat in data]

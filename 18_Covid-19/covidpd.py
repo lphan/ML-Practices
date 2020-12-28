@@ -10,19 +10,12 @@ sys.path.insert(0, current_dir[:current_dir.rfind(path.sep)])
 from Starts.start import *
 from Starts.startml import *
 from Starts.startvis import *
+from covid_import import *
 from matplotlib.pylab import rcParams
 
 rcParams['figure.figsize'] = 20, 6
 
-'''
-Data Preprocessing 
-'''
-# Pre-Processing: fill all NaN with 0
-data = [data[i].fillna(0) for i in range(len(data))]
-
-# x-axis for plot
-x_dat = np.arange(len(data))
-
+''' Data Preprocessing '''
 # collect all data into list all countries of tuple (country, confirmed), (country, fatalities), (country, recovered)
 countries = sdata['Country_Region'].unique()
 
