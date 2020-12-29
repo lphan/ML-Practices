@@ -7,7 +7,7 @@ Data Preprocessing
 '''
 # search all negative values in data or NaN and fill them all with 0 
 data_date = dict([(i, files[i]) for i in range(len(files))]) 
-data_date.pop(0)  # remove .gitignore from list
+
 new_days_list = np.arange(0, len(list(data_date.keys())[:-1]), 1)  # reindex from 0
 for day in new_days_list:
     data[day].fillna(0)

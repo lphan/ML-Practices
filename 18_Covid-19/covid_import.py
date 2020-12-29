@@ -57,3 +57,6 @@ x_dat_us = np.arange(len(data_us))
 
 # Pre-Processing: fill all NaN with 0
 data = [data[day].fillna(0) for day in x_dat]
+
+# clean up unused files
+files.pop(0), files.pop(), files_us.pop()
