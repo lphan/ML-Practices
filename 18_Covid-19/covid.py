@@ -8,7 +8,7 @@ Data Preprocessing
 # search all negative values in data or NaN and fill them all with 0 
 data_date = dict([(i, files[i]) for i in range(len(files))]) 
 
-new_days_list = np.arange(0, len(list(data_date.keys())[:-1]), 1)  # reindex from 0
+new_days_list = np.arange(0, len(list(data_date.keys())[:-1]), 1)  # re-index from 0
 for day in new_days_list:
     data[day].fillna(0)
     data[day][['Confirmed','Deaths','Recovered']] = data[day][['Confirmed','Deaths','Recovered']].mask(data[day][['Confirmed','Deaths','Recovered']]<0, 0)
@@ -307,7 +307,7 @@ Total of infected cases, fatalities, recovered in the world changed by week
 def numberByWeeks(data):
     weeks = list()
 
-    # Firstweek
+    # First week
     weeks.append((1, data[4]))
 
     # start from second week
@@ -323,7 +323,7 @@ def numberByWeeks(data):
 
 confirmedByWeek = numberByWeeks(data=totalconfirmed_by_day)
 deathsByWeek = numberByWeeks(data=totalfatalities_by_day)
-recoveredByWeek = numberByWeeks(data=totalrecovered_by_day) 
+recoveredByWeek = numberByWeeks(data=totalrecovered_by_day)
 
 ''' 
 Top 10 countries with highest cases (new cases, fatality, recovered) changed by day 
