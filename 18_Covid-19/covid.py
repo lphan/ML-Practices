@@ -10,7 +10,6 @@ data_date = dict([(i, files[i]) for i in range(len(files))])
 
 new_days_list = np.arange(0, len(list(data_date.keys())[:-1]), 1)  # re-index from 0
 for day in new_days_list:
-    data[day].fillna(0)
     data[day][['Confirmed','Deaths','Recovered']] = data[day][['Confirmed','Deaths','Recovered']].mask(data[day][['Confirmed','Deaths','Recovered']]<0, 0)
 
 # collect all data into list all countries of tuple (country, confirmed), (country, fatalities), (country, recovered)
@@ -105,7 +104,9 @@ See: https://github.com/CSSEGISandData/COVID-19/issues/3464
 keep_values_day = len(data) - len(data_us)
 
 for i in np.arange(keep_values_day, len(data), 1):
-    data[i].loc[data[i]['Country_Region']=='US', 'Recovered']=0
+    # filter column name 'Country_Region' and 'Country/Region'
+    colname = data[i].filter(regex=("Country.*")).columns    
+    data[i].loc[data[i][colname[0]]=='US', 'Recovered']=0
 
 # Total all recovered cases in all countries changed by day
 totalrecovered_by_day_without_us = [sum(data[day]['Recovered']) for day in x_dat]
