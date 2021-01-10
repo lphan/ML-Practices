@@ -5,6 +5,8 @@ from covid_import import *
 '''
 Data Preprocessing 
 '''
+lastday=len(data)-1
+
 # search all negative values in data or NaN and fill them all with 0 
 data_date = dict([(i, files[i]) for i in range(len(files))]) 
 
@@ -93,7 +95,7 @@ for country in infected_countries_latest:
 # EXAMPLES last day increasing deaths in US: sum(all_countries['Deaths']['US'][-1]) - sum(all_countries['Deaths']['US'][-2])
 
 '''
-HARD-CODE:
+HARD-CODE: (SHOULD MOVE TO COVID_IMPORT)
 Reason: US Recoveries have been nullified in the same data source, but distributed in other data source.
 Need to hard-code to merge partly data together.
 See: https://github.com/CSSEGISandData/COVID-19/issues/3464
@@ -187,48 +189,50 @@ Western_culture (10 countries: US Germany Italy Spain France UK Swiss Netherland
 and
 Estern_culture (10 countries:  China Korea Japan Malaysia Indonesia Thailand Philippine Singapore Taiwan Vietnam)
 '''
-eu10_countries = ['Italy', 'Germany', 'Spain', 'France', 'United Kingdom', 'Switzerland', 'Netherlands', 'Austria',
-                   'Belgium', 'Norway']
-asia10_countries = ['China', 'Korea, South', 'Japan', 'Malaysia', 'Indonesia', 'Thailand', 'Philippines', 'Singapore',
-                    'Taiwan*', 'Vietnam']
+first_group = ['Italy', 'Germany', 'Spain', 'France', 'United Kingdom', 'Switzerland', 'Netherlands', 'Austria', 'Belgium', 'Norway']
+second_group = ['China', 'Korea, South', 'Japan', 'Malaysia', 'Indonesia', 'Thailand', 'Philippines', 'Singapore', 'Taiwan*', 'Vietnam']
 
-eu10_population = [country_pop_dict[country] for country in eu10_countries]
-asia10_population = [country_pop_dict[country] for country in asia10_countries]
+# first_group: female, second_group: male
+# first_group = ['Germany', 'Taiwan*', 'New Zealand', 'Iceland', 'Finland', 'Norway', 'Denmark']
+# second_group = ['US', 'Brazil', 'United Kingdom', 'Russia', 'Italy', 'Spain', 'France']
+
+first_group_population = [country_pop_dict[country] for country in first_group]
+second_group_population = [country_pop_dict[country] for country in second_group]
 
 # total cases by days in 10 EU countries and 10 ASIA countries
-eu_byDay = []
-asia_byDay = []
+firstgroup_byDay = []
+secondgroup_byDay = []
 
 # total fatalities by days in 10 EU countries and 10 ASIA countries
-eu_deaths_byDay = []
-asia_deaths_byDay = []
+firstgroup_deaths_byDay = []
+secondgroup_deaths_byDay = []
 
 # total recovered by days in 10 EU countries and 10 ASIA countries
-eu_rec_byDay = []
-asia_rec_byDay = []
+firstgroup_rec_byDay = []
+secondgroup_rec_byDay = []
 
 # iterate all days
 for i in x_dat:
-    eu_byDay.append(
+    firstgroup_byDay.append(
         [StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=ec)['Confirmed'].values
-         for ec in eu10_countries])
-    asia_byDay.append(
+         for ec in first_group])
+    secondgroup_byDay.append(
         [StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=ac)['Confirmed'].values
-         for ac in asia10_countries])
+         for ac in second_group])
 
-    eu_deaths_byDay.append(
+    firstgroup_deaths_byDay.append(
         [StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=ec)['Deaths'].values
-         for ec in eu10_countries])
-    asia_deaths_byDay.append(
+         for ec in first_group])
+    secondgroup_deaths_byDay.append(
         [StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=ac)['Deaths'].values
-         for ac in asia10_countries])
+         for ac in second_group])
 
-    eu_rec_byDay.append(
+    firstgroup_rec_byDay.append(
         [StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=ec)['Recovered'].values
-         for ec in eu10_countries])
-    asia_rec_byDay.append(
+         for ec in first_group])
+    secondgroup_rec_byDay.append(
         [StartML.searchByValue(data[i], try_keys=['Country_Region', 'Country/Region'], value=ac)['Recovered'].values
-         for ac in asia10_countries])
+         for ac in second_group])
 
 # fill empty data by 0
 # @jit(nopython=True)
@@ -236,69 +240,49 @@ for i in x_dat:
 def getfill(fillbyday):
     return [[np.array([0]) if fi.size == 0 else fi for fi in fill] for fill in fillbyday]
     
-fill_eu_byday = getfill(fillbyday=eu_byDay)
-fill_asia_byday = getfill(fillbyday=asia_byDay)
+fill_firstgroup_byDay = getfill(fillbyday=firstgroup_byDay)
+fill_secondgroup_byDay = getfill(fillbyday=secondgroup_byDay)
 
-# fill_eu_byday = []
-# for eu in eu_byDay:
-#     fill_eu_byday.append([np.array([0]) if e.size == 0 else e for e in eu])
+fill_firstgroup_byDay_temp = []
+fill_secondgroup_byDay_temp = []
 
-# fill_asia_byday = []
-# for asia in asia_byDay:
-#     fill_asia_byday.append([np.array([0]) if a.size == 0 else a for a in asia])
+fill_firstgroup_fatal_byday_temp = []
+fill_secondgroup_fatal_byday_temp = []
 
-# fill by summing all data by day
-# Source: https://numba.pydata.org/numba-doc/dev/reference/numpysupported.html#functions
-# @njit
-# def getfilleu(): 
-#     result = []
-#     for i in x_dat:
-#         result.append([np.sum(fill_eu) for fill_eu in fill_eu_byday[i]])
-#     return result
-#
-# fill_eu_byday_temp = getfilleu()  
-
-fill_eu_byday_temp = []
-fill_asia_byday_temp = []
-
-fill_eu_fatal_byday_temp = []
-fill_asia_fatal_byday_temp = []
-
-fill_eu_recovered_byday_temp= []
-fill_asia_recovered_byday_temp = []
+fill_firstgroup_recovered_byday_temp= []
+fill_secondgroup_recovered_byday_temp = []
 
 # iterate all days
 for i in x_dat:
-    fill_eu_byday_temp.append([sum(fill_eu) for fill_eu in fill_eu_byday[i]])
-    fill_asia_byday_temp.append([sum(fill_asia) for fill_asia in fill_asia_byday[i]])
+    fill_firstgroup_byDay_temp.append([sum(fill_firstgroup) for fill_firstgroup in fill_firstgroup_byDay[i]])
+    fill_secondgroup_byDay_temp.append([sum(fill_secondgroup) for fill_secondgroup in fill_secondgroup_byDay[i]])
 
-    fill_eu_fatal_byday_temp.append([sum(fill_eu) for fill_eu in eu_deaths_byDay[i]])
-    fill_asia_fatal_byday_temp.append([sum(fill_asia) for fill_asia in asia_deaths_byDay[i]])
+    fill_firstgroup_fatal_byday_temp.append([sum(fill_firstgroup) for fill_firstgroup in firstgroup_deaths_byDay[i]])
+    fill_secondgroup_fatal_byday_temp.append([sum(fill_secondgroup) for fill_secondgroup in secondgroup_deaths_byDay[i]])
 
-    fill_eu_recovered_byday_temp.append([sum(fill_eu) for fill_eu in eu_rec_byDay[i]])
-    fill_asia_recovered_byday_temp.append([sum(fill_asia) for fill_asia in asia_rec_byDay[i]])
+    fill_firstgroup_recovered_byday_temp.append([sum(fill_firstgroup) for fill_firstgroup in firstgroup_rec_byDay[i]])
+    fill_secondgroup_recovered_byday_temp.append([sum(fill_secondgroup) for fill_secondgroup in secondgroup_rec_byDay[i]])
 
-''' 
-Computation the total cases in EU and ASIA (infected cases, fatalities, recovered) 
-'''
-eu_total = []
-asia_total = []
 
-eu_deaths_total = []
-asia_deaths_total = []
+# Computation the total cases in EU and ASIA (infected cases, fatalities, recovered) 
+firstgroup_total = []
+secondgroup_total = []
 
-eu_rec_total = []
-asia_rec_total = []
+firstgroup_deaths_total = []
+secondgroup_deaths_total = []
+
+firstgroup_rec_total = []
+secondgroup_rec_total = []
 
 for i in x_dat:
-    eu_total.append(sum(fill_eu_byday_temp[i]))
-    asia_total.append(sum(fill_asia_byday_temp[i]))
+    firstgroup_total.append(sum(fill_firstgroup_byDay_temp[i]))
+    secondgroup_total.append(sum(fill_secondgroup_byDay_temp[i]))
 
-    eu_deaths_total.append(sum(fill_eu_fatal_byday_temp[i]))
-    asia_deaths_total.append(sum(fill_asia_fatal_byday_temp[i]))
+    firstgroup_deaths_total.append(sum(fill_firstgroup_fatal_byday_temp[i]))
+    secondgroup_deaths_total.append(sum(fill_secondgroup_fatal_byday_temp[i]))
 
-    eu_rec_total.append(sum(fill_eu_recovered_byday_temp[i]))
-    asia_rec_total.append(sum(fill_asia_recovered_byday_temp[i]))
+    firstgroup_rec_total.append(sum(fill_firstgroup_recovered_byday_temp[i]))
+    secondgroup_rec_total.append(sum(fill_secondgroup_recovered_byday_temp[i]))
 
 ''' 
 Total of infected cases, fatalities, recovered in the world changed by week 
@@ -403,3 +387,56 @@ ratioRecByDay = [np.round(totalrecovered_by_day[day]/totalconfirmed_by_day[day]*
 
 # Ratio Total_Fatalities over Total_Confirmed changed by Day
 ratioFatalByDay = [np.round(totalfatalities_by_day[day]/totalconfirmed_by_day[day]*100, 3) for day in x_dat]
+
+
+''' Number of all infected countries changed by day '''
+# filter column by name and convert Pandas frame to Numpy Array
+num_infected_countries = [len(np.unique(data[day][data[day]['Confirmed']>0].filter(regex=("Country.*")).values)) for day in x_dat]
+# num_infected_countries = [len(np.unique(data[i][data[i]['Confirmed']>0].filter(regex=("Country.*")).values)) for i in range(len(data))]
+
+# get basic data (confirmed, fatalities, recovered) into list of dictionary by day
+dataconfirmed = [dict() for i in range(len(data))]
+datafatal = [dict() for i in range(len(data))]
+datarecovered = [dict() for i in range(len(data))]
+
+for i in range(len(data)):
+    # print("Day: ", i)
+    col = data[i].filter(like='Country').columns[0]
+    
+    for country in infected_countries_latest:
+        dataconfirmed[i][country] = y_dat_confirmed[country][i]
+        datafatal[i][country] = y_dat_deaths[country][i]
+        datarecovered[i][country] = y_dat_recovered[country][i]
+
+# create 3x data frames (columns = all countries, rows = all days) for confirmed, deaths, and recovered
+pdConfirmed = pd.DataFrame(data=dataconfirmed, columns=infected_countries_latest)
+pdDeaths = pd.DataFrame(data=datafatal, columns=infected_countries_latest)
+pdRecovered = pd.DataFrame(data=datarecovered, columns=infected_countries_latest)
+
+# Select top and bottom values
+totalConfirmed = pdConfirmed.tail(1).values.sum()
+totalFatal = pdDeaths.tail(1).values.sum()
+totalRecovered = pdRecovered.tail(1).values.sum()
+
+# Top 10 highest
+top10confirmed = pdConfirmed.tail(1).transpose().sort_values(by=[lastday], ascending=False).head(10)
+top10confirmed['RatioByTotal_in_%']=[np.round(top10confirmed.loc[country].values[0]/totalConfirmed*100, 4) if totalConfirmed>0 else 0 for country in top10confirmed.index]
+
+top10fatal = pdDeaths.tail(1).transpose().sort_values(by=[lastday], ascending=False).head(10)
+top10fatal['RatioByTotal_in_%']=[np.round(top10fatal.loc[country].values[0]/totalFatal*100, 4) if totalFatal>0 else 0 for country in top10fatal.index]
+
+top10recovered = pdRecovered.tail(1).transpose().sort_values(by=[lastday], ascending=False).head(10)
+top10recovered['RatioByTotal_in_%']=[np.round(top10recovered.loc[country].values[0]/totalRecovered*100, 4) if totalRecovered>0 else 0 for country in top10recovered.index]
+
+# Top 10 lowest
+top10confirmed_lowest = pdConfirmed.tail(1).transpose().sort_values(by=[lastday], ascending=True)
+top10confirmed_lowest['RatioConfirmedByPopulation_in_%']=[np.round(top10confirmed_lowest.loc[country].values[0]/sdata[sdata['Country_Region']==country]['Population'].values[0] *100, 4) if sdata[sdata['Country_Region']==country]['Population'].values[0]>0 else 0 for country in top10confirmed_lowest.index]
+top10confirmed_lowest['population']= [sdata[sdata['Country_Region']==country]['Population'].values[0] for country in top10confirmed_lowest.index]
+
+top10fatal_lowest = pdDeaths.tail(1).transpose().sort_values(by=[lastday], ascending=True)
+top10fatal_lowest['RatioFatalByConfirmed_in_%']=[np.round(top10fatal_lowest.loc[country].values[0]/ pdConfirmed[country].tail(1).values[0] *100, 4) if pdConfirmed[country].tail(1).values[0]>0 else 0 for country in top10fatal_lowest.index]
+top10fatal_lowest['Confirmed']= [pdConfirmed[country].tail(1).values[0] for country in top10fatal_lowest.index]
+
+top10recovered_lowest = pdRecovered.tail(1).transpose().sort_values(by=[lastday], ascending=True)
+top10recovered_lowest['RatioRecoveredByConfirmed_in_%']=[np.round(top10recovered_lowest.loc[country].values[0]/ pdConfirmed[country].tail(1).values[0] *100, 4) if pdConfirmed[country].tail(1).values[0]>0 else 0 for country in top10recovered_lowest.index]
+top10recovered_lowest['Confirmed']= [pdConfirmed[country].tail(1).values[0] for country in top10recovered_lowest.index]
