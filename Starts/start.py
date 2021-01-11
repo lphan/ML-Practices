@@ -10,6 +10,7 @@ from dask.delayed import delayed
 
 from pickle import dump
 from pickle import load
+from datetime import datetime
 
 # from sklearn.externals.joblib import dump as joblib_dump
 # from sklearn.externals.joblib import load as joblib_load
@@ -196,6 +197,7 @@ class Start(object):
             return
     
         files = sorted(os.listdir(folder))
+
         idata = []
         # print(files)
         for fil in files:
@@ -206,8 +208,9 @@ class Start(object):
                 idata.append(df)
             else:
                 print("None")
+                idata.append("None")
 
-        return idata, files          
+        return idata, files
 
  
 # Start._arguments()

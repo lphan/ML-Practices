@@ -74,4 +74,4 @@
 
 # top10recovered_lowest = pdRecovered.tail(1).transpose().sort_values(by=[lastday], ascending=True)
 # top10recovered_lowest['RatioRecoveredByConfirmed_in_%']=[np.round(top10recovered_lowest.loc[country].values[0]/ pdConfirm[country].tail(1).values[0] *100, 4) for country in top10recovered_lowest.index]
-# t
+# top10recovered_lowest['Confirmed']= [pdConfirm[country].tail(1).values[0] for country in top10recovered_lowest.index]
