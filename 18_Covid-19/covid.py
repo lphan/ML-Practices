@@ -131,6 +131,14 @@ y_dat_confirmed = dict()
 for country in all_countries['Confirmed'].keys():
     y_dat_confirmed[country] = [sum(all_countries['Confirmed'][country][day]) for day in x_dat]
 
+# Death by Day in every country
+y_dat_confirmed_ByDay = dict()
+
+for country in infected_countries_latest:
+    # add data of first day with data from day 2 = total present day - total yesterday
+    tmp = [(0, y_dat_confirmed[country][0])] + [(day+1, y_dat_confirmed[country][day+1] - y_dat_confirmed[country][day]) for day in x_dat[:-1]]    
+    y_dat_confirmed_ByDay.update([(country, tmp)])
+
 # Total all confirmed cases in all countries changed by day
 totalconfirmed_by_day = [sum(data[day]['Confirmed']) for day in x_dat]
 
@@ -311,23 +319,19 @@ deathsByWeek = numberByWeeks(data=totalfatalities_by_day)
 recoveredByWeek = numberByWeeks(data=totalrecovered_by_day)
 
 ''' 
-Top 10 countries with highest cases (new cases, fatality, recovered) changed by day 
+Top 10 countries with highest/ lowest cases (new cases confirmed, fatality, recovered) last day 
 '''
-# @jit(nopython=True)
-def top10countrieshighest(keyword, infected_countries, reverse=True):    
-    all_countries_lastday = [(country, sum(all_countries[keyword][country][-1]) - sum(all_countries[keyword][country][-2])) for country in infected_countries]
-    return sorted(all_countries_lastday, key=lambda x: x[1], reverse=True)
-    
-countries_highestConfByDay = top10countrieshighest(keyword='Confirmed', infected_countries=infected_countries_latest)
-countries_highestFatalByDay = top10countrieshighest(keyword='Deaths', infected_countries=infected_countries_latest)
-countries_highestRecByDay = top10countrieshighest(keyword='Recovered', infected_countries=infected_countries_latest)
+list_confirmed = [(country, y_dat_confirmed_ByDay[country][-1][1]) for country in infected_countries_latest]    
+countries_highestConfByDay = sorted(list_confirmed, key=lambda x: x[1], reverse=True)
+countries_lowestConfByDay = sorted(list_confirmed, key=lambda x: x[1], reverse=False)
 
-''' 
-Top 10 countries with lowest cases (new cases, fatality, recovered) changed by day 
-'''
-countries_highestConfByDay = top10countrieshighest(keyword='Confirmed', infected_countries=infected_countries_latest, reverse=False)
-countries_highestFatalByDay = top10countrieshighest(keyword='Deaths', infected_countries=infected_countries_latest, reverse=False)
-countries_highestRecByDay = top10countrieshighest(keyword='Recovered', infected_countries=infected_countries_latest, reverse=False)
+list_fatal = [(country, y_dat_deaths_ByDay[country][-1][1]) for country in infected_countries_latest]
+countries_highestFatalByDay = sorted(list_fatal, key=lambda x: x[1], reverse=True)
+countries_lowestFatalByDay = sorted(list_fatal, key=lambda x: x[1], reverse=False)
+
+list_recovered = [(country, y_dat_recovered_ByDay[country][-1][1]) for country in infected_countries_latest]
+countries_highestRecByDay = sorted(list_recovered, key=lambda x: x[1], reverse=True)
+countries_lowestRecByDay = sorted(list_recovered, key=lambda x: x[1], reverse=False)
 
 ''' 
 Top 10 Countries with highest ratio (cases on population) last DAY (see: file UID_ISO_FIPS_LookUp_Table.csv) 
