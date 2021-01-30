@@ -12,5 +12,3 @@ pyspark>=2.3.0
 h2o>=3.28.0.1
 dask>=2.6.0
 xgboost>=0.90
-category-encoders=>2.0.0
-feature-engine=>0.3.0

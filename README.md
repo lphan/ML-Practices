@@ -160,3 +160,5 @@ ideas contained in this Github-page, you are taking full responsibility for your
 The author does not assume and hereby disclaims any liability to any
 party for any loss, damage, or disruption caused by errors or omissions, whether such errors or
 omissions result from accident, negligence, or any other cause.
+
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/lphan/ML-Practices/HEAD)
