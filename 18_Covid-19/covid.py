@@ -1,5 +1,4 @@
 # ANSWERING the AD-HOC QUESTIONS
-
 from covid_import import *
 
 '''
