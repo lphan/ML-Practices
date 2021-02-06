@@ -37,6 +37,8 @@ Jupyter Viewer: https://nbviewer.jupyter.org/github/lphan/ML-Practices/tree/mast
 
 https://github.com/CSSEGISandData/COVID-19
 
+https://github.com/govex/COVID-19/tree/master/data_tables/vaccine_data
+
 https://systems.jhu.edu/research/public-health/ncov/
 
 https://experience.arcgis.com/experience/478220a4c454480e823b17327b2bf1d4/page/page_0/

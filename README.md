@@ -10,43 +10,41 @@ Shortly, 'Starts' is a Wrapper package with the functions which are written with
 
 "By taking a look on the real examples and see how data are being analysed, install the frameworks you need and do the similar ways like one of the examples, improve your result by transforming your ideas into the new functions you like."
 
-- Finally, it's Open Source on Open Data. You can always extend/ change/ update this package 'Starts'
-
-Loop_of_the_path_to_DataScience_and_MachineLearning:
-
-	1. Study/ review the theories in Machine Learning from different Sources
-
-	2. Implement/ improve the algorithm using Python3 and its frameworks 
-
-	3. Analyzes the data from public sources (scikit-learn, UCI, Kaggle)
-
-	4. Integrate the implementation into the package Starts
+- Finally, it's Open Source on Open Data. You can always extend/ change/ update this package 'Starts'.
 
 ## Example of a analysis workflow: 
->	1. 	Preparation
-	Load dataset and libraries
+> 	1. 	Preparation 
+	Understand the idea, prepare the ad-hoc questions which you want to answer
+	What techniques you want to use to answer the questions
 
->	2. 	Have a first look on data
-	Descriptive Statistics and Visualization
+>	2. 	Data Preparation
+	Find trust data sources 
+	How to technically get dataset 
+	What libraries/ framework you want to use and How to install them
 
 >	3.	Data Preprocessing
 	Data Cleaning
 	Feature Selection 
 	Data Transform
 
->	4.	Data Processing
-	Choose the right algorithms (regression, classification, etc.) and build model (or load model)
-	Evaluation and compare the chosen Algorithms
+>	4. 	Data Processing (basic)
+	Have a first look on data with Descriptive Statistics and Visualization
 
->	5.	Data Post-processing
-	Testing and Performance Tuning (e.g. GridSearchCV) to choose the best parameters
-	Improve the accuracy
-	Ensembles
+>	5.	Data Processing (advanced)
+	Choose the right algorithms for (regression, classification, prediction/ forecasting, Ensembles etc.) 
+	build model (store, or load pretrained-model)
+	Evaluation the results and the chosen Algorithms
+	Improve results
 
->	6.	Finalization
+>	6.	Data Post-processing
+	Testing (test-harness) and Performance Tuning (e.g. GridSearchCV) to choose the best parameters
+	Tuning to improve the accuracy
+	
+>	7.	Deployment
 	Predict with model
 	Serialize model  
 	Present and save results
+	Back to 1. or previous steps
 
 ## Status of the data analysis packages: On-going 
 

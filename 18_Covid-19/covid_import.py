@@ -9,7 +9,7 @@ sys.path.insert(0, current_dir[:current_dir.rfind(path.sep)])
 import seaborn as sns
 from Starts.start import *
 from Starts.startml import *
-from Starts.startvis import *
+# from Starts.startvis import *
 from matplotlib.pylab import rcParams
 
 # Import general data (without US-recovered)
@@ -83,4 +83,4 @@ x_dat_us = np.arange(len(data_us))
 data = [data[day].fillna(0) for day in x_dat]
 data_us = [data_us[day].fillna(0) for day in x_dat_us]
 
-# TODO: fix population Dominica Republic (>10m) 180k covid vs Dominica (76k) 107 covid
+# TODO: fix population 'Dominica Republic' (>10m) 180k covid vs 'Dominica' (76k) 107 covid, there are two location with Dominica
