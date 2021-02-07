@@ -11,6 +11,7 @@ Starts/__pycache__/*
 COVID-19/
 */data/
 .ipynb_checkpoints/
+debug.ipynb
 speedup.ipynb
 18_Covid-19/old/
 COVID-19_Unified/

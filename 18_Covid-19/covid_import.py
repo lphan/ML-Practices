@@ -9,7 +9,7 @@ sys.path.insert(0, current_dir[:current_dir.rfind(path.sep)])
 import seaborn as sns
 from Starts.start import *
 from Starts.startml import *
-# from Starts.startvis import *
+from Starts.startvis import *
 from matplotlib.pylab import rcParams
 
 # Import general data (without US-recovered)
@@ -64,7 +64,6 @@ else:
 # Persist data in memory to allow future computations faster (only apply for dask-object)
 if Start.kwargs['pandas_type'] is False:
     data = [dat.persist() for dat in data]
-
 
 print("Start importing single data ", path_confirmed_global)
 total_confirmed = Start.import_data(path_confirmed_global)
