@@ -392,7 +392,6 @@ ratioRecByDay = [np.round(totalrecovered_by_day[day]/totalconfirmed_by_day[day]*
 # Ratio Total_Fatalities over Total_Confirmed changed by Day
 ratioFatalByDay = [np.round(totalfatalities_by_day[day]/totalconfirmed_by_day[day]*100, 3) for day in x_dat]
 
-
 ''' Number of all infected countries changed by day '''
 # filter column by name and convert Pandas frame to Numpy Array
 num_infected_countries = [len(np.unique(data[day][data[day]['Confirmed']>0].filter(regex=("Country.*")).values)) for day in x_dat]

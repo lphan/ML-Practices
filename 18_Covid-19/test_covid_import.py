@@ -38,12 +38,3 @@ def test_data_us_nonan():
 def test_days_length():
     assert len(x_dat) > 0 and len(x_dat_us) > 0
 
-# TODO: test data covid
-
-# totalconfirmed_by_day > totalrecovered_by_day, totalconfirmed_by_day > totalfatalities_by_day
-
-# np.array(ratioFatalByDay) < np.array(ratioRecByDay)
-
-# us recovered cases
-
-# tbd.
