@@ -41,7 +41,7 @@ all_countries['Recovered'] = {}
 # all_countries['Confirmed']['Congo (Kinshasa)'][-1] == 0
 # data[-1][data[-1]['Confirmed']>0][data[-1][data[-1]['Confirmed']>0]['Country_Region'] == 'Congo (Brazzaville)'] > 0
 # data[-1][data[-1]['Confirmed']>0][data[-1][data[-1]['Confirmed']>0]['Country_Region'] == 'Congo (Kinshasa)'] > 0
-# cause issue: data[-1][data[-1]['Country_Region'].str.contains('Congo (Brazzaville)')] return empty
+# cause issue StartML.searchByValue: data[-1][data[-1]['Country_Region'].str.contains('Congo (Brazzaville)')] return empty
 
 # hard code for Korea
 for feature in features:    
