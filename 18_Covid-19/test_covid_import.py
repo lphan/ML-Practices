@@ -7,7 +7,6 @@ current_dir = path.dirname(path.abspath(getsourcefile(lambda:0)))
 sys.path.insert(0, current_dir[:current_dir.rfind(path.sep)])
 
 from covid_import import *
-# from covid import *
 
 # test data covid_import
 def test_total_confirmed_import():
