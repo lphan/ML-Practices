@@ -36,13 +36,6 @@ all_countries['Confirmed'] = {}
 all_countries['Deaths'] = {}
 all_countries['Recovered'] = {}
 
-# TODO: BUG
-# all_countries['Confirmed']['Congo (Brazzaville)'][-1] == 0
-# all_countries['Confirmed']['Congo (Kinshasa)'][-1] == 0
-# data[-1][data[-1]['Confirmed']>0][data[-1][data[-1]['Confirmed']>0]['Country_Region'] == 'Congo (Brazzaville)'] > 0
-# data[-1][data[-1]['Confirmed']>0][data[-1][data[-1]['Confirmed']>0]['Country_Region'] == 'Congo (Kinshasa)'] > 0
-# cause issue StartML.searchByValue: data[-1][data[-1]['Country_Region'].str.contains('Congo (Brazzaville)')] return empty
-
 # hard code for Korea
 for feature in features:    
     for day in x_dat:
@@ -62,10 +55,10 @@ infected_countries_latest_without_Korea =  np.delete(infected_countries_latest, 
 infected_countries_latest_without_ship =  np.delete(infected_countries_latest, np.where(np.logical_or(infected_countries_latest == 'Diamond Princess', infected_countries_latest == 'MS Zaandam')))
 
 for feature in features:
-    # Total Confirmed in all countries TODO: slow and has different result data[0].groupby(by='Country/Region').sum()
+    # Total Confirmed in all countries 
     for country in infected_countries_latest_without_Korea:
         for day in x_dat:
-            # TODO: error. See BUG above
+            # TODO: error. See BUG in todo
             tmp = StartML.searchByValue(data[day], try_keys=['Country_Region', 'Country/Region'], value=country)[feature].values            
 
             if tmp.size>0:
@@ -130,7 +123,7 @@ for country in infected_countries_latest:
     tmp = [(0, all_countries['Confirmed'][country][0])] + [(day+1, all_countries['Confirmed'][country][day+1] - all_countries['Confirmed'][country][day]) for day in x_dat[:-1]]    
     y_dat_confirmed_ByDay.update([(country, tmp)])
 
-# Total all confirmed cases in all countries changed by day TODO: validate again with y_dat_confirmed
+# Total all confirmed cases in all countries changed by day 
 totalconfirmed_by_day = [sum(data[day]['Confirmed']) for day in x_dat]
 
 # New Increasing/ changes cases in all countries changed by day

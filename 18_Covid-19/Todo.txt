@@ -1,0 +1,12 @@
+# TODO covid.py: BUG
+# all_countries['Confirmed']['Congo (Brazzaville)'][-1] == 0
+# all_countries['Confirmed']['Congo (Kinshasa)'][-1] == 0
+# data[-1][data[-1]['Confirmed']>0][data[-1][data[-1]['Confirmed']>0]['Country_Region'] == 'Congo (Brazzaville)'] > 0
+# data[-1][data[-1]['Confirmed']>0][data[-1][data[-1]['Confirmed']>0]['Country_Region'] == 'Congo (Kinshasa)'] > 0
+# cause issue StartML.searchByValue: data[-1][data[-1]['Country_Region'].str.contains('Congo (Brazzaville)')] return empty
+
+# TODO covid.py: speed up different result with data[0].groupby(by='Country/Region').sum()
+
+# TODO covid.py: validate totalconfirmed_by_day with y_dat_confirmed
+
+# TODO covid_top.py: UPDATE (change from list to dataframe - rewrite data structure to convert from tuple-list to data frame)
