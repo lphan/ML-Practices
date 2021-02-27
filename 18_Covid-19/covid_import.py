@@ -1,30 +1,32 @@
 # setup absolute path to location of package Starts and config-file
 from inspect import getsourcefile
 import os.path as path, sys
+
 current_dir = path.dirname(path.abspath(getsourcefile(lambda: 0)))
 sys.path.insert(0, current_dir[:current_dir.rfind(path.sep)])
 
 # from numba import jit
 # from numba import njit
-import seaborn as sns
-from Starts.start import *
+from Starts.start import Start
 from Starts.startml import *
-from Starts.startvis import *
+# from Starts.startvis import *
 from matplotlib.pylab import rcParams
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 # Import general data (without US-recovered)
 Start._arguments()
 
 # Import global data
-path_confirmed_global = './COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
-path_deaths_global = './COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv'
-path_recovered_global = './COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv'
+path_confirmed_global = './data/COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv'
+path_deaths_global = './data/COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv'
+path_recovered_global = './data/COVID-19/csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv'
 
 # Import World data
 path_folder = Start.kwargs['folder_path']
 
 # Import USA data (used to retrieve number of recovered in USA)
-path_us_folder = './COVID-19/csse_covid_19_data/csse_covid_19_daily_reports_us/'
+path_us_folder = './data/COVID-19/csse_covid_19_data/csse_covid_19_daily_reports_us/'
 
 if path_folder:
     print("Start importing World-data ", path_folder)

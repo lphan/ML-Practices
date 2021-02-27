@@ -63,6 +63,21 @@ def test_total_fatalities_dict():
 def test_total_recovered_dict():
     assert len(total_recovered_without_US) > 0
 
+# test search By value and search by value in certain column
+features = ['Confirmed', 'Deaths', 'Recovered']
+
+def test_data_searchByValueColumn():
+    for feature in features:
+        for country in infected_countries_latest_without_ship:
+            ground_true = sum(StartML.searchByValueColumn(data[-1], try_keys=['Country_Region', 'Country/Region'], column=feature, value=country)[feature].values)
+            assert data[-1][data[-1][feature]>0].groupby(by='Country_Region').sum().loc[country][feature] == ground_true
+
+# issue bug-test in function searchByValue (contain-function) has value = 0 but searchByValueColumn and groupby function return value > 0
+def test_data_searchByValue():
+    for feature in features:   
+        for country in ['Congo (Brazzaville)', 'Congo (Kinshasa)']:            
+            assert sum(StartML.searchByValue(data[-1], try_keys=['Country_Region', 'Country/Region'], value=country)[feature].values) == 0
+
 # def test_data_nonan():
 #     for day in range(len(data)):
 #         for col in data[day].columns:

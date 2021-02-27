@@ -4,19 +4,19 @@ import os.path as path, sys
 current_dir = path.dirname(path.abspath(getsourcefile(lambda: 0)))
 sys.path.insert(0, current_dir[:current_dir.rfind(path.sep)])
 
-from numba import jit
-from numba import njit
-from Starts.start import *
-from Starts.startml import *
-from Starts.startvis import *
+# from numba import jit
+# from numba import njit
+from Starts.start import Start
+# from Starts.startml import *
+# from Starts.startvis import *
 from matplotlib.pylab import rcParams
 
 # Import general data (without US-recovered)
-# Start._arguments()
+Start._arguments()
 
 # Import global data 
-raw_data_us = './Vaccine/COVID-19/data_tables/vaccine_data/raw_data/vaccine_data_us_state_timeline.csv'
-raw_data_global = './Vaccine/COVID-19/data_tables/vaccine_data/global_data/vaccine_data_global.csv'
+raw_data_us = './data/Vaccine/COVID-19/data_tables/vaccine_data/raw_data/vaccine_data_us_state_timeline.csv'
+raw_data_global = './data/Vaccine/COVID-19/data_tables/vaccine_data/global_data/vaccine_data_global.csv'
 
 print("Start importing single data vaccine in US", raw_data_us)
 total_confirmed_vaccine_us = Start.import_data(raw_data_us)

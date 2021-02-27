@@ -39,7 +39,8 @@ all_countries['Recovered'] = {}
 # hard code for Korea
 for feature in features:    
     for day in x_dat:
-        tmp = all_countries[feature]['Korea, South'] = StartML.searchByValue(data[day], try_keys=['Country_Region', 'Country/Region'], value='Korea')[feature].values
+        # Korea, South has two different naming
+        tmp = StartML.searchByValue(data[day], try_keys=['Country_Region', 'Country/Region'], value='Korea')[feature].values        
 
         if tmp.size>0:
             all_countries_values.append(sum(tmp))
@@ -58,8 +59,8 @@ for feature in features:
     # Total Confirmed in all countries 
     for country in infected_countries_latest_without_Korea:
         for day in x_dat:
-            # TODO: error. See BUG in todo
-            tmp = StartML.searchByValue(data[day], try_keys=['Country_Region', 'Country/Region'], value=country)[feature].values            
+            # tmp = StartML.searchByValue(data[day], try_keys=['Country_Region', 'Country/Region'], value=country)[feature].values            
+            tmp = StartML.searchByValueColumn(data[day], try_keys=['Country_Region', 'Country/Region'], column=feature, value=country)[feature].values
 
             if tmp.size>0:
                 all_countries_values.append(sum(tmp))
