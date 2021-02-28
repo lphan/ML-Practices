@@ -78,6 +78,14 @@ def test_data_searchByValue():
         for country in ['Congo (Brazzaville)', 'Congo (Kinshasa)']:            
             assert sum(StartML.searchByValue(data[-1], try_keys=['Country_Region', 'Country/Region'], value=country)[feature].values) == 0
 
+def test_data_total_confirmed_byday():
+    for day in x_dat:
+        assert totalconfirmed_by_day[day] == sum(data[day]['Confirmed']) 
+
+def test_data_total_fatal_byday():
+    for day in x_dat:
+        assert totalfatalities_by_day[day] == sum(data[day]['Deaths']) 
+
 # def test_data_nonan():
 #     for day in range(len(data)):
 #         for col in data[day].columns:

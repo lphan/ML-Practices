@@ -1,5 +1,10 @@
+# TODO: create covid_metadata.py: after import, start pre-processing all metadata and key values to make data consistent before processing
+
+# TODO: FAILED test_data_total_fatal_byday:: KeyError: other countries/ locations like Hong Kong, and others were removed or changed in data 
 
 # TODO: FAILED test_covid.py::test_data_searchByValueColumn - KeyError: 'Cambodia'
+
+# TODO: Test test_covid.py:: searchByValueColumn StartML.searchByValueColumn(data[day], try_keys=['Country_Region', 'Country/Region'], column='Deaths', value='Cruise Ship')['Deaths'].values.size
 
 # TODO: covid_byweek.py: review negative value 
 
@@ -17,4 +22,3 @@
 # cause issue StartML.searchByValue: data[-1][data[-1]['Country_Region'].str.contains('Congo (Brazzaville)')] return empty
 
 # FIXED covid.py: speed up different result with data[0].groupby(by='Country/Region').sum()
-

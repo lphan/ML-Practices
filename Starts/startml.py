@@ -669,7 +669,7 @@ class StartML(Start):
                 # print(result)
 
         return np.array(result)
-
+  
     @classmethod
     def searchByValue(cls, data, try_keys, value):
         """
@@ -684,7 +684,7 @@ class StartML(Start):
         i=0
         while (i<len(try_keys)):
             if try_keys[i] in data:
-                # TODO: use str.extract to suppress the UserWarning
+                # TODO: use str.extract to suppress the UserWarning                
                 return data[data[try_keys[i]].str.contains(value)]                
             else:        
                 i=i+1
@@ -692,6 +692,30 @@ class StartML(Start):
         # return data[data[try_keys].str.contains(value)]
         print("Nothing is found")
         return
+
+    @classmethod
+    def searchByValueColumn(cls, data, try_keys, column, value):
+        """
+        Description:
+            filter out data from certain column with specific value
+        :param data: pandas.core.frame.DataFrame
+        :param try_keys: list of all possible key_columns to search 
+        :param column: identify data from certain column
+        :param value: value in column need to be filtered
+        """
+        # return data[data[column]==value]
+        i=0
+        while (i<len(try_keys)):
+            if try_keys[i] in data:
+                return data[data[column]>0][data[data[column]>0][try_keys[i]] == value]
+                # return data[data[column]>0].groupby(by=try_keys[i]).sum().loc[value][column]
+            else:        
+                i=i+1
+
+        # return data[data[try_keys].str.contains(value)]
+        print("Nothing is found")
+        return
+        
 
     # @classmethod
     # def searchByValue2(cls, data, column, value):

@@ -36,28 +36,42 @@ all_countries['Confirmed'] = {}
 all_countries['Deaths'] = {}
 all_countries['Recovered'] = {}
 
-# hard code for Korea
-for feature in features:    
-    for day in x_dat:
-        # Korea, South has two different naming
-        tmp = StartML.searchByValue(data[day], try_keys=['Country_Region', 'Country/Region'], value='Korea')[feature].values        
+'''
+Hard code for Korea, China, Hong Kong, and United Kingdom
+Reasons:  
+- South Korea has three namings 'South Korea' and 'Korea, South', 'Republic of Korea'
+- China has two different namings ('Mainland, China' and 'China')
+- Hong Kong is removed from data after day 48 (start day 0), also naming as 'Hong Kong SAR' at day 48
+- Taiwan has two different namings ('Taiwan' and 'Taiwan*')
+- UK has two different namings ('UK', and 'United Kingdom')
+'''
+special_countries = ['Korea', 'China', 'Hong Kong', 'Taiwan*']
+for sc in special_countries:
+    for feature in features:
+        for day in x_dat:
+            tmp = StartML.searchByValue(data[day], try_keys=['Country_Region', 'Country/Region'], value=sc)[feature].values        
 
-        if tmp.size>0:
-            all_countries_values.append(sum(tmp))
+            if tmp.size>0:
+                all_countries_values.append(sum(tmp))
+            else:
+                # fill zero for the NaN value in data after computation of fillna
+                all_countries_values.append(0)
+
+        if sc == 'Korea':
+            all_countries[feature]['Korea, South'] = all_countries_values
         else:
-            # fill zero for the NaN value in data after computation of fillna
-            all_countries_values.append(0)
-    all_countries[feature]['Korea, South'] = all_countries_values
+            all_countries[feature][sc] = all_countries_values
 
-    # reset back to initial status
-    all_countries_values = []
+        # reset back to initial status
+        all_countries_values = []
 
-infected_countries_latest_without_Korea =  np.delete(infected_countries_latest, np.where(infected_countries_latest == 'Korea, South'))
+# infected_countries_latest_without_Korea =  np.delete(infected_countries_latest, np.where(infected_countries_latest == 'Korea, South'))
+infected_countries_latest_without_special_countries = np.delete(infected_countries_latest, np.where((infected_countries_latest == 'Korea, South')| (infected_countries_latest == 'China')|(infected_countries_latest == 'Hong Kong')|(infected_countries_latest == 'Taiwan*')))
 infected_countries_latest_without_ship =  np.delete(infected_countries_latest, np.where(np.logical_or(infected_countries_latest == 'Diamond Princess', infected_countries_latest == 'MS Zaandam')))
 
 for feature in features:
     # Total Confirmed in all countries 
-    for country in infected_countries_latest_without_Korea:
+    for country in infected_countries_latest_without_special_countries:
         for day in x_dat:
             # tmp = StartML.searchByValue(data[day], try_keys=['Country_Region', 'Country/Region'], value=country)[feature].values            
             tmp = StartML.searchByValueColumn(data[day], try_keys=['Country_Region', 'Country/Region'], column=feature, value=country)[feature].values
@@ -72,6 +86,31 @@ for feature in features:
         # reset back to initial status
         all_countries_values = []
 
+'''
+Hard code for ship 'Diamond Princess' and 'MS Zaandam'
+Reason: 
+- Others was old name of 'Diamond Princess' from day 29 to 48
+- 'cruise ship' was old name of 'Diamond Princess' from day 49 to 62
+- 'UK' was old name of 'United Kingdom' from day 43 to 49
+'''
+others = list()
+for day in x_dat[29:49]: 
+    if StartML.searchByValueColumn(data[day], try_keys=['Country_Region', 'Country/Region'], column='Deaths', value='Others')['Deaths'].values.size>0:
+        others.append(StartML.searchByValueColumn(data[day], try_keys=['Country_Region', 'Country/Region'], column='Deaths', value='Others')['Deaths'].values.tolist()[0]) 
+
+# df.loc[(df['column_name'] >= A) & (df['column_name'] <= B)]
+cruise_ship = list()
+for day in x_dat[49:62]:
+    cruise_ship.append(data[49].loc[ (data[49]['Deaths']>0) & (data[49]['Country/Region']=='Cruise Ship')]['Deaths'].values.tolist()[0])
+
+uk = list()
+for day in x_dat[43:49]:
+    uk.append(data[day][data[day]['Deaths']>0].groupby('Country/Region').sum()['Deaths'].loc['UK'])
+
+all_countries['Deaths']['Diamond Princess'][29:49] = others
+all_countries['Deaths']['Diamond Princess'][49:62] = cruise_ship
+all_countries['Deaths']['United Kingdom'][43:49] = uk
+
 # create dictionary of country's population
 country_pop_dict = dict()
 for country in infected_countries_latest:
@@ -81,7 +120,8 @@ for country in infected_countries_latest:
         print("No Information about the population of country ", country)
         country_pop_dict[country]='NaN'
 
-# EXAMPLES last day increasing deaths in US: sum(all_countries['Deaths']['US'][-1]) - sum(all_countries['Deaths']['US'][-2])
+# Hong Kong population was not given in 
+country_pop_dict['Hong Kong'] = 7496981
 
 '''
 HARD-CODE: (SHOULD MOVE TO COVID_IMPORT)
@@ -106,15 +146,16 @@ totalrecovered_by_day_us = [sum(data_us[day]['Recovered'].fillna(0)) for day in 
 # Init a list of all zero values
 update_part = [0 for i in range(len(totalrecovered_by_day_us))]
 
-j = 0
-
 # get Sum of total values without US and values with US
+j = 0
 for i in np.arange(len(data)-len(data_us), len(data), 1):    
     update_part[j] = totalrecovered_by_day_without_us[i] + totalrecovered_by_day_us[j]    
     j = j+1
 
 ''' 
-All countries CONFIRMED_cases until last day
+All countries CONFIRMED_cases changed by day
+
+EXAMPLES last day increasing confirmed in US: sum(all_countries['Confirmed']['US'][-1]) - sum(all_countries['Confirmed']['US'][-2])
 '''
 # Confirmed by Day in every country
 y_dat_confirmed_ByDay = dict()
@@ -124,14 +165,8 @@ for country in infected_countries_latest:
     tmp = [(0, all_countries['Confirmed'][country][0])] + [(day+1, all_countries['Confirmed'][country][day+1] - all_countries['Confirmed'][country][day]) for day in x_dat[:-1]]    
     y_dat_confirmed_ByDay.update([(country, tmp)])
 
-# Total all confirmed cases in all countries changed by day 
-totalconfirmed_by_day = [sum(data[day]['Confirmed']) for day in x_dat]
-
-# New Increasing/ changes cases in all countries changed by day
-newCasesByDay = [totalconfirmed_by_day[0]]+[totalconfirmed_by_day[day+1]-totalconfirmed_by_day[day] for day in x_dat[:-1]]
-
 '''
-All Countries FATALITIES_cases until last day
+All Countries FATALITIES_cases changed by day
 '''
 # Death by Day in every country
 y_dat_deaths_ByDay = dict()
@@ -141,14 +176,8 @@ for country in infected_countries_latest:
     tmp = [(0, all_countries['Deaths'][country][0])] + [(day+1, all_countries['Deaths'][country][day+1] - all_countries['Deaths'][country][day]) for day in x_dat[:-1]]    
     y_dat_deaths_ByDay.update([(country, tmp)])
     
-# Total all fatalities cases in all countries changed by day
-totalfatalities_by_day = [sum(data[day]['Deaths']) for day in x_dat]
-
-# New Increasing/ changes Fatalities in ALL COUNTRIES changed by day
-newFatalitiesByDay = [totalfatalities_by_day[0]] + [totalfatalities_by_day[day+1] - totalfatalities_by_day[day] for day in x_dat[:-1]]
-
 '''
-All Countries RECOVERED_cases until last day
+All Countries RECOVERED_cases changed by day
 '''
 
 # HARD-CODE for country US
@@ -163,15 +192,29 @@ for country in infected_countries_latest:
     tmp = [(0,all_countries['Recovered'][country][0])] + [(day+1, all_countries['Recovered'][country][day+1] - all_countries['Recovered'][country][day]) for day in x_dat[:-1]]    
     y_dat_recovered_ByDay.update([(country, tmp)])
     
-# Total all recovered cases in all countries changed by day
-totalrecovered_by_day = totalrecovered_by_day_without_us[0:keep_values_day] + update_part
-
-# New Increasing/ changes Recovered in ALL COUNTRIES changed by day
-newRecoveredByDay = [totalrecovered_by_day[0]] + [totalrecovered_by_day[day+1] - totalrecovered_by_day[day] for day in x_dat[:-1]]
-
 '''
 Collect all Information into 3x Data Frames (Confirmed, Fatalities, Recovered)
 '''
 countries_confirmed = pd.DataFrame.from_dict(data=all_countries['Confirmed'])
 countries_fatalities = pd.DataFrame.from_dict(data=all_countries['Deaths'])
 countries_recovered = pd.DataFrame.from_dict(data=all_countries['Recovered'])
+
+# Total all confirmed cases in all countries changed by day 
+# totalconfirmed_by_day = [sum(data[day]['Confirmed']) for day in x_dat]
+totalconfirmed_by_day = countries_confirmed.sum(axis=1).tolist()
+
+# New Increasing/ changes cases in all countries changed by day
+newCasesByDay = [totalconfirmed_by_day[0]]+[totalconfirmed_by_day[day+1]-totalconfirmed_by_day[day] for day in x_dat[:-1]]
+
+# Total all fatalities cases in all countries changed by day
+# totalfatalities_by_day = [sum(data[day]['Deaths']) for day in x_dat]
+totalfatalities_by_day = countries_fatalities.sum(axis=1).tolist()
+
+# New Increasing/ changes Fatalities in ALL COUNTRIES changed by day
+newFatalitiesByDay = [totalfatalities_by_day[0]] + [totalfatalities_by_day[day+1] - totalfatalities_by_day[day] for day in x_dat[:-1]]
+
+# Total all recovered cases in all countries changed by day
+totalrecovered_by_day = totalrecovered_by_day_without_us[0:keep_values_day] + update_part
+
+# New Increasing/ changes Recovered in ALL COUNTRIES changed by day
+newRecoveredByDay = [totalrecovered_by_day[0]] + [totalrecovered_by_day[day+1] - totalrecovered_by_day[day] for day in x_dat[:-1]]
