@@ -3,47 +3,45 @@ from covid import *
 ''' 
 Top 10 countries with highest/ lowest cases (new cases confirmed, fatality, recovered) last day 
 '''
-# TODO: UPDATE (change from list to dataframe - rewrite data structure to convert from tuple-list to data frame)
+# Example:
+# list_confirmed = [(country, y_dat_confirmed_ByDay[country][-1][1]) for country in infected_countries_latest]    
+# countries_highestConfByDay = sorted(list_confirmed, key=lambda x: x[1], reverse=True)
+# countries_lowestConfByDay = sorted(list_confirmed, key=lambda x: x[1], reverse=False)
 
-list_confirmed = [(country, y_dat_confirmed_ByDay[country][-1][1]) for country in infected_countries_latest]    
-countries_highestConfByDay = sorted(list_confirmed, key=lambda x: x[1], reverse=True)
-countries_lowestConfByDay = sorted(list_confirmed, key=lambda x: x[1], reverse=False)
+countries_ConfLastDay = countries_confirmed.iloc[-2:].diff().iloc[-1]
+countries_highestConfByDay = countries_ConfLastDay.sort_values(ascending=False)
+countries_lowestConfByDay = countries_ConfLastDay.sort_values(ascending=True)
 
-list_fatal = [(country, y_dat_deaths_ByDay[country][-1][1]) for country in infected_countries_latest]
-countries_highestFatalByDay = sorted(list_fatal, key=lambda x: x[1], reverse=True)
-countries_lowestFatalByDay = sorted(list_fatal, key=lambda x: x[1], reverse=False)
+countries_FatalLastDay = countries_fatalities.iloc[-2:].diff().iloc[-1]
+countries_highestFatalByDay = countries_FatalLastDay.sort_values(ascending=False)
+countries_lowestFatalByDay = countries_FatalLastDay.sort_values(ascending=True)
 
-list_recovered = [(country, y_dat_recovered_ByDay[country][-1][1]) for country in infected_countries_latest]
-countries_highestRecByDay = sorted(list_recovered, key=lambda x: x[1], reverse=True)
-countries_lowestRecByDay = sorted(list_recovered, key=lambda x: x[1], reverse=False)
+countries_RecLastDay = countries_recovered.iloc[-2:].diff().iloc[-1]
+countries_highestRecByDay = countries_RecLastDay.sort_values(ascending=False)
+countries_lowestRecByDay = countries_RecLastDay.sort_values(ascending=True)
 
 ''' 
 Top 10 Countries with highest ratio (cases on population) last DAY (see: file UID_ISO_FIPS_LookUp_Table.csv) 
 '''
-# TODO: UPDATE
-
-# @jit(nopython=True)
 def getTopConfLastDay(topCountries, country_population):
-    topCasesPopulation = [((country[0], country[1]/int(country_population[country[0]]), int(country_population[country[0]]))) for country in topCountries]
+    topCasesPopulation = [((country, value/country_population[country], country_population[country])) for country, value in topCountries.items()]
     topCasesRatioPop = [(tcp[0], tcp[1]) for tcp in topCasesPopulation]
     topCasesPop = [(tcp[0], tcp[2]) for tcp in topCasesPopulation]
     return topCasesPopulation, topCasesRatioPop, topCasesPop
 
 # Ratio of Confirmed (last day)/ Population (Take the first 10 countries from the list)
-topConfPopulation, topConfLastDayRatioPop, topConfCountryPop = getTopConfLastDay(topCountries=countries_highestConfByDay[0:10], country_population=country_pop_dict)
+topConfPopulation, topConfLastDayRatioPop, topConfCountryPop = getTopConfLastDay(topCountries=countries_highestConfByDay.head(10), country_population=country_pop_dict)
 
 # Ratio of Deaths (last day)/ Population (Take the first 10 countries from the list)
-topFatalPopulation, topFatalLastDayRatioPop, topFatalCountryPop = getTopConfLastDay(topCountries=countries_highestFatalByDay[0:10], country_population=country_pop_dict)
+topFatalPopulation, topFatalLastDayRatioPop, topFatalCountryPop = getTopConfLastDay(topCountries=countries_highestFatalByDay.head(10), country_population=country_pop_dict)
 
 # Ratio of Recovered (last day)/ Population (Take the first 10 countries from the list)
-topRecPopulation, topRecLastDayRatioPop, topRecCountryPop = getTopConfLastDay(topCountries=countries_highestRecByDay[0:10], country_population=country_pop_dict)
-
-
+topRecPopulation, topRecLastDayRatioPop, topRecCountryPop = getTopConfLastDay(topCountries=countries_highestRecByDay.head(10), country_population=country_pop_dict)
 
 ''' 
 The different Ratio of the Top 10 countries with highest cases 
 '''
-# TODO: UPDATE
+# TODO: UPDATE - replace with DataFrame (see: below top10 below)
 
 # Ratio of Total Confirmed/ Population (certainly >0)
 y_dat_ratioConfPop = dict()
@@ -82,49 +80,43 @@ ratioRecByDay = [np.round(totalrecovered_by_day[day]/totalconfirmed_by_day[day]*
 # Ratio Total_Fatalities over Total_Confirmed changed by Day
 ratioFatalByDay = [np.round(totalfatalities_by_day[day]/totalconfirmed_by_day[day]*100, 3) for day in x_dat]
 
-# get basic data (confirmed, fatalities, recovered) into list of dictionary by day
-dataconfirmed = [dict() for i in range(len(data))]
-datafatal = [dict() for i in range(len(data))]
-datarecovered = [dict() for i in range(len(data))]
+# Total Sum of Confirmed, Fatal, Recovered
+totalConfirmed = countries_confirmed.tail(1).values.sum()
+totalFatal = countries_fatalities.tail(1).values.sum()
+totalRecovered = countries_recovered.tail(1).values.sum()
 
-for i in range(len(data)):
-    # print("Day: ", i)
-    col = data[i].filter(like='Country').columns[0]
-    
-    for country in infected_countries_latest:
-        dataconfirmed[i][country] = all_countries['Confirmed'][country][i]
-        datafatal[i][country] = all_countries['Deaths'][country][i]
-        datarecovered[i][country] = all_countries['Recovered'][country][i]
+'''
+Top 10 highest
+'''
+top10confirmed = countries_confirmed.tail(1).transpose().sort_values(by=[lastday], ascending=False).rename(columns={lastday: "Confirmed"})
+top10confirmed['population']= [country_pop_dict[country] for country in top10confirmed.index]
+top10confirmed['RatioConfirmedByPopulation_in_%']= np.round(top10confirmed['Confirmed']/top10confirmed['population'] *100, 4)                                               
+top10confirmed['RatioByTotal_in_%']= np.round(top10confirmed['Confirmed']/totalConfirmed*100, 4)
 
-# create 3x data frames (columns = all countries, rows = all days) for confirmed, deaths, and recovered
-pdConfirmed = pd.DataFrame(data=dataconfirmed, columns=infected_countries_latest)
-pdDeaths = pd.DataFrame(data=datafatal, columns=infected_countries_latest)
-pdRecovered = pd.DataFrame(data=datarecovered, columns=infected_countries_latest)
+top10fatal = countries_fatalities.tail(1).transpose().sort_values(by=[lastday], ascending=False).rename(columns={lastday: "Fatal"})
+top10fatal['population'] = [country_pop_dict[country] for country in top10fatal.index]
+top10fatal['RatioFatalByPopulation_in_%'] = np.round(top10fatal['Fatal']/top10fatal['population'] *100, 4)
+top10fatal['RatioByTotal_in_%'] = np.round(top10fatal['Fatal']/totalFatal*100, 4)
 
-# Select top and bottom values
-totalConfirmed = pdConfirmed.tail(1).values.sum()
-totalFatal = pdDeaths.tail(1).values.sum()
-totalRecovered = pdRecovered.tail(1).values.sum()
+top10recovered = countries_recovered.tail(1).transpose().sort_values(by=[lastday], ascending=False).rename(columns={lastday: "Recovered"})
+top10recovered['population'] = [country_pop_dict[country] for country in top10recovered.index]
+top10recovered['RatioRecoveredByPopulation_in_%'] = np.round(top10recovered['Recovered']/top10recovered['population'] *100, 4)
+top10recovered['RatioByTotal_in_%'] = np.round(top10recovered['Recovered']/totalRecovered*100, 4)
 
-# Top 10 highest
-top10confirmed = pdConfirmed.tail(1).transpose().sort_values(by=[lastday], ascending=False).head(10)
-top10confirmed['RatioByTotal_in_%']=[np.round(top10confirmed.loc[country].values[0]/totalConfirmed*100, 4) if totalConfirmed>0 else 0 for country in top10confirmed.index]
+'''
+Top 10 lowest
+'''
+top10confirmed_lowest = countries_confirmed.tail(1).transpose().sort_values(by=[lastday], ascending=True).rename(columns={lastday: "Confirmed"})
+top10confirmed_lowest['population'] = [country_pop_dict[country] for country in top10confirmed_lowest.index]
+top10confirmed_lowest['RatioConfirmedByPopulation_in_%'] = np.round(top10confirmed_lowest['Confirmed']/top10confirmed_lowest['population'] *100, 4)
+top10confirmed_lowest['RatioByTotal_in_%'] = np.round(top10confirmed_lowest['Confirmed']/totalConfirmed*100, 4)
 
-top10fatal = pdDeaths.tail(1).transpose().sort_values(by=[lastday], ascending=False).head(10)
-top10fatal['RatioByTotal_in_%']=[np.round(top10fatal.loc[country].values[0]/totalFatal*100, 4) if totalFatal>0 else 0 for country in top10fatal.index]
+top10fatal_lowest = countries_fatalities.tail(1).transpose().sort_values(by=[lastday], ascending=True).rename(columns={lastday: "Fatal"})
+top10fatal_lowest['population'] = [country_pop_dict[country] for country in top10fatal_lowest.index]
+top10fatal_lowest['RatioFatalByPopulation_in_%']= np.round(top10fatal_lowest['Fatal']/top10fatal_lowest['population'] *100, 4)
+top10fatal_lowest['RatioByTotal_in_%']= np.round(top10fatal_lowest['Fatal']/totalFatal*100, 4)
 
-top10recovered = pdRecovered.tail(1).transpose().sort_values(by=[lastday], ascending=False).head(10)
-top10recovered['RatioByTotal_in_%']=[np.round(top10recovered.loc[country].values[0]/totalRecovered*100, 4) if totalRecovered>0 else 0 for country in top10recovered.index]
-
-# Top 10 lowest
-top10confirmed_lowest = pdConfirmed.tail(1).transpose().sort_values(by=[lastday], ascending=True)
-top10confirmed_lowest['RatioConfirmedByPopulation_in_%']=[np.round(top10confirmed_lowest.loc[country].values[0]/sdata[sdata['Country_Region']==country]['Population'].values[0] *100, 4) if sdata[sdata['Country_Region']==country]['Population'].values[0]>0 else 0 for country in top10confirmed_lowest.index]
-top10confirmed_lowest['population']= [sdata[sdata['Country_Region']==country]['Population'].values[0] for country in top10confirmed_lowest.index]
-
-top10fatal_lowest = pdDeaths.tail(1).transpose().sort_values(by=[lastday], ascending=True)
-top10fatal_lowest['RatioFatalByConfirmed_in_%']=[np.round(top10fatal_lowest.loc[country].values[0]/ pdConfirmed[country].tail(1).values[0] *100, 4) if pdConfirmed[country].tail(1).values[0]>0 else 0 for country in top10fatal_lowest.index]
-top10fatal_lowest['Confirmed']= [pdConfirmed[country].tail(1).values[0] for country in top10fatal_lowest.index]
-
-top10recovered_lowest = pdRecovered.tail(1).transpose().sort_values(by=[lastday], ascending=True)
-top10recovered_lowest['RatioRecoveredByConfirmed_in_%']=[np.round(top10recovered_lowest.loc[country].values[0]/ pdConfirmed[country].tail(1).values[0] *100, 4) if pdConfirmed[country].tail(1).values[0]>0 else 0 for country in top10recovered_lowest.index]
-top10recovered_lowest['Confirmed']= [pdConfirmed[country].tail(1).values[0] for country in top10recovered_lowest.index]
+top10recovered_lowest = countries_recovered.tail(1).transpose().sort_values(by=[lastday], ascending=True).rename(columns={lastday: "Recovered"})
+top10recovered_lowest['population']= [country_pop_dict[country] for country in top10recovered_lowest.index]
+top10recovered_lowest['RatioRecoveredByPopulation_in_%']=np.round(top10recovered_lowest['Recovered']/top10recovered_lowest['population'] *100, 4)
+top10recovered_lowest['RatioByTotal_in_%']=np.round(top10recovered_lowest['Recovered']/totalRecovered*100, 4)

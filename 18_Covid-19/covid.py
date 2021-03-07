@@ -120,8 +120,8 @@ for country in infected_countries_latest:
         print("No Information about the population of country ", country)
         country_pop_dict[country]='NaN'
 
-# Hong Kong population was not given in 
-country_pop_dict['Hong Kong'] = 7496981
+# Hong Kong population was not given in file (this is data from Wikipedia, estimated in 2019)
+country_pop_dict['Hong Kong'] = 7500700
 
 '''
 HARD-CODE: (SHOULD MOVE TO COVID_IMPORT)

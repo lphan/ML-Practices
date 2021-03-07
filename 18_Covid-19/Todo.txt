@@ -1,18 +1,20 @@
-# TODO: create covid_metadata.py: after import, start pre-processing all metadata and key values to make data consistent before processing
+# TODO covid_top.py: update The different Ratio of the Top 10 countries with highest cases (replace dict with dataframe)
 
-# TODO: FAILED test_data_total_fatal_byday:: KeyError: other countries/ locations like Hong Kong, and others were removed or changed in data 
+# TODO create covid_metadata.py: after import, start pre-processing all metadata and key values to make data consistent before processing
 
-# TODO: FAILED test_covid.py::test_data_searchByValueColumn - KeyError: 'Cambodia'
+# TODO FAILED test_data_total_fatal_byday:: KeyError: other countries/ locations like Hong Kong, and others were removed or changed in data 
 
-# TODO: Test test_covid.py:: searchByValueColumn StartML.searchByValueColumn(data[day], try_keys=['Country_Region', 'Country/Region'], column='Deaths', value='Cruise Ship')['Deaths'].values.size
+# TODO FAILED test_covid.py::test_data_searchByValueColumn - KeyError: 'Cambodia'
 
-# TODO: covid_byweek.py: review negative value 
+# TODO Test test_covid.py:: searchByValueColumn StartML.searchByValueColumn(data[day], try_keys=['Country_Region', 'Country/Region'], column='Deaths', value='Cruise Ship')['Deaths'].values.size
 
-# TODO: covid_comparisongroups.py: review US recovered value
+# TODO covid_byweek.py: review negative value 
+
+# TODO covid_comparegroups.py: review US recovered value
 
 # TODO covid.py: validate totalconfirmed_by_day with y_dat_confirmed
 
-# TODO covid_top.py: UPDATE (change from list to dataframe - rewrite data structure to convert from tuple-list to data frame)
+# FIXED covid_top.py: UPDATE top10 lowest, highest (change from list to dataframe - rewrite data structure to convert from tuple-list to data frame)
 
 # FIXED covid.py: BUG
 # all_countries['Confirmed']['Congo (Brazzaville)'][-1] == 0

@@ -15,7 +15,7 @@ from matplotlib.pylab import rcParams
 Start._arguments()
 
 # Import global data 
-raw_data_us = './data/Vaccine/COVID-19/data_tables/vaccine_data/raw_data/vaccine_data_us_state_timeline.csv'
+raw_data_us = './data/Vaccine/COVID-19/data_tables/vaccine_data/us_data/time_series/vaccine_data_us_timeline.csv'
 raw_data_global = './data/Vaccine/COVID-19/data_tables/vaccine_data/global_data/vaccine_data_global.csv'
 
 print("Start importing single data vaccine in US", raw_data_us)
