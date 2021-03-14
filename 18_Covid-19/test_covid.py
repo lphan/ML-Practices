@@ -46,7 +46,7 @@ def test_infected_countries_recovered_latest():
         assert all_countries['Recovered'][country][-1] >= 0
 
 def test_length_countries_latest():
-    assert len(infected_countries_latest) == len(list(all_countries['Confirmed'].keys()))
+    assert len(infected_countries_latest) == len(list(countries_confirmed.columns))
 
 # test country population dictionary
 def test_countries_confirmed_population():
@@ -64,15 +64,24 @@ def test_total_recovered_dict():
     assert len(total_recovered_without_US) > 0
 
 # test search By value and search by value in certain column
-features = ['Confirmed', 'Deaths', 'Recovered']
+def test_confirmed_searchByValueColumn():
+    for country in infected_countries_latest_without_ship:
+        ground_true = sum(StartML.searchByValueColumn(data[-1], try_keys=['Country_Region', 'Country/Region'], column='Confirmed', value=country)['Confirmed'].values)
+        assert countries_confirmed[country].sum() == ground_true
 
-def test_data_searchByValueColumn():
-    for feature in features:
-        for country in infected_countries_latest_without_ship:
-            ground_true = sum(StartML.searchByValueColumn(data[-1], try_keys=['Country_Region', 'Country/Region'], column=feature, value=country)[feature].values)
-            assert data[-1][data[-1][feature]>0].groupby(by='Country_Region').sum().loc[country][feature] == ground_true
+def test_deaths_searchByValueColumn():
+    for country in infected_countries_latest_without_ship:
+        ground_true = sum(StartML.searchByValueColumn(data[-1], try_keys=['Country_Region', 'Country/Region'], column='Deaths', value=country)['Deaths'].values)
+        assert countries_fatalities[country].sum() == ground_true
+
+def test_recovered_searchByValueColumn():
+    for country in infected_countries_latest_without_ship:
+        ground_true = sum(StartML.searchByValueColumn(data[-1], try_keys=['Country_Region', 'Country/Region'], column='Recovered', value=country)['Recovered'].values)
+        assert countries_recovered[country].sum() == ground_true
 
 # issue bug-test in function searchByValue (contain-function) has value = 0 but searchByValueColumn and groupby function return value > 0
+features = ['Confirmed', 'Deaths', 'Recovered']
+
 def test_data_searchByValue():
     for feature in features:   
         for country in ['Congo (Brazzaville)', 'Congo (Kinshasa)']:            

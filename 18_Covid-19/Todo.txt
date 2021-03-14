@@ -1,18 +1,31 @@
-# TODO covid_top.py: update The different Ratio of the Top 10 countries with highest cases (replace dict with dataframe)
 
-# TODO create covid_metadata.py: after import, start pre-processing all metadata and key values to make data consistent before processing
 
 # TODO FAILED test_data_total_fatal_byday:: KeyError: other countries/ locations like Hong Kong, and others were removed or changed in data 
 
 # TODO FAILED test_covid.py::test_data_searchByValueColumn - KeyError: 'Cambodia'
 
-# TODO Test test_covid.py:: searchByValueColumn StartML.searchByValueColumn(data[day], try_keys=['Country_Region', 'Country/Region'], column='Deaths', value='Cruise Ship')['Deaths'].values.size
+# TODO FAILED test_covid.py:: searchByValueColumn StartML.searchByValueColumn(data[day], try_keys=['Country_Region', 'Country/Region'], column='Deaths', value='Cruise Ship')['Deaths'].values.size
 
 # TODO covid_byweek.py: review negative value 
 
-# TODO covid_comparegroups.py: review US recovered value
-
 # TODO covid.py: validate totalconfirmed_by_day with y_dat_confirmed
+
+# TODO covid.py: beating covid with additional population in the world
+
+# FIXED create covid_metadata.py: after import, start pre-processing all metadata and key values to make data consistent before processing
+    -> create covid_prep.py
+
+# FIXED covid_comparegroups.py: review US recovered value (US does not input recovered data in recent days) 
+    -> See: https://github.com/CSSEGISandData/COVID-19/tree/master/csse_covid_19_data/csse_covid_19_daily_reports_us
+
+# FIXED covid_prep.py 
+    -> ERROR: 'Hong Kong' and 'Macau' were not given in latest day area 'Country_region' in list of infected_countries 
+    -> redesign the dataframe, maybe two different dataframe with CruiseShip 
+    -> 1. first all countries/ areas/ location with confirmed into dict and set 
+    -> 2. create data frame for 1.
+    -> 3. merge all duplicates of the total data frame (different column name pointing to the same location like UK and United Kingdom)
+
+# FIXED covid_top.py: update The different Ratio of the Top 10 countries with highest cases (replace dict with dataframe)
 
 # FIXED covid_top.py: UPDATE top10 lowest, highest (change from list to dataframe - rewrite data structure to convert from tuple-list to data frame)
 
