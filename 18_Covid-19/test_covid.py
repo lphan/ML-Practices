@@ -12,72 +12,31 @@ from covid import *
 def test_num_infected_countries():
     assert len(num_infected_countries) > 0
 
-def test_num_infected_countries_earliest():
-    assert len(infected_countries_earliest) > 0
+def test_num_confirmed_countries():
+    assert len(countries_confirmed) > 0
 
-def test_num_infected_countries_latest():
-    assert len(infected_countries_latest) > 0
+def test_num_fatal_countries_latest():
+    assert len(countries_fatalities) > 0
 
-def test_num_infected_countries_equal():
-    assert num_infected_countries[-1] == len(infected_countries_latest)
-
-def test_infected_countries_latest():
-    for country in infected_countries_latest:
-        assert country in all_countries['Confirmed'].keys()
-
-    for country in infected_countries_latest:
-        assert country in all_countries['Deaths'].keys()
-
-    for country in infected_countries_latest:
-        assert country in all_countries['Recovered'].keys()
+def test_num_recovered_countries_latest():
+    assert len(countries_recovered) > 0
 
 # test number confirmed, deaths, recovered of infected countries
 # there are two countries with no case confirmed 
 def test_infected_countries_confirmed_latest():
-    for country in infected_countries_latest:
-        assert all_countries['Confirmed'][country][-1] >= 0
+    for country in countries_confirmed.keys():
+        assert countries_confirmed[country][-1] >= 0
 
 def test_infected_countries_deaths_latest():
-    for country in infected_countries_latest:
-        assert all_countries['Deaths'][country][-1] >= 0
+    for country in countries_fatalities.keys():
+        assert countries_fatalities[country][-1] >= 0
 
 def test_infected_countries_recovered_latest():
-    for country in infected_countries_latest:
-        assert all_countries['Recovered'][country][-1] >= 0
+    for country in countries_recovered.keys():
+        assert countries_recovered[country][-1] >= 0
 
 def test_length_countries_latest():
-    assert len(infected_countries_latest) == len(list(countries_confirmed.columns))
-
-# test country population dictionary
-def test_countries_confirmed_population():
-    for country in infected_countries_latest_without_ship:
-        assert country_pop_dict[country] > 0
-
-# test total confirmed/ fatalities/ recovered dict in all countries
-def test_total_confirmed_dict():
-    assert len(total_confirmed) > 0
-
-def test_total_fatalities_dict():
-    assert len(total_deaths) > 0
-
-def test_total_recovered_dict():
-    assert len(total_recovered_without_US) > 0
-
-# test search By value and search by value in certain column
-def test_confirmed_searchByValueColumn():
-    for country in infected_countries_latest_without_ship:
-        ground_true = sum(StartML.searchByValueColumn(data[-1], try_keys=['Country_Region', 'Country/Region'], column='Confirmed', value=country)['Confirmed'].values)
-        assert countries_confirmed[country].sum() == ground_true
-
-def test_deaths_searchByValueColumn():
-    for country in infected_countries_latest_without_ship:
-        ground_true = sum(StartML.searchByValueColumn(data[-1], try_keys=['Country_Region', 'Country/Region'], column='Deaths', value=country)['Deaths'].values)
-        assert countries_fatalities[country].sum() == ground_true
-
-def test_recovered_searchByValueColumn():
-    for country in infected_countries_latest_without_ship:
-        ground_true = sum(StartML.searchByValueColumn(data[-1], try_keys=['Country_Region', 'Country/Region'], column='Recovered', value=country)['Recovered'].values)
-        assert countries_recovered[country].sum() == ground_true
+    assert totalconfirmed_by_day == len(list(countries_confirmed.columns))
 
 # issue bug-test in function searchByValue (contain-function) has value = 0 but searchByValueColumn and groupby function return value > 0
 features = ['Confirmed', 'Deaths', 'Recovered']
@@ -94,6 +53,10 @@ def test_data_total_confirmed_byday():
 def test_data_total_fatal_byday():
     for day in x_dat:
         assert totalfatalities_by_day[day] == sum(data[day]['Deaths']) 
+
+def test_data_total_rec_byday():
+    for day in x_dat:
+        assert totalrecovered_by_day[day] == sum(data[day]['Recovered']) 
 
 # def test_data_nonan():
 #     for day in range(len(data)):
