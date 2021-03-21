@@ -50,47 +50,47 @@ ratioFatalByDay = np.round(np.array(totalfatalities_by_day)/np.array(totalconfir
 The different Ratio of the Top 10 countries with highest cases 
 '''
 # Ratio of Total Confirmed/ Population (certainly >0)
-y_dat_ratioConfPop =pd.DataFrame(index=[lastday], columns=countries_confirmed.columns)
+y_dat_ratioConfPop = pd.DataFrame(index=x_dat, columns=countries_confirmed.columns)
 y_dat_ratioConfPop.fillna(0, inplace=True)
 
 for country in countries_confirmed.columns:
     if country_pop_dict[country] is 'NaN' or country_pop_dict[country] == 0:
         y_dat_ratioConfPop[country] = 0
     else:    
-        y_dat_ratioConfPop[country] = np.round(countries_confirmed[country].iloc[-1]/country_pop_dict[country]*100, 4)
+        y_dat_ratioConfPop[country] = np.round(countries_confirmed[country]/country_pop_dict[country]*100, 4)
     
 # Ratio of Total Deaths/ Total Confirmed
-y_dat_ratioDeathConf = pd.DataFrame(index=[lastday], columns=countries_fatalities.columns)
+y_dat_ratioDeathConf = pd.DataFrame(index=x_dat, columns=countries_fatalities.columns)
 y_dat_ratioDeathConf.fillna(0, inplace=True)
 
 for country in y_dat_ratioDeathConf.columns:
     if countries_confirmed[country] is 'NaN' or  countries_confirmed[country].iloc[-1] == 0:
         y_dat_ratioDeathConf[country] = 0
     else: 
-        y_dat_ratioDeathConf[country] = np.round((countries_fatalities[country].iloc[-1]/countries_confirmed[country].iloc[-1])*100, 4)
+        y_dat_ratioDeathConf[country] = np.round((countries_fatalities[country]/countries_confirmed[country])*100, 4)
 
 # Ratio of Total Deaths/ Population (certainly >0)   
-y_dat_ratioDeathPop =pd.DataFrame(index=[lastday], columns=countries_fatalities.columns)
+y_dat_ratioDeathPop =pd.DataFrame(index=x_dat, columns=countries_fatalities.columns)
 y_dat_ratioDeathPop.fillna(0, inplace=True)
 
 for country in y_dat_ratioDeathPop.columns:
     if country_pop_dict[country] is 'NaN' or country_pop_dict[country] == 0:
         y_dat_ratioDeathPop[country] = 0
     else: 
-        y_dat_ratioDeathPop[country] = np.round(countries_fatalities[country].iloc[-1]/country_pop_dict[country]*100, 4)
+        y_dat_ratioDeathPop[country] = np.round(countries_fatalities[country]/country_pop_dict[country]*100, 4)
 
 # Ratio of Total Recovered/ Total Confirmed      
-y_dat_ratioRecConf = pd.DataFrame(index=[lastday], columns=countries_recovered.columns)
+y_dat_ratioRecConf = pd.DataFrame(index=x_dat, columns=countries_recovered.columns)
 y_dat_ratioRecConf.fillna(0, inplace=True)
 
 for country in y_dat_ratioRecConf.columns:
     if countries_confirmed[country] is 'NaN' or countries_confirmed[country].iloc[-1] == 0:
         y_dat_ratioRecConf[country] = 0
     else: 
-        y_dat_ratioRecConf[country] = np.round((countries_recovered[country].iloc[-1]/countries_confirmed[country].iloc[-1])*100, 4)
+        y_dat_ratioRecConf[country] = np.round((countries_recovered[country]/countries_confirmed[country])*100, 4)
 
 # Ratio of Total Recovered/ Population (certainly >0)
-y_dat_ratioRecPop = pd.DataFrame(index=[lastday], columns=countries_recovered.columns)
+y_dat_ratioRecPop = pd.DataFrame(index=x_dat, columns=countries_recovered.columns)
 y_dat_ratioRecPop.fillna(0, inplace=True)
 
 for country in y_dat_ratioRecPop.columns:
