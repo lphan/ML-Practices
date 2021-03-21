@@ -50,3 +50,20 @@ newFatalitiesByDay = [totalfatalities_by_day[0]] + [totalfatalities_by_day[day+1
 newRecoveredByDay = [totalrecovered_by_day[0]] + [totalrecovered_by_day[day+1] - totalrecovered_by_day[day] for day in x_dat[:-1]]
 
 num_infected_countries = [len(np.unique(data[day][data[day]['Confirmed']>0].filter(regex=("Country.*")).values)) for day in x_dat]
+
+# Compute changes (confirmed, fatalities, recovered) by day in every country
+countries_confirmed_by_day = pd.DataFrame(columns=countries_confirmed.columns)
+
+for country in countries_confirmed.columns:
+    new_values = [countries_confirmed[country].iloc[0]] + [countries_confirmed[country].iloc[day+1]-countries_confirmed[country].iloc[day] for day in x_dat[:-1]]
+    countries_confirmed_by_day[country] = new_values
+
+countries_fatalities_by_day =  pd.DataFrame(columns=countries_fatalities.columns) 
+for country in countries_fatalities_by_day.columns:
+    new_values = [countries_fatalities[country].iloc[0]] + [countries_fatalities[country].iloc[day+1]-countries_fatalities[country].iloc[day] for day in x_dat[:-1]]
+    countries_fatalities_by_day[country] = new_values
+
+countries_recovered_by_day = pd.DataFrame(columns=countries_recovered.columns)
+for country in countries_recovered_by_day.columns:
+    new_values = [countries_recovered[country].iloc[0]] + [countries_recovered[country].iloc[day+1]-countries_recovered[country].iloc[day] for day in x_dat[:-1]]
+    countries_recovered_by_day[country] = new_values

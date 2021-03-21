@@ -1,4 +1,4 @@
-
+# TODO move data and all GitHub private Code Repo to Google Drive and apply Colab Google to run the examples
 
 # TODO FAILED test_data_total_fatal_byday:: KeyError: other countries/ locations like Hong Kong, and others were removed or changed in data 
 
@@ -11,6 +11,8 @@
 # TODO covid.py: validate totalconfirmed_by_day with y_dat_confirmed
 
 # TODO covid.py: beating covid with additional population in the world
+
+# FIXED covid_top.py: ratio between values 
 
 # FIXED create covid_metadata.py: after import, start pre-processing all metadata and key values to make data consistent before processing
     -> create covid_prep.py

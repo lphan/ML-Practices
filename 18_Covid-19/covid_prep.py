@@ -122,13 +122,56 @@ num_infected_countries = [len(infected_countries[day]) for day in x_dat]
 
 # create dictionary of country's population
 country_pop_dict = dict()
+countries_no_infopopulation = list()
+
 for country in countries_confirmed.columns:
     if country in sdata['Country_Region'].unique():
         country_pop_dict[country]=sdata[sdata['Country_Region']==country]['Population'].values[0]  
     else:
-        print("No Information about the population of country ", country)
+        countries_no_infopopulation.append(country)
         country_pop_dict[country]='NaN'
 
-# Input population of the following countries manually from Wikipedia
-# Hong Kong population was not given in file (this is data from Wikipedia, estimated in 2019)
+# print("\nNo Information about the population of these countries: \n", countries_no_infopopulation)
+
+# Input population of the following countries manually  (year 2020)
+# these are data estimated from Wikipedia, and https://www.worldometers.info/world-population/population-by-country/
+# and https://worldpopulationreview.com/countries/
+# and Cruise Ships  https://en.wikipedia.org/wiki/COVID-19_pandemic_on_cruise_ships#Ships_with_confirmed_cases_on_board
 country_pop_dict['Hong Kong'] = 7500700
+country_pop_dict['Republic of the Congo'] = 5381359
+country_pop_dict['Aruba'] = 106314
+country_pop_dict['Cayman Islands'] = 64948
+country_pop_dict['Mayotte'] = 270372
+country_pop_dict['Faroe Islands'] = 48678
+country_pop_dict['Ivory Coast'] = 26378274
+country_pop_dict['The Gambia'] = 2173999
+country_pop_dict['Saint Martin'] = 38666
+country_pop_dict['St. Martin'] = 38666
+country_pop_dict['Cape Verde'] = 555987
+country_pop_dict['Reunion'] = 859959
+country_pop_dict[' Azerbaijan'] = 10139177
+country_pop_dict['Greenland'] = 56770
+country_pop_dict['Channel Islands'] = 173863
+country_pop_dict['Guam'] = 168775
+country_pop_dict['North Ireland'] = 1885000
+country_pop_dict['Curacao'] = 157538
+country_pop_dict['Vatican City'] = 801
+country_pop_dict['The Bahamas'] = 393244
+country_pop_dict['Martinique'] = 375265
+country_pop_dict['Taipei and environs'] = 2646204 # wikipedia https://en.wikipedia.org/wiki/Taipei 2019
+country_pop_dict['Palestine'] = 5101414
+country_pop_dict['Saint Barthelemy'] = 9877
+country_pop_dict['Mayotte'] = 272815
+country_pop_dict['Gibraltar'] = 33691
+country_pop_dict['Republic of Moldova'] = 4033963
+country_pop_dict['Ivory Coast'] = 26867385
+country_pop_dict['Macau'] = 682800
+country_pop_dict['Guadeloupe'] = 400124
+country_pop_dict['Puerto Rico'] = 2860853
+country_pop_dict['French Guiana'] = 298682
+country_pop_dict['Jersey'] = 173863  # Population of Channel Islands (2020 and historical)
+country_pop_dict['occupied Palestinian territory'] = 0
+country_pop_dict['Faroe Islands'] = 52154
+country_pop_dict['Guernsey'] = 67052
+country_pop_dict['East Timor'] = 1318445
+country_pop_dict['Others_and_ships'] = 3711
