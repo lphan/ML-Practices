@@ -49,7 +49,7 @@ ratioFatalByDay = np.round(np.array(totalfatalities_by_day)/np.array(totalconfir
 ''' 
 The different Ratio of the Top 10 countries with highest cases 
 '''
-# Ratio of Total Confirmed/ Population (certainly >0)
+# Ratio of Total Confirmed/ Population (certainly >0) all days
 y_dat_ratioConfPop = pd.DataFrame(index=x_dat, columns=countries_confirmed.columns)
 y_dat_ratioConfPop.fillna(0, inplace=True)
 
@@ -59,7 +59,7 @@ for country in countries_confirmed.columns:
     else:    
         y_dat_ratioConfPop[country] = np.round(countries_confirmed[country]/country_pop_dict[country]*100, 4)
     
-# Ratio of Total Deaths/ Total Confirmed
+# Ratio of Total Deaths/ Total Confirmed all days
 y_dat_ratioDeathConf = pd.DataFrame(index=x_dat, columns=countries_fatalities.columns)
 y_dat_ratioDeathConf.fillna(0, inplace=True)
 
@@ -69,7 +69,7 @@ for country in y_dat_ratioDeathConf.columns:
     else: 
         y_dat_ratioDeathConf[country] = np.round((countries_fatalities[country]/countries_confirmed[country])*100, 4)
 
-# Ratio of Total Deaths/ Population (certainly >0)   
+# Ratio of Total Deaths/ Population (certainly >0) all days 
 y_dat_ratioDeathPop =pd.DataFrame(index=x_dat, columns=countries_fatalities.columns)
 y_dat_ratioDeathPop.fillna(0, inplace=True)
 
@@ -79,7 +79,7 @@ for country in y_dat_ratioDeathPop.columns:
     else: 
         y_dat_ratioDeathPop[country] = np.round(countries_fatalities[country]/country_pop_dict[country]*100, 4)
 
-# Ratio of Total Recovered/ Total Confirmed      
+# Ratio of Total Recovered/ Total Confirmed all days     
 y_dat_ratioRecConf = pd.DataFrame(index=x_dat, columns=countries_recovered.columns)
 y_dat_ratioRecConf.fillna(0, inplace=True)
 
@@ -89,7 +89,7 @@ for country in y_dat_ratioRecConf.columns:
     else: 
         y_dat_ratioRecConf[country] = np.round((countries_recovered[country]/countries_confirmed[country])*100, 4)
 
-# Ratio of Total Recovered/ Population (certainly >0)
+# Ratio of Total Recovered/ Population (certainly >0) all days
 y_dat_ratioRecPop = pd.DataFrame(index=x_dat, columns=countries_recovered.columns)
 y_dat_ratioRecPop.fillna(0, inplace=True)
 
@@ -100,7 +100,7 @@ for country in y_dat_ratioRecPop.columns:
         y_dat_ratioRecPop[country] = np.round(countries_recovered[country]/country_pop_dict[country]*100, 4)
 
 '''
-Top 10 highest
+Top 10 highest over total 
 '''
 top10confirmed = countries_confirmed.tail(1).transpose().rename(columns={lastday: "Confirmed"})
 top10confirmed['population']= [country_pop_dict[country] for country in top10confirmed.index]
@@ -111,14 +111,16 @@ top10confirmed['RatioByTotal_in_%']= np.round(top10confirmed['Confirmed']/totalC
 
 top10fatal = countries_fatalities.tail(1).transpose().rename(columns={lastday: "Fatal"})
 top10fatal['population'] = [country_pop_dict[country] for country in top10fatal.index]
+top10fatal['RatioFatalByPopulation_in_%'] = np.round(top10fatal['Fatal']/top10fatal['population'] *100, 4)
+top10fatal['RatioFatalByConfirmed_in_%'] = np.round(top10fatal['Fatal']/top10confirmed['Confirmed'] *100, 4)
+top10fatal['RatioByTotal_in_%'] = np.round(top10fatal['Fatal']/totalFatal*100, 4)
 top10fatal = top10fatal.replace('NaN', np.nan)
 top10fatal.dropna(inplace=True)
-top10fatal['RatioFatalByPopulation_in_%'] = np.round(top10fatal['Fatal']/top10fatal['population'] *100, 4)
-top10fatal['RatioByTotal_in_%'] = np.round(top10fatal['Fatal']/totalFatal*100, 4)
 
 top10recovered = countries_recovered.tail(1).transpose().rename(columns={lastday: "Recovered"})
 top10recovered['population'] = [country_pop_dict[country] for country in top10recovered.index]
+top10recovered['RatioRecoveredByPopulation_in_%'] = np.round(top10recovered['Recovered']/top10recovered['population'] *100, 4)
+top10recovered['RatiorecoveredByConfirmed_in_%'] = np.round(top10recovered['Recovered']/top10confirmed['Confirmed'] *100, 4)
 top10recovered = top10recovered.replace('NaN', np.nan)
 top10recovered.dropna(inplace=True)
-top10recovered['RatioRecoveredByPopulation_in_%'] = np.round(top10recovered['Recovered']/top10recovered['population'] *100, 4)
 top10recovered['RatioByTotal_in_%'] = np.round(top10recovered['Recovered']/totalRecovered*100, 4)
