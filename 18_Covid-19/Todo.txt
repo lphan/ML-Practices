@@ -6,11 +6,13 @@
 
 # TODO FAILED test_covid.py:: searchByValueColumn StartML.searchByValueColumn(data[day], try_keys=['Country_Region', 'Country/Region'], column='Deaths', value='Cruise Ship')['Deaths'].values.size
 
-# TODO covid_byweek.py: review negative value 
-
 # TODO covid.py: validate totalconfirmed_by_day with y_dat_confirmed
 
 # TODO covid.py: beating covid with additional population in the world
+
+# FIXED: new analysis notebook replace byMonth into for 7-days-incidence for all countries - add time slot rolling window to 18_Covid-19.ipynb
+
+# FIXED covid_byweek.py: review negative value. Reason: recovered data in US see: https://github.com/CSSEGISandData/COVID-19/issues/3464
 
 # FIXED covid_top.py: ratio between values 
 
