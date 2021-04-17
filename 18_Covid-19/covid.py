@@ -49,6 +49,12 @@ newFatalitiesByDay = [totalfatalities_by_day[0]] + [totalfatalities_by_day[day+1
 # New Increasing/ changes Recovered in ALL COUNTRIES changed by day
 newRecoveredByDay = [totalrecovered_by_day[0]] + [totalrecovered_by_day[day+1] - totalrecovered_by_day[day] for day in x_dat[:-1]]
 
+# mitigate the negative values by zero
+newConfirmedByDay = [0 if value < 0 else value for value in newConfirmedByDay]
+newFatalitiesByDay = [0 if value < 0 else value for value in newFatalitiesByDay]
+newRecoveredByDay = [0 if value < 0 else value for value in newRecoveredByDay]
+
+# number of infected countries by time
 num_infected_countries = [len(np.unique(data[day][data[day]['Confirmed']>0].filter(regex=("Country.*")).values)) for day in x_dat]
 
 # Compute changes (confirmed, fatalities, recovered) by day in every country

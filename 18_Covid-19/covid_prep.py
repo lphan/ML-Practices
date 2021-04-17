@@ -175,3 +175,9 @@ country_pop_dict['Faroe Islands'] = 52154
 country_pop_dict['Guernsey'] = 67052
 country_pop_dict['East Timor'] = 1318445
 country_pop_dict['Others_and_ships'] = 3711
+
+
+# Mitigate the negative values by converting all negative values to 0
+countries_recovered.mask(countries_recovered<0, 0, inplace=True)
+countries_fatalities.mask(countries_fatalities<0, 0, inplace=True)
+countries_confirmed.mask(countries_confirmed<0, 0, inplace=True)
