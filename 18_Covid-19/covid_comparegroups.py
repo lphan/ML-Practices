@@ -11,6 +11,7 @@ first_group = ['Italy', 'Germany', 'Spain', 'France', 'United Kingdom', 'Switzer
 # first_group = ['Norway', 'Sweden', 'Denmark', 'Finland']
 second_group = ['China', 'Korea, South', 'Japan', 'Malaysia', 'Indonesia', 'Thailand', 'Philippines', 'Singapore', 'Taiwan*', 'Vietnam']
 
+# Leader by gender
 # first_group: female, second_group: male
 # first_group = ['Germany', 'Taiwan*', 'New Zealand', 'Iceland', 'Finland', 'Norway', 'Denmark']
 # second_group = ['US', 'Brazil', 'United Kingdom', 'Russia', 'Italy', 'Spain', 'France']

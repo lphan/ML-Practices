@@ -8,15 +8,29 @@ Top 10 countries with highest/ lowest cases (new cases confirmed, fatality, reco
 # countries_highestConfByDay = sorted(list_confirmed, key=lambda x: x[1], reverse=True)
 # countries_lowestConfByDay = sorted(list_confirmed, key=lambda x: x[1], reverse=False)
 
-countries_ConfLastDay = countries_confirmed.iloc[-2:].diff().iloc[-1]
+# countries_ConfLastDay = countries_confirmed.iloc[-2:].diff().iloc[-1]
+# countries_highestConfByDay = countries_ConfLastDay.sort_values(ascending=False)
+# countries_lowestConfByDay = countries_ConfLastDay.sort_values(ascending=True)
+
+# countries_FatalLastDay = countries_fatalities.iloc[-2:].diff().iloc[-1]
+# countries_highestFatalByDay = countries_FatalLastDay.sort_values(ascending=False)
+# countries_lowestFatalByDay = countries_FatalLastDay.sort_values(ascending=True)
+
+# countries_RecLastDay = countries_recovered.iloc[-2:].diff().iloc[-1]
+# countries_highestRecByDay = countries_RecLastDay.sort_values(ascending=False)
+# countries_lowestRecByDay = countries_RecLastDay.sort_values(ascending=True)
+
+yesterday = 1
+
+countries_ConfLastDay = countries_confirmed.iloc[-yesterday-1:].diff().iloc[-yesterday]
 countries_highestConfByDay = countries_ConfLastDay.sort_values(ascending=False)
 countries_lowestConfByDay = countries_ConfLastDay.sort_values(ascending=True)
 
-countries_FatalLastDay = countries_fatalities.iloc[-2:].diff().iloc[-1]
+countries_FatalLastDay = countries_fatalities.iloc[-yesterday-1:].diff().iloc[-yesterday]
 countries_highestFatalByDay = countries_FatalLastDay.sort_values(ascending=False)
 countries_lowestFatalByDay = countries_FatalLastDay.sort_values(ascending=True)
 
-countries_RecLastDay = countries_recovered.iloc[-2:].diff().iloc[-1]
+countries_RecLastDay = countries_recovered.iloc[-yesterday-1:].diff().iloc[-yesterday]
 countries_highestRecByDay = countries_RecLastDay.sort_values(ascending=False)
 countries_lowestRecByDay = countries_RecLastDay.sort_values(ascending=True)
 
