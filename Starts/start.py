@@ -157,20 +157,20 @@ class Start(object):
 
         try:
             # Delimiter processing
-            if path.endswith('.xlsx') or path.endswith('.xls'):
+            if path.endswith('.xlsx') or path.endswith('.xls') and os.path.isfile(path):
                 if pandas:
                     df = pd.read_excel(path)
                 else:
                     parts = dask.delayed(pd.read_excel)(path)
                     df = dd.from_delayed(parts)
         
-            elif path.endswith('.json'):
+            elif path.endswith('.json') and os.path.isfile(path):
                 if pandas:
                     df = pd.read_json(path)
                 else:
                     df = dd.read_json(path)
                 
-            elif path.endswith('.csv'):
+            elif path.endswith('.csv') and os.path.isfile(path):
                 if pandas:
                     df = pd.read_csv(path, low_memory=False)
                 else:
@@ -178,7 +178,7 @@ class Start(object):
                 
             else:
                 # print('Unknown format')
-                return
+                return None
         
         except (TypeError, OSError, FileNotFoundError):
             print("Wrong Type Format of imported data")
