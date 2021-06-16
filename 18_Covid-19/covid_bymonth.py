@@ -7,7 +7,10 @@ files_by_month = [[str(month)+'-'+str(calendar.monthrange(year, month)[1])+'-'+s
 # flatten all lists into one list
 files_by_month = [y for x in files_by_month for y in x]
 
-# query data in year 2020
+# add current month by finding the data last day. parse the month, current_data_this_month = the difference last day with previous month
+files_by_month.append(updated_date+'.csv')
+
+# query data in year 2020 (check if file exists, then import data)
 data_by_month = [Start.import_data(path_folder+pathfile) for pathfile in files_by_month if os.path.isfile(path_folder+pathfile)]
 
 countries_confirmed_month = pd.DataFrame(columns=countries)

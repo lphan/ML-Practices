@@ -6,6 +6,9 @@ from ALL COUNTRIES FROM FIRST DAY to LATEST DAY
 """
 from covid_prep import *
 
+# the date (previous day) for update data 
+updated_date=files[-1].split('.')[0]
+
 ''' 
 All countries CONFIRMED_cases changed by day - Total Confirmed by Day in all countries
 '''
