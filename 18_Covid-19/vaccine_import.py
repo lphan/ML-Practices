@@ -32,4 +32,3 @@ time_series_vaccine_global = Start.import_data(ts_vaccine_global)
 
 # print("Start importing time series data vaccine doses admin in the World", ts_vaccine_doses_global)
 # time_series_admin_vaccine_global = Start.import_data(ts_vaccine_doses_global)
-
