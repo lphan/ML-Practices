@@ -9,7 +9,7 @@ Estern_culture (10 countries:  China Korea Japan Malaysia Indonesia Thailand Phi
 
 first_group = ['Italy', 'Germany', 'Spain', 'France', 'United Kingdom', 'Switzerland', 'Netherlands', 'Austria', 'Belgium', 'Luxembourg']
 # first_group = ['Norway', 'Sweden', 'Denmark', 'Finland']
-second_group = ['China', 'Korea, South', 'Japan', 'Malaysia', 'Indonesia', 'Thailand', 'Philippines', 'Singapore', 'Taiwan*', 'Vietnam']
+second_group = ['China', 'Korea, South', 'Japan', 'Malaysia', 'Indonesia', 'Thailand', 'Philippines', 'Singapore', 'Cambodia', 'Vietnam']
 
 # Leader by gender
 # first_group: female, second_group: male
