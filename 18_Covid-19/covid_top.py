@@ -125,16 +125,16 @@ top10confirmed['RatioByTotal_in_%']= np.round(top10confirmed['Confirmed']/totalC
 
 top10fatal = countries_fatalities.tail(1).transpose().rename(columns={lastday: "Fatal"})
 top10fatal['population'] = [country_pop_dict[country] for country in top10fatal.index]
+top10fatal = top10fatal.replace('NaN', np.nan)
+top10fatal.dropna(inplace=True)
 top10fatal['RatioFatalByPopulation_in_%'] = np.round(top10fatal['Fatal']/top10fatal['population'] *100, 4)
 top10fatal['RatioFatalByConfirmed_in_%'] = np.round(top10fatal['Fatal']/top10confirmed['Confirmed'] *100, 4)
 top10fatal['RatioByTotal_in_%'] = np.round(top10fatal['Fatal']/totalFatal*100, 4)
-top10fatal = top10fatal.replace('NaN', np.nan)
-top10fatal.dropna(inplace=True)
 
 top10recovered = countries_recovered.tail(1).transpose().rename(columns={lastday: "Recovered"})
 top10recovered['population'] = [country_pop_dict[country] for country in top10recovered.index]
-top10recovered['RatioRecoveredByPopulation_in_%'] = np.round(top10recovered['Recovered']/top10recovered['population'] *100, 4)
-top10recovered['RatiorecoveredByConfirmed_in_%'] = np.round(top10recovered['Recovered']/top10confirmed['Confirmed'] *100, 4)
 top10recovered = top10recovered.replace('NaN', np.nan)
 top10recovered.dropna(inplace=True)
+top10recovered['RatioRecoveredByPopulation_in_%'] = np.round(top10recovered['Recovered']/top10recovered['population'] *100, 4)
+top10recovered['RatiorecoveredByConfirmed_in_%'] = np.round(top10recovered['Recovered']/top10confirmed['Confirmed'] *100, 4)
 top10recovered['RatioByTotal_in_%'] = np.round(top10recovered['Recovered']/totalRecovered*100, 4)
