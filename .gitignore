@@ -9,7 +9,9 @@ reports/
 __pycache__/
 Starts/__pycache__/*
 COVID-19/
-*/data/
+*/data/Vaccine/
+*/data/COVID-19/
+*/data/COVID-19_Unified/
 .ipynb_checkpoints/
 debug.ipynb
 speedup.ipynb
